@@ -2,7 +2,7 @@
   Founder & Lead Developer: Kevin Italo Cajaleon Zuta
   Artistic Name: Vloitz
   Location: Lima, Peru
-  Site: https://vloitz.github.io/wav-sets/
+  Site: https://vloitz.github.io/
   
 /* TECHNOLOGY */
   Engine: Vloitz Hybrid Video Renderer (V78)
@@ -12,4 +12,5 @@
 
 /* ORIGIN */
   Establecido: 2025
+
   Misión: Democratizar la creación de contenido musical de alta fidelidad desde la web.
