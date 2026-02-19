@@ -8,7 +8,7 @@
             "title": "Jungle Rhythmic Grooves 004",
             "id": "jungle-004",
             "date": "2025-10-20",
-            "audio_url": "./audio/Jungle%20Rhythmic%20Grooves%20004.flac",
+            "audio_url": "https://media.githubusercontent.com/media/vloitz/wav-sets/2e0373928d8d3d764c9c1db1a90647ff067541fe/audio/Jungle%20Rhythmic%20Grooves%20004.flac",
             "cover_art_url": "https://i1.sndcdn.com/artworks-mS3G3teAbdAutPAq-7e5HeA-t500x500.png",
 
             "peaks_url": "./peaks/Jungle%20Rhythmic%20Grooves%20004_peaks_max_detail_FULL.json",
@@ -47,7 +47,7 @@
             "title": "GridLock Groovy 003",
             "id": "GL003",
             "date": "2025-12-03",
-            "audio_url": "./audio/GDL003_HIFI.flac",
+            "audio_url": "https://media.githubusercontent.com/media/vloitz/wav-sets/refs/heads/main/audio/GDL003_HIFI.flac",
             "cover_art_url": "./Artwork/GDL003_ARTWORK.jpg",
             "peaks_url": "./peaks/GDL_003_peaks_max_detail.json",
             "tracklist": [
