@@ -476,7 +476,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         console.log(`Cargando track ${index}: ${set.title}`); // LOG
 
-// --- INICIO: CERO CONFIGURACIÓN (Actualización HLS Nivel Dios) ---
+        // --- INICIO: CERO CONFIGURACIÓN (Actualización HLS Nivel Dios) ---
         // Ahora buscamos el index.m3u8 primero. Si no existe, WaveSurfer fallará, lo cual es esperado si el set no está en HLS aún.
         const hlsManifestUrl = `${CLOUDFLARE_R2_URL}/${set.id}/index.m3u8`;
         // Mantenemos el fallback por si en el futuro decides volver a usar archivos únicos
@@ -505,35 +505,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         console.log(`WaveSurfer intentará cargar: ${magicAudioUrl}`); // LOG
 
-        // Lógica para cargar picos
-        if (magicPeaksUrl) {
-            console.log(`Intentando cargar picos desde: ${set.peaks_url}`); // LOG
-            fetch(magicPeaksUrl)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`Error HTTP al cargar picos! status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(peaksData => {
-                    const peaksArray = peaksData.data;
-                    if (peaksArray && Array.isArray(peaksArray)) {
-                        console.log(`Picos cargados (${peaksArray.length} puntos). Cargando audio con picos...`); // LOG
-                        wavesurfer.load(magicAudioUrl, peaksArray);
-                    } else {
-                        console.warn("El JSON de picos no tiene un array 'data' válido. Cargando solo audio..."); // LOG ADVERTENCIA
-                        wavesurfer.load(magicAudioUrl);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error al cargar o parsear el JSON de picos:', error); // LOG ERROR
-                    console.warn("Fallback: Cargando solo audio debido a error con picos..."); // LOG ADVERTENCIA
-                    wavesurfer.load(magicAudioUrl);
-                });
-        } else {
-            console.log("No se encontró peaks_url. Cargando solo audio..."); // LOG
-
         // --- INICIO: MOTOR HLS Y PICOS UNIFICADO (Corrección de Flujo) ---
+        // Esta sub-función asegura que el motor correcto se inicie después de intentar cargar los picos
         const initWaveSurfer = (peaks) => {
             if (magicAudioUrl.endsWith('.m3u8')) {
                 console.log("[Motor HLS] Detectado formato segmentado. Iniciando hls.js...");
@@ -548,7 +521,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         // WaveSurfer dibujará la onda a medida que el audio se reproduce
                     });
                     hls.on(Hls.Events.ERROR, function(event, data) {
-                        if (data.fatal) console.error("[Motor HLS] Error fatal:", data);
+                        // FIX: Se cambió data.message por el objeto data para evitar error de undefined
+                        if (data.fatal) console.error("[Motor HLS] Error fatal detectado:", data);
                     });
                 } else if (audioEl.canPlayType('application/vnd.apple.mpegurl')) {
                     console.log("[Motor HLS] Usando soporte nativo (Safari/iOS)...");
@@ -576,16 +550,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     initWaveSurfer(peaksData.data);
                 })
                 .catch(error => {
-                    console.warn("[Cero Config] Sin picos previos. Fallback activado:", error.message);
+                    console.warn("[Cero Config] Sin picos previos o error de carga. Fallback activado:", error.message);
                     initWaveSurfer(null);
                 });
         } else {
             initWaveSurfer(null);
         }
         // --- FIN: MOTOR HLS Y PICOS UNIFICADO ---
-
-
-        }
 
         currentLoadedSet = set;
         window.currentLoadedSet = set; // <--- ¡ESTA ES LA LÍNEA QUE FALTABA!
@@ -607,6 +578,7 @@ document.addEventListener('DOMContentLoaded', () => {
         TrackNavigator.prepareTimestamps(set.tracklist || [], currentSetFavorites); // <-- AÑADIR ESTA LÍNEA
         updatePlayingHighlight();
     }
+
 
     // --- INICIO: Media Session API (Fase 3 - Modificada para Track Actual) ---
     function updateMediaSessionMetadata(set, currentTrackName = null) { // <-- MODIFICADO: Añadir currentTrackName
