@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Referencias ---
     const waveformContainer = document.getElementById('waveform');
     const playPauseBtn = document.getElementById('playPauseBtn');
-    const playIcon = document.getElementById('playIcon');   // <-- NUEVO
+    const playIcon = document.getElementById('playIcon'); // <-- NUEVO
     const pauseIcon = document.getElementById('pauseIcon'); // <-- NUEVO
     const currentTimeEl = document.getElementById('currentTime');
     const totalDurationEl = document.getElementById('totalDuration');
@@ -89,6 +89,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let wsRegions = null; // Referencia al plugin de regiones
 
+    // --- NUBE (URL Oficial de Cloudflare R2) ---
+    const CLOUDFLARE_R2_URL = 'https://pub-1bd5ca00f737488cae44be74016d8499.r2.dev';
+
 
     // --- INICIO: Módulo URLController (Fase 2 - Deep Linking) ---
     const URLController = (() => {
@@ -98,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const setId = params.get('set'); // captura ?set=...
             const timestamp = params.get('t'); // captura &t=...
 
-        // Log de diagnóstico (Regla 5)
+            // Log de diagnóstico (Regla 5)
             console.log(`[URLController] Params detectados -> ID: ${setId}, Time: ${timestamp}`);
 
             return {
@@ -230,7 +233,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         };
 
-        return { init };
+        return {
+            init
+        };
     })();
     // --- FIN: Módulo ShareController ---
 
@@ -241,16 +246,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const generatePalette = () => {
             // Tu Paleta "Contraste Técnico"
             const baseTones = [
-                [29, 185, 84],   // 1. Verde Vloitz (Marca - Inicio)
-                [140, 0, 220],   // 2. Morado Profundo
-                [255, 100, 0],   // 3. Naranja Ámbar
-                [0, 120, 255],   // 4. Azul Eléctrico
-                [230, 0, 0],     // 5. Rojo Intenso
-                [0, 190, 200],   // 6. Cyan/Turquesa
-                [255, 190, 0],   // 7. Amarillo Oro
-                [80, 80, 80],    // 8. Gris Acero
-                [255, 50, 100],  // 9. Salmón Neón
-                [120, 220, 0]    // 10. Lima Ácido
+                [29, 185, 84], // 1. Verde Vloitz (Marca - Inicio)
+                [140, 0, 220], // 2. Morado Profundo
+                [255, 100, 0], // 3. Naranja Ámbar
+                [0, 120, 255], // 4. Azul Eléctrico
+                [230, 0, 0], // 5. Rojo Intenso
+                [0, 190, 200], // 6. Cyan/Turquesa
+                [255, 190, 0], // 7. Amarillo Oro
+                [80, 80, 80], // 8. Gris Acero
+                [255, 50, 100], // 9. Salmón Neón
+                [120, 220, 0] // 10. Lima Ácido
             ];
 
             // Variaciones sutiles para no aburrir, pero respetando el tono base
@@ -258,7 +263,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             baseTones.forEach(([r, g, b]) => {
                 variations.forEach(variant => {
-                    let finalR = r, finalG = g, finalB = b;
+                    let finalR = r,
+                        finalG = g,
+                        finalB = b;
 
                     if (variant === 'Profundo') {
                         // Oscurecemos un poco (30%) para dar variedad sin cambiar el color base
@@ -284,7 +291,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return palette[index % palette.length];
         };
 
-        return { getColor };
+        return {
+            getColor
+        };
     })();
 
 
@@ -329,10 +338,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // --- Variables para lógica táctil v6 Final ---
-let isDraggingWaveformTouch = false;
-let longTouchTimer = null;
-const LONG_TOUCH_THRESHOLD = 200;
-let wasPlayingBeforeDrag = false; // Para saber si pausar/reanudar
+    let isDraggingWaveformTouch = false;
+    let longTouchTimer = null;
+    const LONG_TOUCH_THRESHOLD = 200;
+    let wasPlayingBeforeDrag = false; // Para saber si pausar/reanudar
 
     // --- Inicializar WaveSurfer ---
     try {
@@ -342,9 +351,9 @@ let wasPlayingBeforeDrag = false; // Para saber si pausar/reanudar
             // --- Matching Prototype Visuals ---
             waveColor: 'rgba(255, 255, 255, 0.20)', // Match prototype
             progressColor: 'rgba(255, 255, 255, 0.90)', // Match prototype
-            height: 128,                          // Match prototype
-            barWidth: 3,                          // Match prototype
-            barGap: 1,                           // Match prototype
+            height: 128, // Match prototype
+            barWidth: 3, // Match prototype
+            barGap: 1, // Match prototype
             // barRadius: 0, // Default in prototype, can omit or set explicitly
             // normalize: false, // Default in prototype, ensure it's not true
             // --- End Matching ---
@@ -352,7 +361,7 @@ let wasPlayingBeforeDrag = false; // Para saber si pausar/reanudar
             plugins: [WaveSurfer.Regions.create()], // Activar plugin
 
             cursorColor: "#ffffff", // Keep your preferred cursor color
-            cursorWidth: 1,         // Keep your preferred cursor width
+            cursorWidth: 1, // Keep your preferred cursor width
             responsive: true,
             backend: 'MediaElement',
             media: document.getElementById('audio-player')
@@ -365,10 +374,10 @@ let wasPlayingBeforeDrag = false; // Para saber si pausar/reanudar
 
         console.log("Instancia de WaveSurfer asignada a window.wavesurfer para depuración."); // LOG
     } catch (error) {
-         console.error("Error CRÍTICO al inicializar WaveSurfer:", error); // LOG ERROR
-         currentTrackTitle.textContent = "Error al iniciar reproductor";
-         playPauseBtn.textContent = '❌';
-         return; // Detener si WaveSurfer no se puede crear
+        console.error("Error CRÍTICO al inicializar WaveSurfer:", error); // LOG ERROR
+        currentTrackTitle.textContent = "Error al iniciar reproductor";
+        playPauseBtn.textContent = '❌';
+        return; // Detener si WaveSurfer no se puede crear
     }
 
     // --- Cargar sets.json ---
@@ -379,7 +388,7 @@ let wasPlayingBeforeDrag = false; // Para saber si pausar/reanudar
                 throw new Error(`Error HTTP! status: ${response.status}`);
             }
             return response.json();
-         })
+        })
         .then(data => {
             console.log("sets.json cargado:", data); // LOG ÉXITO
 
@@ -447,7 +456,7 @@ let wasPlayingBeforeDrag = false; // Para saber si pausar/reanudar
             li.className = 'track-item';
             li.dataset.index = index;
             li.innerHTML = `
-                <img src="${set.cover_art_url}" alt="${set.title} cover" class="track-item-cover">
+                <img src="${set.cover_art_url || `./Artwork/${set.id}.jpg`}" alt="${set.title} cover" class="track-item-cover">
                 <span class="track-item-title">${set.title}</span>
                 <span class="track-item-date">${set.date}</span>
             `;
@@ -465,7 +474,17 @@ let wasPlayingBeforeDrag = false; // Para saber si pausar/reanudar
         // --- FIN DEL AGREGADO ---
 
         console.log(`Cargando track ${index}: ${set.title}`); // LOG
-        currentCoverArt.src = set.cover_art_url;
+
+        // --- INICIO: CERO CONFIGURACIÓN (Deducción automática) ---
+        const magicAudioUrl = set.audio_url || `${CLOUDFLARE_R2_URL}/${set.id}.flac`;
+        const magicPeaksUrl = set.peaks_url || `./peaks/${set.id}.json`;
+        const magicCoverUrl = set.cover_art_url || `./Artwork/${set.id}.jpg`;
+        console.log(`[Cero Config] Audio: ${magicAudioUrl}`);
+        console.log(`[Cero Config] Picos: ${magicPeaksUrl}`);
+        console.log(`[Cero Config] Portada: ${magicCoverUrl}`);
+        // --- FIN: CERO CONFIGURACIÓN ---
+
+        currentCoverArt.src = magicCoverUrl;
         currentTrackTitle.textContent = `Cargando: ${set.title}...`;
         currentSetIndex = index;
 
@@ -475,16 +494,16 @@ let wasPlayingBeforeDrag = false; // Para saber si pausar/reanudar
         playPauseBtn.disabled = true;
 
         // --- INICIO: CÓDIGO FALTANTE (Establecer icono inicial) ---
-        if (playIcon) playIcon.style.display = 'block';   // Asegura que se muestre el icono de Play al cargar
+        if (playIcon) playIcon.style.display = 'block'; // Asegura que se muestre el icono de Play al cargar
         if (pauseIcon) pauseIcon.style.display = 'none'; // Asegura que Pause esté oculto
         // --- FIN: CÓDIGO FALTANTE ---
 
-        console.log(`WaveSurfer intentará cargar: ${set.audio_url}`); // LOG
+        console.log(`WaveSurfer intentará cargar: ${magicAudioUrl}`); // LOG
 
         // Lógica para cargar picos
-        if (set.peaks_url) {
+        if (magicPeaksUrl) {
             console.log(`Intentando cargar picos desde: ${set.peaks_url}`); // LOG
-            fetch(set.peaks_url)
+            fetch(magicPeaksUrl)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`Error HTTP al cargar picos! status: ${response.status}`);
@@ -495,20 +514,20 @@ let wasPlayingBeforeDrag = false; // Para saber si pausar/reanudar
                     const peaksArray = peaksData.data;
                     if (peaksArray && Array.isArray(peaksArray)) {
                         console.log(`Picos cargados (${peaksArray.length} puntos). Cargando audio con picos...`); // LOG
-                        wavesurfer.load(set.audio_url, peaksArray);
+                        wavesurfer.load(magicAudioUrl, peaksArray);
                     } else {
                         console.warn("El JSON de picos no tiene un array 'data' válido. Cargando solo audio..."); // LOG ADVERTENCIA
-                        wavesurfer.load(set.audio_url);
+                        wavesurfer.load(magicAudioUrl);
                     }
                 })
                 .catch(error => {
                     console.error('Error al cargar o parsear el JSON de picos:', error); // LOG ERROR
                     console.warn("Fallback: Cargando solo audio debido a error con picos..."); // LOG ADVERTENCIA
-                    wavesurfer.load(set.audio_url);
+                    wavesurfer.load(magicAudioUrl);
                 });
         } else {
             console.log("No se encontró peaks_url. Cargando solo audio..."); // LOG
-            wavesurfer.load(set.audio_url);
+            wavesurfer.load(magicAudioUrl);
         }
 
         currentLoadedSet = set;
@@ -542,8 +561,11 @@ let wasPlayingBeforeDrag = false; // Para saber si pausar/reanudar
                 title: set.title, // El título principal sigue siendo el del Set
                 artist: currentTrackName ? '' : 'Vloitz',
                 album: trackTitle, // <-- MODIFICADO: Usamos 'album' para el nombre del track actual
-                artwork: [
-                    { src: set.cover_art_url, sizes: '500x500', type: 'image/png' }, // Asume PNG, ajusta si es necesario
+                artwork: [{
+                        src: set.cover_art_url || `./Artwork/${set.id}.jpg`,
+                        sizes: '500x500',
+                        type: 'image/jpeg'
+                    }, // Deducido automáticamente
                 ]
             });
             console.log("[MediaSession] Metadatos aplicados."); // LOG
@@ -566,7 +588,7 @@ let wasPlayingBeforeDrag = false; // Para saber si pausar/reanudar
         }
     }
 
-// Formatear tiempo inteligente (Soporte para +1 Hora)
+    // Formatear tiempo inteligente (Soporte para +1 Hora)
     function formatTime(seconds) {
         seconds = Number(seconds);
         if (isNaN(seconds) || seconds < 0) seconds = 0;
@@ -581,7 +603,7 @@ let wasPlayingBeforeDrag = false; // Para saber si pausar/reanudar
         if (h > 0) {
             return `${h}:${mDisplay}:${sDisplay}`; // Formato H:MM:SS
         } else {
-            return `${mDisplay}:${sDisplay}`;      // Formato MM:SS
+            return `${mDisplay}:${sDisplay}`; // Formato MM:SS
         }
     }
 
@@ -634,9 +656,9 @@ let wasPlayingBeforeDrag = false; // Para saber si pausar/reanudar
             const timeParts = track.time.split(':');
             let totalSeconds = 0;
             if (timeParts.length === 2 && !isNaN(parseInt(timeParts[0], 10)) && !isNaN(parseInt(timeParts[1], 10))) {
-                 totalSeconds = parseInt(timeParts[0], 10) * 60 + parseInt(timeParts[1], 10);
+                totalSeconds = parseInt(timeParts[0], 10) * 60 + parseInt(timeParts[1], 10);
             } else {
-                 console.warn(`Timestamp inválido en tracklist: ${track.time}`); // LOG ADVERTENCIA
+                console.warn(`Timestamp inválido en tracklist: ${track.time}`); // LOG ADVERTENCIA
             }
 
             const isFavorited = currentSetFavorites.has(totalSeconds); // v2: Comprobar contra el Set del set actual
@@ -657,64 +679,84 @@ let wasPlayingBeforeDrag = false; // Para saber si pausar/reanudar
 
     }
 
-// --- Función SeekWaveform (Requerida por Drag Logic) ---
-const seekWaveform = (clientX, rect, eventType) => {
-    console.log(`[Drag v6 Final Corrected] seekWaveform llamado desde: ${eventType}`); // LOG (Prefijo actualizado)
-    if (!wavesurfer) { console.warn("[Drag v6 Final Corrected] Seek ignorado: WS no inicializado."); return false; }
-    const x = Math.max(0, clientX - rect.left); const width = rect.width;
-    if (width === 0) { console.warn("[Drag v6 Final Corrected] Seek abortado: Ancho 0."); return false; }
-    const progress = Math.max(0, Math.min(1, x / width));
-    try {
-        // --- INICIO CORRECCIÓN ---
-        // Eliminamos check isReady aquí para permitir seek durante drag
-        // if (wavesurfer.isReady) {
+    // --- Función SeekWaveform (Requerida por Drag Logic) ---
+    const seekWaveform = (clientX, rect, eventType) => {
+        console.log(`[Drag v6 Final Corrected] seekWaveform llamado desde: ${eventType}`); // LOG (Prefijo actualizado)
+        if (!wavesurfer) {
+            console.warn("[Drag v6 Final Corrected] Seek ignorado: WS no inicializado.");
+            return false;
+        }
+        const x = Math.max(0, clientX - rect.left);
+        const width = rect.width;
+        if (width === 0) {
+            console.warn("[Drag v6 Final Corrected] Seek abortado: Ancho 0.");
+            return false;
+        }
+        const progress = Math.max(0, Math.min(1, x / width));
+        try {
+            // --- INICIO CORRECCIÓN ---
+            // Eliminamos check isReady aquí para permitir seek durante drag
+            // if (wavesurfer.isReady) {
             wavesurfer.seekTo(progress);
             const duration = wavesurfer.getDuration();
-            if (duration > 0 && currentTimeEl) { currentTimeEl.textContent = formatTime(progress * duration); }
-            console.log(`[Drag v6 Final Corrected] Seek executed: progress=${progress.toFixed(4)}`); return true;
-        // } else {
-        //      console.warn("[Drag v6 Final Corrected] Seek abortado DENTRO: WS no listo."); return false;
-        // }
-        // --- FIN CORRECCIÓN ---
-    } catch (error) {
-        console.error(`[Drag v6 Final Corrected] Error en seekTo(${progress.toFixed(4)}):`, error); return false;
-    }
-};
+            if (duration > 0 && currentTimeEl) {
+                currentTimeEl.textContent = formatTime(progress * duration);
+            }
+            console.log(`[Drag v6 Final Corrected] Seek executed: progress=${progress.toFixed(4)}`);
+            return true;
+            // } else {
+            //      console.warn("[Drag v6 Final Corrected] Seek abortado DENTRO: WS no listo."); return false;
+            // }
+            // --- FIN CORRECCIÓN ---
+        } catch (error) {
+            console.error(`[Drag v6 Final Corrected] Error en seekTo(${progress.toFixed(4)}):`, error);
+            return false;
+        }
+    };
 
 
-// --- Handlers Globales para Arrastre Táctil (Definidos Fuera) ---
-const handleWaveformTouchMove = (moveEvent) => {
-    console.log("[Drag v7 Refactored] handleWaveformTouchMove INICIO."); // LOG
-    if (!isDraggingWaveformTouch) { console.log("[Drag v7 Refactored] Move ignorado: isDragging false."); return; }
-    moveEvent.preventDefault(); // Prevenir scroll
-    if (moveEvent.touches && moveEvent.touches.length > 0) {
-        const wavesurferElement = wavesurfer.getWrapper(); const rect = wavesurferElement.getBoundingClientRect();
-        seekWaveform(moveEvent.touches[0].clientX, rect, "touchmove"); // Llamar a seekWaveform
-    } else { console.warn("[Drag v7 Refactored] Touch Move: No 'touches'."); }
-    console.log("[Drag v7 Refactored] handleWaveformTouchMove FIN."); // LOG
-};
+    // --- Handlers Globales para Arrastre Táctil (Definidos Fuera) ---
+    const handleWaveformTouchMove = (moveEvent) => {
+        console.log("[Drag v7 Refactored] handleWaveformTouchMove INICIO."); // LOG
+        if (!isDraggingWaveformTouch) {
+            console.log("[Drag v7 Refactored] Move ignorado: isDragging false.");
+            return;
+        }
+        moveEvent.preventDefault(); // Prevenir scroll
+        if (moveEvent.touches && moveEvent.touches.length > 0) {
+            const wavesurferElement = wavesurfer.getWrapper();
+            const rect = wavesurferElement.getBoundingClientRect();
+            seekWaveform(moveEvent.touches[0].clientX, rect, "touchmove"); // Llamar a seekWaveform
+        } else {
+            console.warn("[Drag v7 Refactored] Touch Move: No 'touches'.");
+        }
+        console.log("[Drag v7 Refactored] handleWaveformTouchMove FIN."); // LOG
+    };
 
-const handleWaveformTouchEnd = (endEvent) => {
-    console.log(`[Drag v7 Refactored] handleWaveformTouchEnd (Global) INICIO. isDragging: ${isDraggingWaveformTouch}. Tipo: ${endEvent.type}`); // LOG
-    if (!isDraggingWaveformTouch) { console.log("[Drag v7 Refactored] End (Global) ignorado: isDragging false."); return; }
-    isDraggingWaveformTouch = false; // Resetear bandera
+    const handleWaveformTouchEnd = (endEvent) => {
+        console.log(`[Drag v7 Refactored] handleWaveformTouchEnd (Global) INICIO. isDragging: ${isDraggingWaveformTouch}. Tipo: ${endEvent.type}`); // LOG
+        if (!isDraggingWaveformTouch) {
+            console.log("[Drag v7 Refactored] End (Global) ignorado: isDragging false.");
+            return;
+        }
+        isDraggingWaveformTouch = false; // Resetear bandera
 
-                // --- INICIO: Reanudar al finalizar drag ---
-                if (wasPlayingBeforeDrag) {
-                    wavesurfer.play();
-                    console.log("[Drag v7 Pause] Audio reanudado al finalizar arrastre."); // LOG
-                }
-                wasPlayingBeforeDrag = false; // Resetear estado guardado
-                // --- FIN: Reanudar al finalizar drag ---
+        // --- INICIO: Reanudar al finalizar drag ---
+        if (wasPlayingBeforeDrag) {
+            wavesurfer.play();
+            console.log("[Drag v7 Pause] Audio reanudado al finalizar arrastre."); // LOG
+        }
+        wasPlayingBeforeDrag = false; // Resetear estado guardado
+        // --- FIN: Reanudar al finalizar drag ---
 
-    console.log("[Drag v7 Refactored] Bandera isDragging reseteada (Global)."); // LOG
-    console.log("[Drag v7 Refactored] Removiendo listeners GLOBALES..."); // LOG
-    window.removeEventListener('touchmove', handleWaveformTouchMove);
-    window.removeEventListener('touchend', handleWaveformTouchEnd);
-    window.removeEventListener('touchcancel', handleWaveformTouchEnd);
-    console.log("[Drag v7 Refactored] handleWaveformTouchEnd (Global) FIN."); // LOG
-};
-// --- Fin Handlers Globales ---
+        console.log("[Drag v7 Refactored] Bandera isDragging reseteada (Global)."); // LOG
+        console.log("[Drag v7 Refactored] Removiendo listeners GLOBALES..."); // LOG
+        window.removeEventListener('touchmove', handleWaveformTouchMove);
+        window.removeEventListener('touchend', handleWaveformTouchEnd);
+        window.removeEventListener('touchcancel', handleWaveformTouchEnd);
+        console.log("[Drag v7 Refactored] handleWaveformTouchEnd (Global) FIN."); // LOG
+    };
+    // --- Fin Handlers Globales ---
 
     // --- INICIO: Configuración de Acciones Media Session (Repurposed Seek) ---
     if ('mediaSession' in navigator) {
@@ -723,11 +765,11 @@ const handleWaveformTouchEnd = (endEvent) => {
         try {
             navigator.mediaSession.setActionHandler('play', () => {
                 console.log("[MediaSession] Acción 'play' recibida."); // LOG
-                if(wavesurfer) wavesurfer.play();
+                if (wavesurfer) wavesurfer.play();
             });
             navigator.mediaSession.setActionHandler('pause', () => {
                 console.log("[MediaSession] Acción 'pause' recibida."); // LOG
-                if(wavesurfer) wavesurfer.pause();
+                if (wavesurfer) wavesurfer.pause();
             });
 
             // --- INICIO: REEMPLAZO - Usar Seek para Saltar Pista ---
@@ -794,9 +836,9 @@ const handleWaveformTouchEnd = (endEvent) => {
 
     });
 
-     wavesurfer.on('loading', (percent) => {
-         console.log(`WaveSurfer cargando: ${percent}%`); // LOG PROGRESO
-         currentTrackTitle.textContent = `Cargando: ${allSets[currentSetIndex]?.title || 'Set'} (${percent}%)`;
+    wavesurfer.on('loading', (percent) => {
+        console.log(`WaveSurfer cargando: ${percent}%`); // LOG PROGRESO
+        currentTrackTitle.textContent = `Cargando: ${allSets[currentSetIndex]?.title || 'Set'} (${percent}%)`;
     });
 
     wavesurfer.on('error', (err) => {
@@ -920,57 +962,57 @@ const handleWaveformTouchEnd = (endEvent) => {
         }
         // --- FIN: Lógica Media Session ---
 
-            // --- INICIO: Nueva Función Auto-Loop (Refactorización v6) ---
-            function handleAutoLoopJump(currentTime) {
-                const isFavoritesModeActive = favToggleCheckbox && favToggleCheckbox.checked;
+        // --- INICIO: Nueva Función Auto-Loop (Refactorización v6) ---
+        function handleAutoLoopJump(currentTime) {
+            const isFavoritesModeActive = favToggleCheckbox && favToggleCheckbox.checked;
 
-                // Solo actuar si AMBOS botones están activos, Nav está listo Y no estamos ya saltando
-                if (isAutoLoopActive && isFavoritesModeActive && TrackNavigator.isReady() && !isSeekingViaAutoLoop) {
+            // Solo actuar si AMBOS botones están activos, Nav está listo Y no estamos ya saltando
+            if (isAutoLoopActive && isFavoritesModeActive && TrackNavigator.isReady() && !isSeekingViaAutoLoop) {
 
-                    const currentFavStartTime = TrackNavigator.getCurrentTrackStartTime(currentTime, true);
+                const currentFavStartTime = TrackNavigator.getCurrentTrackStartTime(currentTime, true);
 
-                    if (currentFavStartTime !== null) {
-                        const trackEndTime = TrackNavigator.getTrackEndTime(currentFavStartTime, wavesurfer.getDuration());
+                if (currentFavStartTime !== null) {
+                    const trackEndTime = TrackNavigator.getTrackEndTime(currentFavStartTime, wavesurfer.getDuration());
 
-                        if (trackEndTime !== null) {
-                            const calculatedJumpTime = trackEndTime - TrackNavigator.AUTOLOOP_JUMP_SECONDS_BEFORE_END;
+                    if (trackEndTime !== null) {
+                        const calculatedJumpTime = trackEndTime - TrackNavigator.AUTOLOOP_JUMP_SECONDS_BEFORE_END;
 
-                            // CONDICIÓN: Verificar si estamos DENTRO de la ventana de salto
-                            if (currentTime >= calculatedJumpTime) {
-                                console.log(`%c[AutoLoop Trigger v6] Condición Cumplida! Time:${currentTime.toFixed(4)} >= JumpAt:${calculatedJumpTime.toFixed(4)}`, "color: lightgreen; font-weight: bold;"); // Log Mantenido
+                        // CONDICIÓN: Verificar si estamos DENTRO de la ventana de salto
+                        if (currentTime >= calculatedJumpTime) {
+                            console.log(`%c[AutoLoop Trigger v6] Condición Cumplida! Time:${currentTime.toFixed(4)} >= JumpAt:${calculatedJumpTime.toFixed(4)}`, "color: lightgreen; font-weight: bold;"); // Log Mantenido
 
-                                const nextFavTimestamp = TrackNavigator.findNextTimestamp(currentFavStartTime, true);
-                                console.log(`[AL FoundNext] NextFav: ${nextFavTimestamp !== null ? nextFavTimestamp.toFixed(2)+'s' : 'null'}`); // Log Mantenido
+                            const nextFavTimestamp = TrackNavigator.findNextTimestamp(currentFavStartTime, true);
+                            console.log(`[AL FoundNext] NextFav: ${nextFavTimestamp !== null ? nextFavTimestamp.toFixed(2)+'s' : 'null'}`); // Log Mantenido
 
-                                if (nextFavTimestamp !== null && nextFavTimestamp !== currentFavStartTime) {
-                                    console.log(`[AL Set Seeking TRUE] Antes de llamar a seekToTimestamp.`); // Log Mantenido
-                                    isSeekingViaAutoLoop = true;
-                                    console.log(`[AL ---> Saltando a ${nextFavTimestamp.toFixed(2)}s <---]`); // Log Mantenido
-                                    TrackNavigator.seekToTimestamp(nextFavTimestamp);
-                                } else {
-                                    console.warn(`[AL No Jump] nextFav es null o igual a currentFav.`); // Log Mantenido
-                                }
-                            } // Fin if currentTime >= calculatedJumpTime
-                        } // Fin if trackEndTime
-                    } // Fin if currentFavStartTime
-                } // Fin if AutoLoop Activo
-            }
-            // --- FIN: Nueva Función Auto-Loop ---
+                            if (nextFavTimestamp !== null && nextFavTimestamp !== currentFavStartTime) {
+                                console.log(`[AL Set Seeking TRUE] Antes de llamar a seekToTimestamp.`); // Log Mantenido
+                                isSeekingViaAutoLoop = true;
+                                console.log(`[AL ---> Saltando a ${nextFavTimestamp.toFixed(2)}s <---]`); // Log Mantenido
+                                TrackNavigator.seekToTimestamp(nextFavTimestamp);
+                            } else {
+                                console.warn(`[AL No Jump] nextFav es null o igual a currentFav.`); // Log Mantenido
+                            }
+                        } // Fin if currentTime >= calculatedJumpTime
+                    } // Fin if trackEndTime
+                } // Fin if currentFavStartTime
+            } // Fin if AutoLoop Activo
+        }
+        // --- FIN: Nueva Función Auto-Loop ---
 
-            // --- INICIO: Llamada a Lógica Auto-Bucle (Refactorización v6) ---
-            handleAutoLoopJump(currentTime);
-            // --- FIN: Llamada a Lógica Auto-Bucle ---
+        // --- INICIO: Llamada a Lógica Auto-Bucle (Refactorización v6) ---
+        handleAutoLoopJump(currentTime);
+        // --- FIN: Llamada a Lógica Auto-Bucle ---
 
-            // Actualizar el tiempo anterior SIEMPRE al final del bloque timeupdate
-            previousTimeForAutoLoop = currentTime;
+        // Actualizar el tiempo anterior SIEMPRE al final del bloque timeupdate
+        previousTimeForAutoLoop = currentTime;
 
 
 
     }); // Fin de timeupdate
 
     wavesurfer.on('seeking', (currentTime) => {
-         currentTimeEl.textContent = formatTime(currentTime);
-         console.log(`Seeking a: ${formatTime(currentTime)}`); // LOG
+        currentTimeEl.textContent = formatTime(currentTime);
+        console.log(`Seeking a: ${formatTime(currentTime)}`); // LOG
     });
 
     // --- INICIO: Resetear Bandera de AutoLoop (Fase 4 Corrección) ---
@@ -990,14 +1032,14 @@ const handleWaveformTouchEnd = (endEvent) => {
     // --- FIN: Resetear Bandera ---
 
     wavesurfer.on('play', () => {
-        if (playIcon) playIcon.style.display = 'none';    // Oculta Play
+        if (playIcon) playIcon.style.display = 'none'; // Oculta Play
         if (pauseIcon) pauseIcon.style.display = 'block'; // Muestra Pause
         updatePlayingHighlight();
         console.log("Evento: Play"); // LOG
     });
     wavesurfer.on('pause', () => {
-        if (playIcon) playIcon.style.display = 'block';   // Muestra Play
-        if (pauseIcon) pauseIcon.style.display = 'none';  // Oculta Pause
+        if (playIcon) playIcon.style.display = 'block'; // Muestra Play
+        if (pauseIcon) pauseIcon.style.display = 'none'; // Oculta Pause
         updatePlayingHighlight(); // Quitar resaltado
         console.log("Evento: Pause"); // LOG
     });
@@ -1017,97 +1059,112 @@ const handleWaveformTouchEnd = (endEvent) => {
         }
     });
 
-// --- NUEVO v6 Stable Final (Merged): Lógica Drag-to-Seek ---
-const waveformInteractionElement = document.getElementById('waveform');
+    // --- NUEVO v6 Stable Final (Merged): Lógica Drag-to-Seek ---
+    const waveformInteractionElement = document.getElementById('waveform');
 
-if (waveformInteractionElement && wavesurfer) {
-    console.log("[Drag v6 Final Merged] Añadiendo listeners TÁCTILES v6."); // LOG
+    if (waveformInteractionElement && wavesurfer) {
+        console.log("[Drag v6 Final Merged] Añadiendo listeners TÁCTILES v6."); // LOG
 
-    // Variables ya definidas arriba
+        // Variables ya definidas arriba
 
-    // Listener para INICIO TÁCTIL
-    waveformInteractionElement.addEventListener('touchstart', (event) => {
-        console.log("[Drag v6 Final Merged] Evento: touchstart INICIO.");
-        if (event.target.closest('button')) { console.warn("[Drag v6 Final Merged] Touch Start ignorado: botón."); return; }
-        console.log("[Drag v6 Final Merged] Touch Start ACEPTADO.");
-
-        clearTimeout(longTouchTimer);
-
-        let touchStartTime = 0;
-        if (wavesurfer && typeof wavesurfer.getCurrentTime === 'function') { try { touchStartTime = wavesurfer.getCurrentTime(); } catch (e) {} }
-        if (touchStartTime === 0 && wavesurfer && wavesurfer.getMediaElement()) { touchStartTime = wavesurfer.getMediaElement().currentTime || 0; }
-        const formattedTouchStartTime = formatTime(touchStartTime);
-        console.log(`[Drag v6 Final Merged] Tiempo inicio toque: ${formattedTouchStartTime}`);
-
-        // --- Llamar a seekWaveform en touchstart ---
-        console.log("[Drag v6 Final Merged] Intentando seek inicial en touchstart...");
-        if (event.touches && event.touches.length > 0) {
-            const wavesurferElement = wavesurfer.getWrapper(); const rect = wavesurferElement.getBoundingClientRect();
-            seekWaveform(event.touches[0].clientX, rect, "touchstart-initial");
-        } else { console.warn("[Drag v6 Final Merged] Touch Start: No 'touches' para seek inicial."); }
-        // --- FIN Llamar a seekWaveform ---
-
-        // Iniciar temporizador
-        longTouchTimer = setTimeout(() => {
-            console.warn(`[Drag v6 Final Merged] ¡TOQUE LARGO DETECTADO! en ${formattedTouchStartTime}`);
-
-            // --- INICIO: Pausar al iniciar drag ---
-            wasPlayingBeforeDrag = wavesurfer.isPlaying(); // Guardar estado actual
-            if (wasPlayingBeforeDrag) {
-                wavesurfer.pause();
-                console.log("[Drag v7 Pause] Audio pausado al iniciar arrastre."); // LOG
+        // Listener para INICIO TÁCTIL
+        waveformInteractionElement.addEventListener('touchstart', (event) => {
+            console.log("[Drag v6 Final Merged] Evento: touchstart INICIO.");
+            if (event.target.closest('button')) {
+                console.warn("[Drag v6 Final Merged] Touch Start ignorado: botón.");
+                return;
             }
-            // --- FIN: Pausar al iniciar drag ---
+            console.log("[Drag v6 Final Merged] Touch Start ACEPTADO.");
 
-            isDraggingWaveformTouch = true; // Activar bandera de arrastre (después de pausar)
-
-            console.log("[Drag v6 Final Merged] isDragging=TRUE. Añadiendo listeners GLOBALES.");
-
-            // --- Definir Handlers Globales ---
-
-            // --- FIN Definir Handlers ---
-
-            // Añadir listeners globales
-            window.addEventListener('touchmove', handleWaveformTouchMove, { passive: false });
-            window.addEventListener('touchend', handleWaveformTouchEnd);
-            window.addEventListener('touchcancel', handleWaveformTouchEnd);
-
-        }, LONG_TOUCH_THRESHOLD);
-
-        console.log(`[Drag v6 Final Merged] touchstart FIN (Timer iniciado).`);
-    });
-
-    // Listener para CLIC SIMPLE de RATÓN (PC)
-    waveformInteractionElement.addEventListener('click', (event) => {
-        // Mantenemos el check isReady aquí para el clic simple
-        if (!isDraggingWaveformTouch && wavesurfer && wavesurfer.isReady && !event.target.closest('button')) {
-            console.log("[Drag v6 Final Merged] Clic simple (Mouse) detectado.");
-            const wavesurferElement = wavesurfer.getWrapper(); const rect = wavesurferElement.getBoundingClientRect();
-            seekWaveform(event.clientX, rect, "click"); // Llamada a seek
-        } else {
-             console.log(`[Drag v6 Final Merged] Clic ignorado. isDragging: ${isDraggingWaveformTouch}, WS ready: ${wavesurfer ? wavesurfer.isReady : 'N/A'}`);
-        }
-    });
-
-    // Listener LOCAL para FIN de toque (SOLO para cancelar timer en TAP rápido)
-    const handleWaveformTapEnd = (event) => {
-        console.log(`[Drag v7 Refactored] Evento LOCAL: ${event.type} detectado.`); // LOG
-        // Solo necesitamos cancelar el timer aquí
-        if (longTouchTimer) {
             clearTimeout(longTouchTimer);
-            console.log("[Drag v7 Refactored] Timer cancelado (TAP rápido)."); // LOG
-            // Reseteamos longTouchTimer a null para evitar cancelaciones múltiples
-            longTouchTimer = null;
-        }
-        // NO manejamos la bandera ni los listeners globales aquí.
-    };
-    waveformInteractionElement.addEventListener('touchend', handleWaveformTapEnd);
-    waveformInteractionElement.addEventListener('touchcancel', handleWaveformTapEnd);
 
-} else {
-     console.error("[Drag v6 Final Merged] No se pudo añadir lógica de interacción."); // LOG ERROR
-}
-// --- FIN NUEVO BLOQUE v6 Stable Final ---
+            let touchStartTime = 0;
+            if (wavesurfer && typeof wavesurfer.getCurrentTime === 'function') {
+                try {
+                    touchStartTime = wavesurfer.getCurrentTime();
+                } catch (e) {}
+            }
+            if (touchStartTime === 0 && wavesurfer && wavesurfer.getMediaElement()) {
+                touchStartTime = wavesurfer.getMediaElement().currentTime || 0;
+            }
+            const formattedTouchStartTime = formatTime(touchStartTime);
+            console.log(`[Drag v6 Final Merged] Tiempo inicio toque: ${formattedTouchStartTime}`);
+
+            // --- Llamar a seekWaveform en touchstart ---
+            console.log("[Drag v6 Final Merged] Intentando seek inicial en touchstart...");
+            if (event.touches && event.touches.length > 0) {
+                const wavesurferElement = wavesurfer.getWrapper();
+                const rect = wavesurferElement.getBoundingClientRect();
+                seekWaveform(event.touches[0].clientX, rect, "touchstart-initial");
+            } else {
+                console.warn("[Drag v6 Final Merged] Touch Start: No 'touches' para seek inicial.");
+            }
+            // --- FIN Llamar a seekWaveform ---
+
+            // Iniciar temporizador
+            longTouchTimer = setTimeout(() => {
+                console.warn(`[Drag v6 Final Merged] ¡TOQUE LARGO DETECTADO! en ${formattedTouchStartTime}`);
+
+                // --- INICIO: Pausar al iniciar drag ---
+                wasPlayingBeforeDrag = wavesurfer.isPlaying(); // Guardar estado actual
+                if (wasPlayingBeforeDrag) {
+                    wavesurfer.pause();
+                    console.log("[Drag v7 Pause] Audio pausado al iniciar arrastre."); // LOG
+                }
+                // --- FIN: Pausar al iniciar drag ---
+
+                isDraggingWaveformTouch = true; // Activar bandera de arrastre (después de pausar)
+
+                console.log("[Drag v6 Final Merged] isDragging=TRUE. Añadiendo listeners GLOBALES.");
+
+                // --- Definir Handlers Globales ---
+
+                // --- FIN Definir Handlers ---
+
+                // Añadir listeners globales
+                window.addEventListener('touchmove', handleWaveformTouchMove, {
+                    passive: false
+                });
+                window.addEventListener('touchend', handleWaveformTouchEnd);
+                window.addEventListener('touchcancel', handleWaveformTouchEnd);
+
+            }, LONG_TOUCH_THRESHOLD);
+
+            console.log(`[Drag v6 Final Merged] touchstart FIN (Timer iniciado).`);
+        });
+
+        // Listener para CLIC SIMPLE de RATÓN (PC)
+        waveformInteractionElement.addEventListener('click', (event) => {
+            // Mantenemos el check isReady aquí para el clic simple
+            if (!isDraggingWaveformTouch && wavesurfer && wavesurfer.isReady && !event.target.closest('button')) {
+                console.log("[Drag v6 Final Merged] Clic simple (Mouse) detectado.");
+                const wavesurferElement = wavesurfer.getWrapper();
+                const rect = wavesurferElement.getBoundingClientRect();
+                seekWaveform(event.clientX, rect, "click"); // Llamada a seek
+            } else {
+                console.log(`[Drag v6 Final Merged] Clic ignorado. isDragging: ${isDraggingWaveformTouch}, WS ready: ${wavesurfer ? wavesurfer.isReady : 'N/A'}`);
+            }
+        });
+
+        // Listener LOCAL para FIN de toque (SOLO para cancelar timer en TAP rápido)
+        const handleWaveformTapEnd = (event) => {
+            console.log(`[Drag v7 Refactored] Evento LOCAL: ${event.type} detectado.`); // LOG
+            // Solo necesitamos cancelar el timer aquí
+            if (longTouchTimer) {
+                clearTimeout(longTouchTimer);
+                console.log("[Drag v7 Refactored] Timer cancelado (TAP rápido)."); // LOG
+                // Reseteamos longTouchTimer a null para evitar cancelaciones múltiples
+                longTouchTimer = null;
+            }
+            // NO manejamos la bandera ni los listeners globales aquí.
+        };
+        waveformInteractionElement.addEventListener('touchend', handleWaveformTapEnd);
+        waveformInteractionElement.addEventListener('touchcancel', handleWaveformTapEnd);
+
+    } else {
+        console.error("[Drag v6 Final Merged] No se pudo añadir lógica de interacción."); // LOG ERROR
+    }
+    // --- FIN NUEVO BLOQUE v6 Stable Final ---
 
     // --- Manejar clics en el tracklist actual ---
     currentTracklistElement.addEventListener('click', (e) => {
@@ -1131,10 +1188,10 @@ if (waveformInteractionElement && wavesurfer) {
             const timeParts = timeString.split(':');
             let timeInSeconds = 0;
             if (timeParts.length === 2 && !isNaN(parseInt(timeParts[0], 10)) && !isNaN(parseInt(timeParts[1], 10))) {
-                 timeInSeconds = parseInt(timeParts[0], 10) * 60 + parseInt(timeParts[1], 10);
+                timeInSeconds = parseInt(timeParts[0], 10) * 60 + parseInt(timeParts[1], 10);
             } else {
-                 console.warn(`Timestamp inválido al hacer clic: ${timeString}`);
-                 return;
+                console.warn(`Timestamp inválido al hacer clic: ${timeString}`);
+                return;
             }
 
             console.log(`Clic en tracklist item: ${timeString} (${timeInSeconds}s). Intentando buscar...`); // LOG
@@ -1154,103 +1211,103 @@ if (waveformInteractionElement && wavesurfer) {
                     }
 
                     if (typeof wavesurfer.isPlaying === 'function' && !wavesurfer.isPlaying()) {
-                         if (typeof wavesurfer.play === 'function') {
-                             wavesurfer.play();
-                         } else {
-                              console.warn("wavesurfer.play no es una función");
-                         }
+                        if (typeof wavesurfer.play === 'function') {
+                            wavesurfer.play();
+                        } else {
+                            console.warn("wavesurfer.play no es una función");
+                        }
                     }
                 } else {
                     console.error("El objeto wavesurfer no está correctamente inicializado o le faltan métodos en este punto."); // LOG ERROR
                 }
             } catch (error) {
-                 console.error("Error al intentar buscar (seekTo) o reproducir:", error); // LOG ERROR
+                console.error("Error al intentar buscar (seekTo) o reproducir:", error); // LOG ERROR
             }
         }
     });
 
-// --- Lógica Filtro Favoritos (prototipo v4) ---
-function filterFavoritesDisplay() {
-    if (!favToggleCheckbox || !currentTracklistElement) return; // Salir si no existen
+    // --- Lógica Filtro Favoritos (prototipo v4) ---
+    function filterFavoritesDisplay() {
+        if (!favToggleCheckbox || !currentTracklistElement) return; // Salir si no existen
 
-    const showOnlyFavorites = favToggleCheckbox.checked;
-    console.log(`[Filter] Cambiando filtro. Mostrar solo favoritos: ${showOnlyFavorites}`); // LOG
+        const showOnlyFavorites = favToggleCheckbox.checked;
+        console.log(`[Filter] Cambiando filtro. Mostrar solo favoritos: ${showOnlyFavorites}`); // LOG
 
-    const items = currentTracklistElement.querySelectorAll('.current-tracklist-item');
-    let visibleCount = 0;
+        const items = currentTracklistElement.querySelectorAll('.current-tracklist-item');
+        let visibleCount = 0;
 
-    items.forEach(item => {
-        const favButton = item.querySelector('.favorite-btn');
-        const isFavorited = favButton && favButton.classList.contains('favorited');
+        items.forEach(item => {
+            const favButton = item.querySelector('.favorite-btn');
+            const isFavorited = favButton && favButton.classList.contains('favorited');
 
-        if (showOnlyFavorites) {
-            if (isFavorited) {
-                item.style.display = 'flex'; // Mostrar
-                visibleCount++;
+            if (showOnlyFavorites) {
+                if (isFavorited) {
+                    item.style.display = 'flex'; // Mostrar
+                    visibleCount++;
+                } else {
+                    item.style.display = 'none'; // Ocultar
+                }
             } else {
-                item.style.display = 'none'; // Ocultar
+                item.style.display = 'flex'; // Mostrar todos
+                visibleCount++;
             }
+        });
+        console.log(`[Filter] Filtro aplicado. Items visibles: ${visibleCount} de ${items.length}`); // LOG
+    }
+
+    // Listener para el checkbox
+    if (favToggleCheckbox) {
+        favToggleCheckbox.addEventListener('change', filterFavoritesDisplay);
+        console.log("Listener para el filtro de favoritos añadido."); // LOG
+    }
+    // --- Fin Lógica Filtro (prototipo v4) ---
+
+
+
+    // --- Añadir/Quitar Favorito (v2: por set) ---
+    function toggleFavorite(seconds, buttonElement) {
+        if (!currentLoadedSet) {
+            console.error("[Fav v2] Error: No hay 'currentLoadedSet' para guardar el favorito.");
+            return;
+        }
+
+        const setKey = currentLoadedSet.title;
+        console.log(`[Fav v2] Toggle favorito para set: "${setKey}", tiempo: ${seconds}s`); // LOG
+
+        // 1. Actualizar el 'Set' en memoria (currentSetFavorites)
+        if (currentSetFavorites.has(seconds)) {
+            currentSetFavorites.delete(seconds);
+            buttonElement.classList.remove('favorited');
+            buttonElement.innerHTML = '☆';
+            console.log(`[Fav v2] Favorito eliminado de la memoria.`); // LOG
         } else {
-            item.style.display = 'flex'; // Mostrar todos
-            visibleCount++;
+            currentSetFavorites.add(seconds);
+            buttonElement.classList.add('favorited');
+            buttonElement.innerHTML = '★';
+            console.log(`[Fav v2] Favorito añadido a la memoria.`); // LOG
         }
-    });
-    console.log(`[Filter] Filtro aplicado. Items visibles: ${visibleCount} de ${items.length}`); // LOG
-}
 
-// Listener para el checkbox
-if (favToggleCheckbox) {
-    favToggleCheckbox.addEventListener('change', filterFavoritesDisplay);
-    console.log("Listener para el filtro de favoritos añadido."); // LOG
-}
-// --- Fin Lógica Filtro (prototipo v4) ---
+        // 2. Actualizar el objeto 'allFavorites' con el array convertido del Set
+        allFavorites[setKey] = Array.from(currentSetFavorites);
 
+        // 3. Guardar el objeto 'allFavorites' completo en Local Storage
+        try {
+            console.log("[Fav PorSet] VERIFICANDO: Objeto a punto de guardar:", JSON.stringify(allFavorites));
+            localStorage.setItem('vloitz_favorites', JSON.stringify(allFavorites));
+            filterFavoritesDisplay(); // Re-aplicar filtro al cambiar un favorito
+            console.log("[Fav PorSet] Base de datos de favoritos guardada en Local Storage:", allFavorites); // LOG
 
+            // --- INICIO: Actualizar Navegador (Corrección Loop Favoritos) ---
+            if (currentLoadedSet) { // Asegurarse de que el set está cargado
+                TrackNavigator.prepareTimestamps(currentLoadedSet.tracklist || [], currentSetFavorites);
+                console.log("[Nav Sync] Timestamps del Navegador actualizados tras cambio de favorito."); // LOG
+            }
+            // --- FIN: Actualizar Navegador ---
 
-// --- Añadir/Quitar Favorito (v2: por set) ---
-function toggleFavorite(seconds, buttonElement) {
-    if (!currentLoadedSet) {
-        console.error("[Fav v2] Error: No hay 'currentLoadedSet' para guardar el favorito.");
-        return;
-    }
-
-    const setKey = currentLoadedSet.title;
-    console.log(`[Fav v2] Toggle favorito para set: "${setKey}", tiempo: ${seconds}s`); // LOG
-
-    // 1. Actualizar el 'Set' en memoria (currentSetFavorites)
-    if (currentSetFavorites.has(seconds)) {
-        currentSetFavorites.delete(seconds);
-        buttonElement.classList.remove('favorited');
-        buttonElement.innerHTML = '☆';
-        console.log(`[Fav v2] Favorito eliminado de la memoria.`); // LOG
-    } else {
-        currentSetFavorites.add(seconds);
-        buttonElement.classList.add('favorited');
-        buttonElement.innerHTML = '★';
-        console.log(`[Fav v2] Favorito añadido a la memoria.`); // LOG
-    }
-
-    // 2. Actualizar el objeto 'allFavorites' con el array convertido del Set
-    allFavorites[setKey] = Array.from(currentSetFavorites);
-
-    // 3. Guardar el objeto 'allFavorites' completo en Local Storage
-    try {
-        console.log("[Fav PorSet] VERIFICANDO: Objeto a punto de guardar:", JSON.stringify(allFavorites));
-        localStorage.setItem('vloitz_favorites', JSON.stringify(allFavorites));
-        filterFavoritesDisplay(); // Re-aplicar filtro al cambiar un favorito
-        console.log("[Fav PorSet] Base de datos de favoritos guardada en Local Storage:", allFavorites); // LOG
-
-        // --- INICIO: Actualizar Navegador (Corrección Loop Favoritos) ---
-        if (currentLoadedSet) { // Asegurarse de que el set está cargado
-             TrackNavigator.prepareTimestamps(currentLoadedSet.tracklist || [], currentSetFavorites);
-             console.log("[Nav Sync] Timestamps del Navegador actualizados tras cambio de favorito."); // LOG
+        } catch (error) {
+            console.error("[Fav v2] Error al guardar favoritos en Local Storage:", error); // LOG ERROR
         }
-        // --- FIN: Actualizar Navegador ---
-
-    } catch (error) {
-        console.error("[Fav v2] Error al guardar favoritos en Local Storage:", error); // LOG ERROR
     }
-}
 
     // --- Clic en lista general de sets ---
     tracklistElement.addEventListener('click', e => {
@@ -1398,22 +1455,22 @@ function toggleFavorite(seconds, buttonElement) {
             }
 
             // --- INICIO: Lógica de Loop para Favoritos ---
-                if (useFavorites && timestamps.length > 0) {
-                    // Si estamos en modo favoritos y llegamos al final, volvemos al primero
-                    console.log("[Nav Debug] Fin de favoritos alcanzado, loopeando al primero."); // LOG (Ya estaba)
-                    // --- INICIO: LOGS ADICIONALES ---
-                    console.log(`[Nav Debug] Devolviendo primer favorito: ${timestamps[0]}`);
-                    // --- FIN: LOGS ADICIONALES ---
-                    return timestamps[0]; // Devuelve el primer favorito
-                } else {
-                    // Si no estamos en modo favoritos, o no hay favoritos, no hay siguiente
-                    console.log(`[Nav Debug] No se encontró siguiente timestamp (${useFavorites ? 'Fav' : 'All'}).`); // LOG (Modificado)
-                    // --- INICIO: LOGS ADICIONALES ---
-                    console.log("[Nav Debug] Devolviendo null (sin loop o sin siguiente).");
-                    // --- FIN: LOGS ADICIONALES ---
-                    return null; // Comportamiento original: no hay siguiente
-                }
-                // --- FIN: Lógica de Loop ---
+            if (useFavorites && timestamps.length > 0) {
+                // Si estamos en modo favoritos y llegamos al final, volvemos al primero
+                console.log("[Nav Debug] Fin de favoritos alcanzado, loopeando al primero."); // LOG (Ya estaba)
+                // --- INICIO: LOGS ADICIONALES ---
+                console.log(`[Nav Debug] Devolviendo primer favorito: ${timestamps[0]}`);
+                // --- FIN: LOGS ADICIONALES ---
+                return timestamps[0]; // Devuelve el primer favorito
+            } else {
+                // Si no estamos en modo favoritos, o no hay favoritos, no hay siguiente
+                console.log(`[Nav Debug] No se encontró siguiente timestamp (${useFavorites ? 'Fav' : 'All'}).`); // LOG (Modificado)
+                // --- INICIO: LOGS ADICIONALES ---
+                console.log("[Nav Debug] Devolviendo null (sin loop o sin siguiente).");
+                // --- FIN: LOGS ADICIONALES ---
+                return null; // Comportamiento original: no hay siguiente
+            }
+            // --- FIN: Lógica de Loop ---
 
         }
 
@@ -1447,7 +1504,7 @@ function toggleFavorite(seconds, buttonElement) {
                 if (timestamps[i] <= currentTime) {
                     currentTrackStartTimestamp = timestamps[i];
                     if (i > 0) {
-                        previousTimestamp = timestamps[i-1];
+                        previousTimestamp = timestamps[i - 1];
                     }
                     break;
                 }
@@ -1482,12 +1539,12 @@ function toggleFavorite(seconds, buttonElement) {
                     console.log(`[Nav] Saltando a ${targetSeconds}s (Progreso: ${progress.toFixed(4)})`); // LOG
                     wavesurfer.seekTo(progress);
 
-            // --- INICIO: Resetear Bandera INMEDIATAMENTE ---
-            if (isSeekingViaAutoLoop) {
-                console.log(`[Nav seekToTimestamp] Reseteando isSeekingViaAutoLoop a FALSE inmediatamente después de llamar a seekTo.`);
-                isSeekingViaAutoLoop = false;
-            }
-            // --- FIN: Resetear Bandera ---
+                    // --- INICIO: Resetear Bandera INMEDIATAMENTE ---
+                    if (isSeekingViaAutoLoop) {
+                        console.log(`[Nav seekToTimestamp] Reseteando isSeekingViaAutoLoop a FALSE inmediatamente después de llamar a seekTo.`);
+                        isSeekingViaAutoLoop = false;
+                    }
+                    // --- FIN: Resetear Bandera ---
 
                     // Asegurarse de reproducir si estaba pausado por el salto
                     if (!wavesurfer.isPlaying()) {
@@ -1548,13 +1605,14 @@ function toggleFavorite(seconds, buttonElement) {
             console.log(`[AutoLoop] Modo Auto-Bucle ${isAutoLoopActive ? 'ACTIVADO' : 'DESACTIVADO'}.`); // LOG
 
             // Opcional: Podríamos guardar este estado en localStorage también si quisiéramos que se recuerde
-             localStorage.setItem('vloitz_auto_loop', isAutoLoopActive);
+            localStorage.setItem('vloitz_auto_loop', isAutoLoopActive);
             // Y cargarlo al inicio:
-             isAutoLoopActive = localStorage.getItem('vloitz_auto_loop') === 'true'; autoLoopBtn.classList.toggle('active', isAutoLoopActive);
+            isAutoLoopActive = localStorage.getItem('vloitz_auto_loop') === 'true';
+            autoLoopBtn.classList.toggle('active', isAutoLoopActive);
         });
 
         // Cargar estado inicial (si decidimos guardarlo en localStorage)
-         isAutoLoopActive = localStorage.getItem('vloitz_auto_loop') === 'true';
+        isAutoLoopActive = localStorage.getItem('vloitz_auto_loop') === 'true';
         autoLoopBtn.classList.toggle('active', isAutoLoopActive);
 
     } else {
@@ -1667,7 +1725,7 @@ function toggleFavorite(seconds, buttonElement) {
     const isInStandaloneMode = ('standalone' in window.navigator) && (window.navigator.standalone);
 
     const PWA_CONFIG = {
-        INITIAL_DELAY: 3000,        // 3 seg: Primer aviso
+        INITIAL_DELAY: 3000, // 3 seg: Primer aviso
         GHOST_INTERVALS_MIN: [4, 9, 15, 25],
         GHOST_DURATION: 5000
     };
@@ -1763,7 +1821,9 @@ function toggleFavorite(seconds, buttonElement) {
                 if (ghostTimer) clearTimeout(ghostTimer);
                 if (deferredPrompt) {
                     deferredPrompt.prompt();
-                    const { outcome } = await deferredPrompt.userChoice;
+                    const {
+                        outcome
+                    } = await deferredPrompt.userChoice;
                     console.log(`[PWA] Decisión: ${outcome}`);
                     deferredPrompt = null;
                 }
@@ -1783,7 +1843,7 @@ function toggleFavorite(seconds, buttonElement) {
 
     window.addEventListener('appinstalled', () => {
         const pwaToast = document.getElementById('pwa-toast');
-        if(pwaToast) pwaToast.style.display = 'none';
+        if (pwaToast) pwaToast.style.display = 'none';
         if (ghostTimer) clearTimeout(ghostTimer);
     });
 
