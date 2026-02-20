@@ -689,9 +689,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         debug: false,
                         enableWorker: true,
                         lowLatencyMode: false,
+                        // Configuración crítica para Bóveda Hugging Face:
                         xhrSetup: function(xhr, url) {
-                            // Esto evita que hls.js envíe cabeceras que S3/HuggingFace podrían rechazar
-                            xhr.withCredentials = false;
+                            xhr.withCredentials = false; // No enviar cookies
+                            // Forzamos a que no se añadan cabeceras que S3 rechaza
+                            if (xhr.readyState === 0) {
+                                xhr.setRequestHeader = function() {
+                                    console.log("[HLS Debug] Cabecera omitida para evitar bloqueo CORS.");
+                                };
+                            }
                         }
                     });
                     hls.loadSource(magicAudioUrl);
