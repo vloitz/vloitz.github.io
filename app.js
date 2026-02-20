@@ -300,7 +300,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- INICIO: Módulo PrecacheController (Fase 10 - Latencia Cero) ---
     const PrecacheController = (() => {
         let hoverTimer = null;
-        const DEBOUNCE_MS = 150; // Tiempo de espera para confirmar intención del usuario
+        const DEBOUNCE_MS = 80; // Tiempo de espera reducido para respuesta ultra-rápida
         const HLS_TIME = 2; // Sincronizado con tu uploader de 2 segundos
 
         const preloadSegment = (time) => {
