@@ -332,7 +332,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Cálculo de Física: Velocidad = Distancia / Tiempo (píxeles por milisegundo)
+            // Cálculo de Física
             const deltaX = Math.abs(clientX - lastX);
             const deltaTime = currentTime - lastTime;
             const velocity = deltaTime > 0 ? (deltaX / deltaTime) : 0;
@@ -340,21 +340,19 @@ document.addEventListener('DOMContentLoaded', () => {
             lastX = clientX;
             lastTime = currentTime;
 
+            // MATAMOS el temporizador anterior si el mouse se sigue moviendo
             clearTimeout(checkTimer);
 
-            // Detección de Intención: Si la velocidad es menor a 0.3 px/ms, está "Afinando Puntería"
-            if (velocity < 0.3) {
+            // EL CEREBRO 10000% CONFIABLE:
+            // Si va rápido (Viaje largo) -> Esperamos 80ms para ver dónde aterriza.
+            // Si va lento (Afinando) -> Esperamos solo 25ms. (Suficiente para evitar el rastro de frenado).
+            const waitTime = velocity > 0.4 ? 80 : 25;
+
+            checkTimer = setTimeout(() => {
                 const progress = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
                 const duration = wavesurfer.getDuration();
                 if (duration > 0) preloadSegment(progress * duration);
-            } else {
-                // Si el movimiento es un "Macro-movimiento" rápido, esperamos un freno seco (40ms)
-                checkTimer = setTimeout(() => {
-                    const progress = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-                    const duration = wavesurfer.getDuration();
-                    if (duration > 0) preloadSegment(progress * duration);
-                }, 40);
-            }
+            }, waitTime);
         };
 
         return {
