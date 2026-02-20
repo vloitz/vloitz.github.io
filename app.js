@@ -2097,5 +2097,48 @@ document.addEventListener('DOMContentLoaded', () => {
         if (ghostTimer) clearTimeout(ghostTimer);
     });
 
+    // --- INICIO: REGISTRO PWA CON AUTOPSIA DE HARDWARE (MODO TORTUGA) ---
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js').then((registration) => {
+                console.log('%c[PWA] Service Worker Registrado Correctamente', 'color: #39FF14; font-weight: bold;');
+
+                // Autopsia de Hardware: Detectamos RAM (Gama Alta >= 4GB)
+                // Usamos fallback a 4 si el navegador no permite leerlo (ej. Safari antiguo)
+                const ramDetected = navigator.deviceMemory || 4;
+                const coresDetected = navigator.hardwareConcurrency || 2;
+
+                console.log(`%c[Hardware] Detección finalizada: RAM: ${ramDetected}GB | Cores: ${coresDetected}`, 'color: #00F3FF;');
+
+                // Esperamos a que el SW esté activo para enviarle el reporte
+                const sendHardwareConfig = () => {
+                    if (registration.active) {
+                        registration.active.postMessage({
+                            type: 'CONFIG_HARDWARE',
+                            isLowEnd: ramDetected < 4,
+                            ram: ramDetected
+                        });
+                        console.log('%c[PWA] Reporte de hardware enviado al Escudo de Datos.', 'color: #39FF14; font-size: 10px;');
+                    }
+                };
+
+                // Si ya está activo lo enviamos, si no, esperamos al cambio de estado
+                if (registration.active) {
+                    sendHardwareConfig();
+                } else {
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'activated') sendHardwareConfig();
+                        });
+                    });
+                }
+            }).catch((err) => {
+                console.error('[PWA] Error crítico de registro:', err);
+            });
+        });
+    }
+    // --- FIN: REGISTRO PWA ---
+
 
 });
