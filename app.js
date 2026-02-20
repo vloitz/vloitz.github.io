@@ -297,6 +297,39 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     })();
 
+    // --- INICIO: Módulo PrecacheController (Fase 10 - Latencia Cero) ---
+    const PrecacheController = (() => {
+        let hoverTimer = null;
+        const DEBOUNCE_MS = 150; // Tiempo de espera para confirmar intención del usuario
+        const HLS_TIME = 2; // Sincronizado con tu uploader de 2 segundos
+
+        const preloadSegment = (time) => {
+            if (!currentLoadedSet || !currentLoadedSet.id) return;
+
+            // Calculamos qué fragmento corresponde a ese segundo
+            const segmentIndex = Math.floor(time / HLS_TIME);
+            const segmentUrl = `${CLOUDFLARE_R2_URL}/${currentLoadedSet.id}/seg-${segmentIndex}.m4s`;
+
+            // Fetch silencioso: calienta la caché del navegador
+            fetch(segmentUrl, { mode: 'no-cors' }).then(() => {
+                console.log(`%c[Premium UI] Pre-cargado fragmento ${segmentIndex} (${formatTime(time)})`, "color: #3ea6ff; font-size: 10px;");
+            }).catch(() => {});
+        };
+
+        const handleInteraction = (clientX, rect) => {
+            clearTimeout(hoverTimer);
+            hoverTimer = setTimeout(() => {
+                const x = clientX - rect.left;
+                const progress = Math.max(0, Math.min(1, x / rect.width));
+                const duration = wavesurfer.getDuration();
+                if (duration > 0) preloadSegment(progress * duration);
+            }, DEBOUNCE_MS);
+        };
+
+        return { handleInteraction, cancel: () => clearTimeout(hoverTimer) };
+    })();
+    // --- FIN: Módulo PrecacheController ---
+
 
     // --- FUNCIÓN DE PINTADO (Fase 7) ---
     function paintWaveformRegions() {
@@ -1110,6 +1143,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Variables ya definidas arriba
 
+        // 1. PC: Pre-carga al mover el mouse
+        waveformInteractionElement.addEventListener('mousemove', (e) => {
+            const rect = waveformInteractionElement.getBoundingClientRect();
+            PrecacheController.handleInteraction(e.clientX, rect);
+        });
+
+        // 2. Móvil: Pre-carga al arrastrar el dedo
+        waveformInteractionElement.addEventListener('touchmove', (e) => {
+            if (e.touches && e.touches.length > 0) {
+                const rect = waveformInteractionElement.getBoundingClientRect();
+                PrecacheController.handleInteraction(e.touches[0].clientX, rect);
+            }
+        });
+
+        // 3. Cancelar pre-carga si el usuario sale de la onda
+        waveformInteractionElement.addEventListener('mouseleave', () => PrecacheController.cancel());
+
         // Listener para INICIO TÁCTIL
         waveformInteractionElement.addEventListener('touchstart', (event) => {
             console.log("[Drag v6 Final Merged] Evento: touchstart INICIO.");
@@ -1179,7 +1229,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Listener para CLIC SIMPLE de RATÓN (PC)
         waveformInteractionElement.addEventListener('click', (event) => {
             // Mantenemos el check isReady aquí para el clic simple
-            if (!isDraggingWaveformTouch && wavesurfer && wavesurfer.isReady && !event.target.closest('button')) {
+            if (!isDraggingWaveformTouch && wavesurfer && !event.target.closest('button')) {
                 console.log("[Drag v6 Final Merged] Clic simple (Mouse) detectado.");
                 const wavesurferElement = wavesurfer.getWrapper();
                 const rect = wavesurferElement.getBoundingClientRect();
