@@ -297,36 +297,73 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     })();
 
-    // --- INICIO: Módulo PrecacheController (Fase 10 - Latencia Cero) ---
+// --- INICIO: Módulo PrecacheController (Fase 11 - Física y Afinación de Puntería) ---
     const PrecacheController = (() => {
-        let hoverTimer = null;
-        const DEBOUNCE_MS = 80; // Tiempo de espera reducido para respuesta ultra-rápida
-        const HLS_TIME = 2; // Sincronizado con tu uploader de 2 segundos
+        let lastX = 0;
+        let lastTime = 0;
+        let checkTimer = null;
+        let preloadedSegments = new Set(); // Memoria para no spamear el mismo fragmento
+        const HLS_TIME = 2; // Sincronizado con tu uploader de 2s
 
         const preloadSegment = (time) => {
             if (!currentLoadedSet || !currentLoadedSet.id) return;
-
-            // Calculamos qué fragmento corresponde a ese segundo
             const segmentIndex = Math.floor(time / HLS_TIME);
-            const segmentUrl = `${CLOUDFLARE_R2_URL}/${currentLoadedSet.id}/seg-${segmentIndex}.m4s`;
 
-            // Fetch silencioso: calienta la caché del navegador
+            // Si ya pre-cargamos este fragmento mientras el usuario "afinaba puntería", lo ignoramos
+            if (preloadedSegments.has(segmentIndex)) return;
+
+            const segmentUrl = `${CLOUDFLARE_R2_URL}/${currentLoadedSet.id}/seg-${segmentIndex}.m4s`;
+            preloadedSegments.add(segmentIndex); // Lo guardamos en memoria temporal
+
             fetch(segmentUrl, { mode: 'no-cors' }).then(() => {
-                console.log(`%c[Premium UI] Pre-cargado fragmento ${segmentIndex} (${formatTime(time)})`, "color: #3ea6ff; font-size: 10px;");
-            }).catch(() => {});
+                console.log(`%c[Smart UI] Física predictiva (Afinando). Fragmento ${segmentIndex} en caché local.`, "color: #00e676; font-weight: bold; font-size: 10px;");
+            }).catch(() => {
+                preloadedSegments.delete(segmentIndex); // Si falla el internet, permitimos reintentar
+            });
         };
 
         const handleInteraction = (clientX, rect) => {
-            clearTimeout(hoverTimer);
-            hoverTimer = setTimeout(() => {
-                const x = clientX - rect.left;
-                const progress = Math.max(0, Math.min(1, x / rect.width));
+            const currentTime = performance.now();
+
+            // Primera lectura (inicialización)
+            if (lastTime === 0) {
+                lastX = clientX;
+                lastTime = currentTime;
+                return;
+            }
+
+            // Cálculo de Física: Velocidad = Distancia / Tiempo (píxeles por milisegundo)
+            const deltaX = Math.abs(clientX - lastX);
+            const deltaTime = currentTime - lastTime;
+            const velocity = deltaTime > 0 ? (deltaX / deltaTime) : 0;
+
+            lastX = clientX;
+            lastTime = currentTime;
+
+            clearTimeout(checkTimer);
+
+            // Detección de Intención: Si la velocidad es menor a 0.3 px/ms, está "Afinando Puntería"
+            if (velocity < 0.3) {
+                const progress = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
                 const duration = wavesurfer.getDuration();
                 if (duration > 0) preloadSegment(progress * duration);
-            }, DEBOUNCE_MS);
+            } else {
+                // Si el movimiento es un "Macro-movimiento" rápido, esperamos un freno seco (40ms)
+                checkTimer = setTimeout(() => {
+                    const progress = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+                    const duration = wavesurfer.getDuration();
+                    if (duration > 0) preloadSegment(progress * duration);
+                }, 40);
+            }
         };
 
-        return { handleInteraction, cancel: () => clearTimeout(hoverTimer) };
+        return {
+            handleInteraction,
+            cancel: () => {
+                clearTimeout(checkTimer);
+                lastTime = 0; // Reseteamos la física al sacar el mouse
+            }
+        };
     })();
     // --- FIN: Módulo PrecacheController ---
 
