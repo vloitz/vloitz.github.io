@@ -63,7 +63,10 @@ async function saveFragmentToDB(url, blob) {
             const request = store.put(record);
 
             request.onsuccess = () => {
-                console.log(`[Vloitz Cache] 💾 Fragmento guardado en Disco: ${url.split('/').pop()}`);
+                console.log(
+                    `%c[Vloitz Cache] 💾 Fragmento guardado en Disco: ${url.split('/').pop()}`,
+                    "background: #121212; color: #39FF14; font-weight: bold; padding: 2px 4px; border: 1px solid #39FF14; border-radius: 3px;"
+                );
                 resolve();
             };
 
