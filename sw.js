@@ -114,7 +114,7 @@ async function getFragmentFromDB(url) {
 }
 // --- FIN: FUNCIONES DE LECTURA Y ESCRITURA ---
 
-// 1. INSTALACIÓN: Guardamos la interfaz en el cachénst CACHE_NA
+// 1. INSTALACIÓN: Guardamos la interfaz en el caché
 self.addEventListener('install', (e) => {
   console.log('[Service Worker] Instalando caché de interfaz...');
   e.waitUntil(
