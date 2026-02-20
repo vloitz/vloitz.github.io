@@ -297,76 +297,76 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     })();
 
-// --- INICIO: Módulo PrecacheController (Fase 11 - Física y Afinación de Puntería) ---
-//ANTERIOR VERSION LA MANTENGO POR QUE YA CASI ERA PEREFCTA SE PODIRA CONSIDERAR EXELENTE
-   /* const PrecacheController = (() => {
-        let lastX = 0;
-        let lastTime = 0;
-        let checkTimer = null;
-        let preloadedSegments = new Set(); // Memoria para no spamear el mismo fragmento
-        const HLS_TIME = 2; // Sincronizado con tu uploader de 2s
+    // --- INICIO: Módulo PrecacheController (Fase 11 - Física y Afinación de Puntería) ---
+    //ANTERIOR VERSION LA MANTENGO POR QUE YA CASI ERA PEREFCTA SE PODIRA CONSIDERAR EXELENTE
+    /* const PrecacheController = (() => {
+         let lastX = 0;
+         let lastTime = 0;
+         let checkTimer = null;
+         let preloadedSegments = new Set(); // Memoria para no spamear el mismo fragmento
+         const HLS_TIME = 2; // Sincronizado con tu uploader de 2s
 
-        const preloadSegment = (time) => {
-            if (!currentLoadedSet || !currentLoadedSet.id) return;
-            const segmentIndex = Math.floor(time / HLS_TIME);
+         const preloadSegment = (time) => {
+             if (!currentLoadedSet || !currentLoadedSet.id) return;
+             const segmentIndex = Math.floor(time / HLS_TIME);
 
-            // Si ya pre-cargamos este fragmento mientras el usuario "afinaba puntería", lo ignoramos
-            if (preloadedSegments.has(segmentIndex)) return;
+             // Si ya pre-cargamos este fragmento mientras el usuario "afinaba puntería", lo ignoramos
+             if (preloadedSegments.has(segmentIndex)) return;
 
-            const segmentUrl = `${CLOUDFLARE_R2_URL}/${currentLoadedSet.id}/seg-${segmentIndex}.m4s`;
-            preloadedSegments.add(segmentIndex); // Lo guardamos en memoria temporal
+             const segmentUrl = `${CLOUDFLARE_R2_URL}/${currentLoadedSet.id}/seg-${segmentIndex}.m4s`;
+             preloadedSegments.add(segmentIndex); // Lo guardamos en memoria temporal
 
-            fetch(segmentUrl, { mode: 'no-cors' }).then(() => {
-                console.log(`%c[Smart UI] Física predictiva (Afinando). Fragmento ${segmentIndex} en caché local.`, "color: #00e676; font-weight: bold; font-size: 10px;");
-            }).catch(() => {
-                preloadedSegments.delete(segmentIndex); // Si falla el internet, permitimos reintentar
-            });
-        };
+             fetch(segmentUrl, { mode: 'no-cors' }).then(() => {
+                 console.log(`%c[Smart UI] Física predictiva (Afinando). Fragmento ${segmentIndex} en caché local.`, "color: #00e676; font-weight: bold; font-size: 10px;");
+             }).catch(() => {
+                 preloadedSegments.delete(segmentIndex); // Si falla el internet, permitimos reintentar
+             });
+         };
 
-        const handleInteraction = (clientX, rect) => {
-            const currentTime = performance.now();
+         const handleInteraction = (clientX, rect) => {
+             const currentTime = performance.now();
 
-            // Primera lectura (inicialización)
-            if (lastTime === 0) {
-                lastX = clientX;
-                lastTime = currentTime;
-                return;
-            }
+             // Primera lectura (inicialización)
+             if (lastTime === 0) {
+                 lastX = clientX;
+                 lastTime = currentTime;
+                 return;
+             }
 
-            // Cálculo de Física
-            const deltaX = Math.abs(clientX - lastX);
-            const deltaTime = currentTime - lastTime;
-            const velocity = deltaTime > 0 ? (deltaX / deltaTime) : 0;
+             // Cálculo de Física
+             const deltaX = Math.abs(clientX - lastX);
+             const deltaTime = currentTime - lastTime;
+             const velocity = deltaTime > 0 ? (deltaX / deltaTime) : 0;
 
-            lastX = clientX;
-            lastTime = currentTime;
+             lastX = clientX;
+             lastTime = currentTime;
 
-            // MATAMOS el temporizador anterior si el mouse se sigue moviendo
-            clearTimeout(checkTimer);
+             // MATAMOS el temporizador anterior si el mouse se sigue moviendo
+             clearTimeout(checkTimer);
 
-            // EL CEREBRO 10000% CONFIABLE:
-            // Si va rápido (Viaje largo) -> Esperamos 80ms para ver dónde aterriza.
-            // Si va lento (Afinando) -> Esperamos solo 25ms. (Suficiente para evitar el rastro de frenado).
-            const waitTime = velocity > 0.4 ? 80 : 25;
+             // EL CEREBRO 10000% CONFIABLE:
+             // Si va rápido (Viaje largo) -> Esperamos 80ms para ver dónde aterriza.
+             // Si va lento (Afinando) -> Esperamos solo 25ms. (Suficiente para evitar el rastro de frenado).
+             const waitTime = velocity > 0.4 ? 80 : 25;
 
-            checkTimer = setTimeout(() => {
-                const progress = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-                const duration = wavesurfer.getDuration();
-                if (duration > 0) preloadSegment(progress * duration);
-            }, waitTime);
-        };
+             checkTimer = setTimeout(() => {
+                 const progress = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+                 const duration = wavesurfer.getDuration();
+                 if (duration > 0) preloadSegment(progress * duration);
+             }, waitTime);
+         };
 
-        return {
-            handleInteraction,
-            cancel: () => {
-                clearTimeout(checkTimer);
-                lastTime = 0; // Reseteamos la física al sacar el mouse
-            }
-        };
-    })();*/
+         return {
+             handleInteraction,
+             cancel: () => {
+                 clearTimeout(checkTimer);
+                 lastTime = 0; // Reseteamos la física al sacar el mouse
+             }
+         };
+     })();*/
     // --- FIN: Módulo PrecacheController ---
 
-// --- INICIO: Módulo PrecacheController (Hybrid-Tier - Precisión + Cero Latencia Virtual) ---
+    // --- INICIO: Módulo PrecacheController (Hybrid-Tier - Precisión + Cero Latencia Virtual) ---
     const PrecacheController = (() => {
         let lastX = 0;
         let lastTime = 0;
@@ -383,7 +383,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // --- INICIO: ENRUTADOR PRE-CACHE HÍBRIDO ---
             let segmentUrl = "";
             if (currentLoadedSet.server === "HF") {
-                segmentUrl = `https://huggingface.co/datasets/italocajaleon/vloitz-vault/resolve/main/${currentLoadedSet.id}/seg-${segmentIndex}.m4s`;
+                // Sincronizado con endpoint raw
+                segmentUrl = `https://huggingface.co/datasets/italocajaleon/vloitz-vault/raw/main/${currentLoadedSet.id}/seg-${segmentIndex}.m4s`;
             } else {
                 segmentUrl = `${CLOUDFLARE_R2_URL}/${currentLoadedSet.id}/seg-${segmentIndex}.m4s`;
             }
@@ -392,7 +393,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             preloadedSegments.add(segmentIndex);
 
-            fetch(segmentUrl, { mode: 'no-cors' }).then(() => {
+            fetch(segmentUrl, {
+                mode: 'no-cors'
+            }).then(() => {
                 console.log(`%c[Hybrid UI] Precisión Absoluta. Fragmento ${segmentIndex} capturado.`, "color: #ffaa00; font-weight: bold; font-size: 11px;");
             }).catch(() => {
                 preloadedSegments.delete(segmentIndex);
@@ -403,7 +406,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const currentTime = performance.now();
 
             if (lastTime === 0) {
-                lastX = clientX; lastTime = currentTime; return;
+                lastX = clientX;
+                lastTime = currentTime;
+                return;
             }
 
             const deltaX = Math.abs(clientX - lastX);
@@ -608,7 +613,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log(`Tracklist poblado con ${sets.length} items.`); // LOG
     }
 
-// --- Cargar un set ---
+    // --- Cargar un set ---
     function loadTrack(set, index) {
 
         // --- AGREGA ESTO AQUÍ (INICIO) ---
@@ -621,16 +626,16 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- INICIO: CERO CONFIGURACIÓN (Actualización HLS Nivel Dios) ---
         // Ahora buscamos el index.m3u8 primero. Si no existe, WaveSurfer fallará, lo cual es esperado si el set no está en HLS aún.
 
-    // --- INICIO DE CONSTRUCTOR DE RUTAS HÍBRIDO (VLOITZ ENGINE) ---
+        // --- INICIO DE CONSTRUCTOR DE RUTAS HÍBRIDO (VLOITZ ENGINE) ---
         let hlsManifestUrl = "";
         if (set.server === "HF") {
-            // Ruta hacia la Bóveda de Hugging Face
-            hlsManifestUrl = `https://huggingface.co/datasets/italocajaleon/vloitz-vault/resolve/main/${set.id}/index.m3u8`;
-            console.log(`[Vloitz Engine] 🧊 Conectando a Bóveda Eterna (HF) para: ${set.id}`);
+            // Cambio a endpoint 'raw' para evitar bloqueos CORS
+            hlsManifestUrl = `https://huggingface.co/datasets/italocajaleon/vloitz-vault/raw/main/${set.id}/index.m3u8`;
+            console.log(`[Vloitz Engine] 🧊 Sirviendo desde Bóveda (HF Raw): ${set.id}`);
         } else {
             // Ruta por defecto hacia Cloudflare R2 (CF)
             hlsManifestUrl = `${CLOUDFLARE_R2_URL}/${set.id}/index.m3u8`;
-            console.log(`[Vloitz Engine] ⚡ Conectando a Zona Rápida (R2) para: ${set.id}`);
+            console.log(`[Vloitz Engine] ⚡ Sirviendo desde Zona Rápida (R2): ${set.id}`);
         }
         // --- FIN DE CONSTRUCTOR DE RUTAS ---
 
@@ -675,15 +680,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 if (Hls.isSupported()) {
-                    const hls = new Hls({ debug: false });
+                    const hls = new Hls({
+                        debug: false
+                    });
                     hls.loadSource(magicAudioUrl);
                     hls.attachMedia(audioEl);
-                    hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                    hls.on(Hls.Events.MANIFEST_PARSED, function () {
                         console.log("[Motor HLS] Manifiesto atado a WaveSurfer correctamente.");
                         // Forzar el evento ready si no se cargaron picos pre-calculados
                         if (!peaks) wavesurfer.emit('ready');
                     });
-                    hls.on(Hls.Events.ERROR, function(event, data) {
+                    hls.on(Hls.Events.ERROR, function (event, data) {
                         if (data.fatal) console.error("[Motor HLS] Error fatal detectado:", data);
                     });
                 } else if (audioEl.canPlayType('application/vnd.apple.mpegurl')) {
@@ -691,7 +698,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     audioEl.src = magicAudioUrl;
                     audioEl.addEventListener('loadedmetadata', () => {
                         if (!peaks) wavesurfer.emit('ready');
-                    }, { once: true });
+                    }, {
+                        once: true
+                    });
                 } else {
                     console.error("[Motor HLS] Navegador no soporta HLS.");
                 }
