@@ -384,7 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let segmentUrl = "";
             if (currentLoadedSet.server === "HF") {
                 // Sincronizado con endpoint raw
-                segmentUrl = `https://huggingface.co/datasets/italocajaleon/vloitz-vault/raw/main/${currentLoadedSet.id}/seg-${segmentIndex}.m4s`;
+                segmentUrl = `https://huggingface.co/datasets/italocajaleon/vloitz-vault/resolve/main/${currentLoadedSet.id}/seg-${segmentIndex}.m4s`;
             } else {
                 segmentUrl = `${CLOUDFLARE_R2_URL}/${currentLoadedSet.id}/seg-${segmentIndex}.m4s`;
             }
@@ -630,7 +630,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let hlsManifestUrl = "";
         if (set.server === "HF") {
             // Usamos endpoint 'raw' para saltar redirecciones y mejorar compatibilidad CORS
-            hlsManifestUrl = `https://huggingface.co/datasets/italocajaleon/vloitz-vault/raw/main/${set.id}/index.m3u8`;
+            hlsManifestUrl = `https://huggingface.co/datasets/italocajaleon/vloitz-vault/resolve/main/${set.id}/index.m3u8`;
             console.log(`%c[Vloitz Engine] 🧊 CONECTANDO A BÓVEDA ETERNA (HF RAW): ${set.id}`, "background: #005f73; color: #94d2bd; font-weight: bold; padding: 4px; border-radius: 3px;");
         } else {
             hlsManifestUrl = `${CLOUDFLARE_R2_URL}/${set.id}/index.m3u8`;
