@@ -629,9 +629,9 @@ document.addEventListener('DOMContentLoaded', () => {
 // --- INICIO DE CONSTRUCTOR DE RUTAS HÍBRIDO (VLOITZ ENGINE) ---
         let hlsManifestUrl = "";
         if (set.server === "HF") {
-            // Utilizamos el CDN de resolución directa de HF para evitar redirecciones pesadas
-            hlsManifestUrl = `https://resolve.huggingface.co/datasets/italocajaleon/vloitz-vault/resolve/main/${set.id}/index.m3u8`;
-            console.log(`%c[Vloitz Engine] 🧊 CONECTANDO A BÓVEDA ETERNA (HF CDN): ${set.id}`, "background: #005f73; color: #94d2bd; font-weight: bold; padding: 4px; border-radius: 3px;");
+            // Utilizamos el Túnel Proxy de Cloudflare para saltar el CORS de Hugging Face
+            hlsManifestUrl = `https://vloitz-proxy.italocajaleon.workers.dev/${set.id}/index.m3u8`;
+            console.log(`%c[Vloitz Engine] 🧊 CONECTANDO A BÓVEDA ETERNA (HF TUNNEL): ${set.id}`, "background: #005f73; color: #94d2bd; font-weight: bold; padding: 4px; border-radius: 3px;");
         } else {
             hlsManifestUrl = `${CLOUDFLARE_R2_URL}/${set.id}/index.m3u8`;
             console.log(`%c[Vloitz Engine] ⚡ CONECTANDO A ZONA RÁPIDA (R2): ${set.id}`, "background: #ee9b00; color: #001219; font-weight: bold; padding: 4px; border-radius: 3px;");
