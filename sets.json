@@ -5,23 +5,10 @@
     },
     "sets": [
         {
-            "id": "GDL003",
-            "title": "GDL003",
-            "server": "CF",
-            "date": "2026-02-20 13:04:02",
-            "tracklist": [
-                {
-                    "time": "0:00",
-                    "emoji": "🌅",
-                    "title": "ID"
-                }
-            ]
-        },
-        {
             "id": "JRG004",
             "title": "JRG004",
-            "server": "HF",
-            "date": "2026-02-20 12:32:18",
+            "server": "CF",
+            "date": "2026-02-20 13:42:08",
             "tracklist": [
                 {
                     "time": "0:00",

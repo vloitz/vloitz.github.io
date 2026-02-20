@@ -626,18 +626,17 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- INICIO: CERO CONFIGURACIÓN (Actualización HLS Nivel Dios) ---
         // Ahora buscamos el index.m3u8 primero. Si no existe, WaveSurfer fallará, lo cual es esperado si el set no está en HLS aún.
 
-        // --- INICIO DE CONSTRUCTOR DE RUTAS HÍBRIDO (VLOITZ ENGINE) ---
+// --- INICIO DE CONSTRUCTOR DE RUTAS HÍBRIDO (VLOITZ ENGINE) ---
         let hlsManifestUrl = "";
         if (set.server === "HF") {
-            // Cambio a endpoint 'raw' para evitar bloqueos CORS
-            hlsManifestUrl = `https://huggingface.co/datasets/italocajaleon/vloitz-vault/raw/main/${set.id}/index.m3u8`;
-            console.log(`[Vloitz Engine] 🧊 Sirviendo desde Bóveda (HF Raw): ${set.id}`);
+            // Usamos 'resolve' para que Hugging Face gestione el streaming de archivos grandes
+            hlsManifestUrl = `https://huggingface.co/datasets/italocajaleon/vloitz-vault/resolve/main/${set.id}/index.m3u8`;
+            console.log(`[Vloitz Engine] 🧊 Conectando a Bóveda Eterna (HF): ${set.id}`);
         } else {
-            // Ruta por defecto hacia Cloudflare R2 (CF)
             hlsManifestUrl = `${CLOUDFLARE_R2_URL}/${set.id}/index.m3u8`;
-            console.log(`[Vloitz Engine] ⚡ Sirviendo desde Zona Rápida (R2): ${set.id}`);
+            console.log(`[Vloitz Engine] ⚡ Conectando a Zona Rápida (R2): ${set.id}`);
         }
-        // --- FIN DE CONSTRUCTOR DE RUTAS ---
+    // --- FIN DE CONSTRUCTOR DE RUTAS ---
 
 
         // Mantenemos el fallback por si en el futuro decides volver a usar archivos únicos
