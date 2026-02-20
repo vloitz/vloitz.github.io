@@ -631,10 +631,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (set.server === "HF") {
             // Usamos 'resolve' para que Hugging Face gestione el streaming de archivos grandes
             hlsManifestUrl = `https://huggingface.co/datasets/italocajaleon/vloitz-vault/resolve/main/${set.id}/index.m3u8`;
-            console.log(`[Vloitz Engine] 🧊 Conectando a Bóveda Eterna (HF): ${set.id}`);
+            console.log(`%c[Vloitz Engine] 🧊 CONECTANDO A BÓVEDA ETERNA (HF): ${set.id}`, "background: #005f73; color: #94d2bd; font-weight: bold; padding: 4px; border-radius: 3px;");
         } else {
             hlsManifestUrl = `${CLOUDFLARE_R2_URL}/${set.id}/index.m3u8`;
-            console.log(`[Vloitz Engine] ⚡ Conectando a Zona Rápida (R2): ${set.id}`);
+            console.log(`%c[Vloitz Engine] ⚡ CONECTANDO A ZONA RÁPIDA (R2): ${set.id}`, "background: #ee9b00; color: #001219; font-weight: bold; padding: 4px; border-radius: 3px;");
         }
     // --- FIN DE CONSTRUCTOR DE RUTAS ---
 
