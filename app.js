@@ -444,15 +444,14 @@ document.addEventListener('DOMContentLoaded', () => {
     })();*/
     // --- FIN: Módulo PrecacheController ---
 
-// --- V3 INICIO: Módulo PrecacheController (Vloitz Ballistic Engine v3.0 - Predicción de Impacto) ---
+    // --- V3 INICIO: Módulo PrecacheController (Vloitz Quantum-Kinetic v4.0 - Sub-Pixel Precision) ---
     const PrecacheController = (() => {
-        // --- CONFIGURACIÓN DE CONTROL ---
-        const PRECACHE_SAVE_DB = false; // [TRUE]: Bóveda | [FALSE]: RAM
+        const PRECACHE_SAVE_DB = false;
 
-        let lastX = 0;
-        let lastV = 0;
-        let lastTime = 0;
-        let hasFired = false; // Bloqueo de seguridad para disparo único
+        // Memoria Cuántica (Buffer de muestras para suavizado)
+        let samples = [];
+        const SAMPLE_LIMIT = 5; // Promediamos las últimas 5 micro-muestras
+        let hasFired = false;
         let preloadedSegments = new Set();
         const HLS_TIME = 2;
 
@@ -461,74 +460,76 @@ document.addEventListener('DOMContentLoaded', () => {
             const segmentIndex = Math.floor(time / HLS_TIME);
             if (preloadedSegments.has(segmentIndex)) return;
 
-            // --- ENRUTADOR DINÁMICO DE PRECARGA (VLOITZ CLUSTER READY) ---
             let segmentUrl = "";
             if (currentLoadedSet.server === "HF") {
-                // Balanceador de Carga para Precarga: Elegimos un túnel al azar del clúster global
-                const selectedTunnel = VLOITZ_CLUSTER[Math.floor(Math.random() * VLOITZ_CLUSTER.length)];
-
+                const tunnel = VLOITZ_CLUSTER[Math.floor(Math.random() * VLOITZ_CLUSTER.length)];
                 const direct = `https://huggingface.co/datasets/italocajaleon/vloitz-vault/resolve/main/${currentLoadedSet.id}/seg-${segmentIndex}.m4s`;
-
-                // Si PRECACHE_SAVE_DB es true, forzamos el paso por el túnel para que el SW lo capture
-                segmentUrl = PRECACHE_SAVE_DB ? `${selectedTunnel}/${currentLoadedSet.id}/seg-${segmentIndex}.m4s` : direct;
-
-                if (PRECACHE_SAVE_DB) {
-                    console.log(`%c[Ballistic Engine] 🛰️ Túnel activo para precarga: ${selectedTunnel}`, "color: #94d2bd; font-size: 8px; font-style: italic;");
-                }
+                segmentUrl = PRECACHE_SAVE_DB ? `${tunnel}/${currentLoadedSet.id}/seg-${segmentIndex}.m4s` : direct;
             } else {
                 segmentUrl = `${CLOUDFLARE_R2_URL}/${currentLoadedSet.id}/seg-${segmentIndex}.m4s`;
             }
 
             preloadedSegments.add(segmentIndex);
             fetch(segmentUrl, { mode: 'no-cors' }).then(() => {
-                console.log(`%c[Ballistic Engine] 🎯 Bala capturada: Fragmento ${segmentIndex}`, "color: #ffaa00; font-weight: bold; font-size: 10px;");
+                console.log(`%c[Quantum Engine] 🎯 Impacto confirmado: Fragmento ${segmentIndex}`, "color: #ffaa00; font-weight: bold; font-size: 10px;");
             }).catch(() => preloadedSegments.delete(segmentIndex));
         };
 
         const handleInteraction = (clientX, rect) => {
-            const currentTime = performance.now();
-            if (lastTime === 0) { lastX = clientX; lastTime = currentTime; return; }
+            const now = performance.now(); // Precisión en microsegundos
 
-            const deltaX = Math.abs(clientX - lastX);
-            const deltaTime = currentTime - lastTime;
-            const velocity = deltaTime > 0 ? (deltaX / deltaTime) : 0;
-            const acceleration = (velocity - lastV) / deltaTime; // Física real: cambio de velocidad
+            // Registramos la muestra (Sub-pixel data)
+            samples.push({ x: clientX, t: now });
+            if (samples.length > SAMPLE_LIMIT) samples.shift();
 
-            // --- LÓGICA DE ESTADOS (MÁQUINA DE ESTADOS CINÉTICA) ---
+            if (samples.length < 2) return;
 
-            // 1. Reset: Si el usuario mueve el mouse rápido, habilitamos el próximo disparo
-            if (velocity > 0.6) {
+            // --- CÁLCULO DE CINEMÁTICA SUAVIZADA (Filtro de Paso Bajo) ---
+            const first = samples[0];
+            const last = samples[samples.length - 1];
+
+            const dt = last.t - first.t;
+            const dx = Math.abs(last.x - first.x);
+
+            const v = dx / dt; // Velocidad real (px/ms)
+
+            // Calculamos el "Jerk" (cambio de aceleración) para detectar intención real
+            const v_prev = samples.length > 2 ? Math.abs(samples[samples.length-1].x - samples[samples.length-2].x) / (samples[samples.length-1].t - samples[samples.length-2].t) : v;
+            const a = (v - v_prev) / (last.t - samples[samples.length-2].t);
+
+            // --- LÓGICA DE DISPARO CUÁNTICO ---
+
+            // Umbral de Rearmado: Debe haber un movimiento limpio y rápido para desbloquear
+            if (v > 0.8) {
                 if (hasFired) {
                     hasFired = false;
-                    console.log("%c[Ballistic Engine] ⚡ Alta velocidad detectada. Sistema rearmado.", "color: #888; font-size: 8px;");
+                    console.log("%c[Quantum Engine] ⚡ Rearmando por inercia...", "color: #555; font-size: 8px;");
                 }
             }
 
-            // 2. Predicción de Impacto (Stopping Distance): d = v^2 / (2 * |a|)
-            // Si la aceleración es negativa (frenando) y la distancia para detenerse es < 10px
-            const stoppingDistance = (velocity * velocity) / (2 * Math.abs(acceleration || 0.001));
+            // Condición de Frenado Predictivo:
+            // 1. No hemos disparado aún.
+            // 2. La velocidad es baja pero el movimiento es hacia el reposo (a < 0).
+            // 3. El Stopping Distance predice que te detendrás en menos de 5 micro-píxeles.
+            const stoppingDistance = (v * v) / (2 * Math.abs(a || 0.0001));
 
-            if (!hasFired && acceleration < -0.002 && velocity < 0.25) {
-                if (stoppingDistance < 10) {
-                    hasFired = true; // BLOQUEO INMEDIATO: Un solo disparo por cada frenado
+            if (!hasFired && v < 0.3 && a < -0.001) {
+                if (stoppingDistance < 5) {
+                    hasFired = true; // Bloqueo preventivo
 
-                    const progress = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+                    const progress = Math.max(0, Math.min(1, (last.x - rect.left) / rect.width));
                     const duration = wavesurfer.getDuration();
 
-                    console.log(`%c[Ballistic Engine] 🔫 DISPARO ÚNICO (v:${velocity.toFixed(2)} | d_stop:${stoppingDistance.toFixed(1)}px)`, "background: #39FF14; color: #000; font-weight: bold; padding: 2px 4px; border-radius: 3px;");
+                    console.log(`%c[Quantum Engine] 🧠 PREDICCIÓN DE PARADA (v:${v.toFixed(4)} | dist_frenado:${stoppingDistance.toFixed(2)}px)`, "background: #00F3FF; color: #000; font-weight: bold; padding: 2px 4px; border-radius: 3px;");
 
                     if (duration > 0) preloadSegment(progress * duration);
                 }
             }
-
-            lastX = clientX;
-            lastV = velocity;
-            lastTime = currentTime;
         };
 
         return {
             handleInteraction,
-            cancel: () => { lastTime = 0; hasFired = false; }
+            cancel: () => { samples = []; hasFired = false; }
         };
     })();
     // --- FIN: Módulo PrecacheController ---
