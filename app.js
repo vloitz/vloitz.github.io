@@ -629,9 +629,9 @@ document.addEventListener('DOMContentLoaded', () => {
 // --- INICIO DE CONSTRUCTOR DE RUTAS HÍBRIDO (VLOITZ ENGINE) ---
         let hlsManifestUrl = "";
         if (set.server === "HF") {
-            // Usamos endpoint 'raw' para saltar redirecciones y mejorar compatibilidad CORS
-            hlsManifestUrl = `https://huggingface.co/datasets/italocajaleon/vloitz-vault/resolve/main/${set.id}/index.m3u8`;
-            console.log(`%c[Vloitz Engine] 🧊 CONECTANDO A BÓVEDA ETERNA (HF RESOLVE): ${set.id}`, "background: #005f73; color: #94d2bd; font-weight: bold; padding: 4px; border-radius: 3px;");
+            // Utilizamos el CDN de resolución directa de HF para evitar redirecciones pesadas
+            hlsManifestUrl = `https://resolve.huggingface.co/datasets/italocajaleon/vloitz-vault/resolve/main/${set.id}/index.m3u8`;
+            console.log(`%c[Vloitz Engine] 🧊 CONECTANDO A BÓVEDA ETERNA (HF CDN): ${set.id}`, "background: #005f73; color: #94d2bd; font-weight: bold; padding: 4px; border-radius: 3px;");
         } else {
             hlsManifestUrl = `${CLOUDFLARE_R2_URL}/${set.id}/index.m3u8`;
             console.log(`%c[Vloitz Engine] ⚡ CONECTANDO A ZONA RÁPIDA (R2): ${set.id}`, "background: #ee9b00; color: #001219; font-weight: bold; padding: 4px; border-radius: 3px;");
@@ -685,51 +685,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 if (Hls.isSupported()) {
-                const hls = new Hls({
+                    const hls = new Hls({
                         debug: false,
                         enableWorker: true,
-                        // Configuración crítica para Bóveda Hugging Face:
+                        lowLatencyMode: false,
+                        // Configuración mínima recomendada
                         xhrSetup: function(xhr, url) {
                             xhr.withCredentials = false;
-                        },
-                        // INTERCEPTOR BLOB: Descarga manual para evadir CORS de S3
-                        fLoader: function(config) {
-                            let loader = new Hls.DefaultConfig.loader(config);
-                            this.abort = () => loader.abort();
-                            this.destroy = () => loader.destroy();
-                            this.load = (context, config, callbacks) => {
-                                // 1. Forçar SEMPRE a URL limpa (Ignorar redireccionamentos em cache do HLS)
-                                if (context.url) {
-                                    // Extrai apenas o nome do ficheiro (ex: init.mp4 ou seg-0.m4s)
-                                    const fileName = context.url.split('/').pop();
-                                    // Reconstrói a URL usando a base oficial
-                                    const baseUrl = `https://huggingface.co/datasets/italocajaleon/vloitz-vault/resolve/main/${currentLoadedSet.id}/`;
-                                    context.url = baseUrl + fileName;
-                                }
-
-                                // 2. Guardamos los callbacks originales
-                                const onSuccess = callbacks.onSuccess;
-                                const onError = callbacks.onError;
-
-                                // 3. Usamos la API moderna Fetch para descargar el binario puro
-                                fetch(context.url)
-                                    .then(response => {
-                                        if (!response.ok) throw new Error("Fallo en descarga S3");
-                                        return response.arrayBuffer();
-                                    })
-                                    .then(buffer => {
-                                        // 4. Entregamos el binario a HLS.js emulando una descarga exitosa
-                                        console.log(`[Túnel HF] Fragmento descargado manual: ${context.url.split('/').pop()}`);
-                                        callbacks.onSuccess({
-                                            url: context.url,
-                                            data: buffer
-                                        }, context.stats, context);
-                                    })
-                                    .catch(err => {
-                                        console.error(`[Túnel HF] Error en ${context.url}:`, err);
-                                        callbacks.onError(err, context, context.stats);
-                                    });
-                            };
                         }
                     });
                     hls.loadSource(magicAudioUrl);
