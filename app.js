@@ -520,7 +520,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     const progress = Math.max(0, Math.min(1, (last.x - rect.left) / rect.width));
                     const duration = wavesurfer.getDuration();
 
-                    console.log(`%c[Quantum Engine] 🧠 PREDICCIÓN DE PARADA (v:${v.toFixed(4)} | dist_frenado:${stoppingDistance.toFixed(2)}px)`, "background: #00F3FF; color: #000; font-weight: bold; padding: 2px 4px; border-radius: 3px;");
+                    const predictedTime = progress * duration;
+                    console.log(`%c[Quantum Engine] 🧠 PREDICCIÓN DE PARADA (v:${v.toFixed(4)} | dist_frenado:${stoppingDistance.toFixed(2)}px | Tiempo Audio: ${predictedTime.toFixed(3)}s)`, "background: #00F3FF; color: #000; font-weight: bold; padding: 2px 4px; border-radius: 3px;");
 
                     if (duration > 0) preloadSegment(progress * duration);
                 }
@@ -1020,7 +1021,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (duration > 0 && currentTimeEl) {
                 currentTimeEl.textContent = formatTime(progress * duration);
             }
-            console.log(`[Drag v6 Final Corrected] Seek executed: progress=${progress.toFixed(4)}`);
+
+            const clickTime = progress * wavesurfer.getDuration();
+            console.log(`%c[CLICK REAL] 🎯 Posición de impacto: ${clickTime.toFixed(3)}s (progress: ${progress.toFixed(4)})`, "background: #FFD700; color: #000; font-weight: bold; padding: 2px 4px; border-radius: 3px;");
+
             return true;
             // } else {
             //      console.warn("[Drag v6 Final Corrected] Seek abortado DENTRO: WS no listo."); return false;
