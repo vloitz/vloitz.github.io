@@ -10,6 +10,39 @@ const ASSETS_TO_CACHE = [
   'https://unpkg.com/wavesurfer.js@7.7.5/dist/plugins/regions.min.js'
 ];
 
+// --- INICIO: MOTOR DE BASE DE DATOS (VLOITZ VAULT DB) ---
+const DB_NAME = 'vloitz_vault_db';
+const STORE_NAME = 'audio_fragments';
+const DB_VERSION = 1;
+
+// Promesa envolvente para manejar IndexedDB dentro del Service Worker
+function openDB() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+        // Se ejecuta si es la primera vez o si cambiamos la versión
+        request.onupgradeneeded = (event) => {
+            const db = event.target.result;
+            // Creamos el "almacén" si no existe.
+            // Usamos 'url' como llave única para cada fragmento de audio.
+            if (!db.objectStoreNames.contains(STORE_NAME)) {
+                db.createObjectStore(STORE_NAME, { keyPath: 'url' });
+                console.log('[Vloitz DB] 🏗️ Almacén de fragmentos creado exitosamente.');
+            }
+        };
+
+        request.onsuccess = (event) => {
+            resolve(event.target.result);
+        };
+
+        request.onerror = (event) => {
+            console.error('[Vloitz DB] ❌ Error al abrir IndexedDB:', event.target.error);
+            reject(event.target.error);
+        };
+    });
+}
+// --- FIN: MOTOR DE BASE DE DATOS ---
+
 // 1. INSTALACIÓN: Guardamos la interfaz en el cachénst CACHE_NA
 self.addEventListener('install', (e) => {
   console.log('[Service Worker] Instalando caché de interfaz...');
