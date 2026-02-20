@@ -5,39 +5,167 @@
     },
     "sets": [
         {
+            "id": "JRG004",
+            "title": "JRG004",
+            "date": "2026-02-20 10:53:28",
+            "tracklist": [
+                {
+                    "time": "0:00",
+                    "emoji": "🌅",
+                    "title": "ID"
+                }
+            ]
+        },
+        {
             "id": "GDL003",
             "title": "GDL003",
             "date": "2026-02-20 00:59:31",
             "tracklist": [
-                {"time": "0:00", "emoji": "🌅", "title": "Patrizio Exclusive, Lollomezz - Sweet Love"},
-                {"time": "2:29", "emoji": "🚗", "title": "Carloh - Pra Dançar"},
-                {"time": "5:00", "emoji": "🥁", "title": "Elias R, Reenday - La Noche"},
-                {"time": "6:31", "emoji": "🐆", "title": "Fercio - To The Dance Floor"},
-                {"time": "8:38", "emoji": "🔥", "title": "Santi Dominguez - Believe"},
-                {"time": "10:53", "emoji": "🌆", "title": "Seba Iturra - F CK YEAH !"},
-                {"time": "12:52", "emoji": "🚀", "title": "Sergiodnine - Disco Fresh"},
-                {"time": "14:37", "emoji": "🌙", "title": "Andres Blows, Fran-co - Flow Repeat"},
-                {"time": "15:53", "emoji": "🐺", "title": "jeaneiffel - Trumbeat"},
-                {"time": "18:52", "emoji": "🛸", "title": "BESSEMM - Wayout"},
-                {"time": "20:23", "emoji": "🔮", "title": "Juan Ferreyro, Caitto - I Don't Have"},
-                {"time": "22:38", "emoji": "🔑", "title": "Ivan Lopez - Don't Talk (Herloop Mix)"},
-                {"time": "24:22", "emoji": "🌋", "title": "Nautik (US) - Third Eye"},
-                {"time": "25:52", "emoji": "💣", "title": "Seba Cortes, ANDRES_HERRERA - Body Communicate"},
-                {"time": "27:23", "emoji": "🎭", "title": "Yas, LASADJ - La Piña"},
-                {"time": "29:53", "emoji": "👑", "title": "Roworth - Fiesta Loca"},
-                {"time": "32:22", "emoji": "⚡", "title": "Carloh - Solo Tu"},
-                {"time": "35:41", "emoji": "💎", "title": "Erick Cz, Juan Velasquez - GLICHSS"},
-                {"time": "36:41", "emoji": "🌀", "title": "Smith & Welson - La Vida Loca (DJ Global Byte Mix)"},
-                {"time": "38:12", "emoji": "🕶️", "title": "Eloyco - Heyyy!"},
-                {"time": "40:42", "emoji": "👽", "title": "Jim Poel - Bempi"},
-                {"time": "42:41", "emoji": "🎪", "title": "Raumakustik, Pete Kaltenburg - Hive"},
-                {"time": "45:41", "emoji": "👻", "title": "S7VEN (SP) - Jumpin (Summer Mix)"},
-                {"time": "47:41", "emoji": "🧬", "title": "Juan Velasquez - Viajera"},
-                {"time": "48:32", "emoji": "🌊", "title": "Ricardo Criollo House - La Tribu"},
-                {"time": "49:49", "emoji": "⛓️", "title": "Paul Clarkson - Hypnotic"},
-                {"time": "52:11", "emoji": "🪐", "title": "LAVY (IT) - Linear Pulse"},
-                {"time": "54:11", "emoji": "🍸", "title": "Raumakustik, Pete Kaltenburg - All Night Long"},
-                {"time": "56:11", "emoji": "💥", "title": "Erland Galjaard - Music Move Your Feet"}
+                {
+                    "time": "0:00",
+                    "emoji": "🌅",
+                    "title": "Patrizio Exclusive, Lollomezz - Sweet Love"
+                },
+                {
+                    "time": "2:29",
+                    "emoji": "🚗",
+                    "title": "Carloh - Pra Dançar"
+                },
+                {
+                    "time": "5:00",
+                    "emoji": "🥁",
+                    "title": "Elias R, Reenday - La Noche"
+                },
+                {
+                    "time": "6:31",
+                    "emoji": "🐆",
+                    "title": "Fercio - To The Dance Floor"
+                },
+                {
+                    "time": "8:38",
+                    "emoji": "🔥",
+                    "title": "Santi Dominguez - Believe"
+                },
+                {
+                    "time": "10:53",
+                    "emoji": "🌆",
+                    "title": "Seba Iturra - F CK YEAH !"
+                },
+                {
+                    "time": "12:52",
+                    "emoji": "🚀",
+                    "title": "Sergiodnine - Disco Fresh"
+                },
+                {
+                    "time": "14:37",
+                    "emoji": "🌙",
+                    "title": "Andres Blows, Fran-co - Flow Repeat"
+                },
+                {
+                    "time": "15:53",
+                    "emoji": "🐺",
+                    "title": "jeaneiffel - Trumbeat"
+                },
+                {
+                    "time": "18:52",
+                    "emoji": "🛸",
+                    "title": "BESSEMM - Wayout"
+                },
+                {
+                    "time": "20:23",
+                    "emoji": "🔮",
+                    "title": "Juan Ferreyro, Caitto - I Don't Have"
+                },
+                {
+                    "time": "22:38",
+                    "emoji": "🔑",
+                    "title": "Ivan Lopez - Don't Talk (Herloop Mix)"
+                },
+                {
+                    "time": "24:22",
+                    "emoji": "🌋",
+                    "title": "Nautik (US) - Third Eye"
+                },
+                {
+                    "time": "25:52",
+                    "emoji": "💣",
+                    "title": "Seba Cortes, ANDRES_HERRERA - Body Communicate"
+                },
+                {
+                    "time": "27:23",
+                    "emoji": "🎭",
+                    "title": "Yas, LASADJ - La Piña"
+                },
+                {
+                    "time": "29:53",
+                    "emoji": "👑",
+                    "title": "Roworth - Fiesta Loca"
+                },
+                {
+                    "time": "32:22",
+                    "emoji": "⚡",
+                    "title": "Carloh - Solo Tu"
+                },
+                {
+                    "time": "35:41",
+                    "emoji": "💎",
+                    "title": "Erick Cz, Juan Velasquez - GLICHSS"
+                },
+                {
+                    "time": "36:41",
+                    "emoji": "🌀",
+                    "title": "Smith & Welson - La Vida Loca (DJ Global Byte Mix)"
+                },
+                {
+                    "time": "38:12",
+                    "emoji": "🕶️",
+                    "title": "Eloyco - Heyyy!"
+                },
+                {
+                    "time": "40:42",
+                    "emoji": "👽",
+                    "title": "Jim Poel - Bempi"
+                },
+                {
+                    "time": "42:41",
+                    "emoji": "🎪",
+                    "title": "Raumakustik, Pete Kaltenburg - Hive"
+                },
+                {
+                    "time": "45:41",
+                    "emoji": "👻",
+                    "title": "S7VEN (SP) - Jumpin (Summer Mix)"
+                },
+                {
+                    "time": "47:41",
+                    "emoji": "🧬",
+                    "title": "Juan Velasquez - Viajera"
+                },
+                {
+                    "time": "48:32",
+                    "emoji": "🌊",
+                    "title": "Ricardo Criollo House - La Tribu"
+                },
+                {
+                    "time": "49:49",
+                    "emoji": "⛓️",
+                    "title": "Paul Clarkson - Hypnotic"
+                },
+                {
+                    "time": "52:11",
+                    "emoji": "🪐",
+                    "title": "LAVY (IT) - Linear Pulse"
+                },
+                {
+                    "time": "54:11",
+                    "emoji": "🍸",
+                    "title": "Raumakustik, Pete Kaltenburg - All Night Long"
+                },
+                {
+                    "time": "56:11",
+                    "emoji": "💥",
+                    "title": "Erland Galjaard - Music Move Your Feet"
+                }
             ]
         }
     ]
