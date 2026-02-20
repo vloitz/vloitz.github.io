@@ -631,7 +631,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (set.server === "HF") {
             // Usamos endpoint 'raw' para saltar redirecciones y mejorar compatibilidad CORS
             hlsManifestUrl = `https://huggingface.co/datasets/italocajaleon/vloitz-vault/resolve/main/${set.id}/index.m3u8`;
-            console.log(`%c[Vloitz Engine] 🧊 CONECTANDO A BÓVEDA ETERNA (HF RAW): ${set.id}`, "background: #005f73; color: #94d2bd; font-weight: bold; padding: 4px; border-radius: 3px;");
+            console.log(`%c[Vloitz Engine] 🧊 CONECTANDO A BÓVEDA ETERNA (HF RESOLVE): ${set.id}`, "background: #005f73; color: #94d2bd; font-weight: bold; padding: 4px; border-radius: 3px;");
         } else {
             hlsManifestUrl = `${CLOUDFLARE_R2_URL}/${set.id}/index.m3u8`;
             console.log(`%c[Vloitz Engine] ⚡ CONECTANDO A ZONA RÁPIDA (R2): ${set.id}`, "background: #ee9b00; color: #001219; font-weight: bold; padding: 4px; border-radius: 3px;");
@@ -686,7 +686,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (Hls.isSupported()) {
                     const hls = new Hls({
-                        debug: false
+                        debug: false,
+                        enableWorker: true,
+                        lowLatencyMode: false,
+                        xhrSetup: function(xhr, url) {
+                            // Esto evita que hls.js envíe cabeceras que S3/HuggingFace podrían rechazar
+                            xhr.withCredentials = false;
+                        }
                     });
                     hls.loadSource(magicAudioUrl);
                     hls.attachMedia(audioEl);
