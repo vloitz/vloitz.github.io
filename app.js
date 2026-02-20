@@ -512,23 +512,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log("[Motor HLS] Detectado formato segmentado. Iniciando hls.js...");
                 const audioEl = document.getElementById('audio-player');
 
+                // FIX VISUAL: Si hay picos, los inyectamos directamente en WaveSurfer sin pasarle la URL
+                // Esto permite que dibuje la onda inmediatamente
+                if (peaks) {
+                    wavesurfer.load(null, peaks);
+                }
+
                 if (Hls.isSupported()) {
                     const hls = new Hls({ debug: false });
                     hls.loadSource(magicAudioUrl);
                     hls.attachMedia(audioEl);
                     hls.on(Hls.Events.MANIFEST_PARSED, function() {
                         console.log("[Motor HLS] Manifiesto atado a WaveSurfer correctamente.");
-                        // TRUCO SENIOR: Forzar el evento 'ready' para quitar el Cargando y activar el Play
-                        wavesurfer.emit('ready');
+                        // Forzar el evento ready si no se cargaron picos pre-calculados
+                        if (!peaks) wavesurfer.emit('ready');
                     });
                     hls.on(Hls.Events.ERROR, function(event, data) {
-                        // FIX: Se cambió data.message por el objeto data para evitar error de undefined
                         if (data.fatal) console.error("[Motor HLS] Error fatal detectado:", data);
                     });
                 } else if (audioEl.canPlayType('application/vnd.apple.mpegurl')) {
                     console.log("[Motor HLS] Usando soporte nativo (Safari/iOS)...");
                     audioEl.src = magicAudioUrl;
-                    audioEl.addEventListener('loadedmetadata', () => wavesurfer.emit('ready'), { once: true });
+                    audioEl.addEventListener('loadedmetadata', () => {
+                        if (!peaks) wavesurfer.emit('ready');
+                    }, { once: true });
                 } else {
                     console.error("[Motor HLS] Navegador no soporta HLS.");
                 }
