@@ -685,28 +685,47 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 if (Hls.isSupported()) {
-                    const hls = new Hls({
+                const hls = new Hls({
                         debug: false,
                         enableWorker: true,
-                        lowLatencyMode: false,
                         // Configuración crítica para Bóveda Hugging Face:
                         xhrSetup: function(xhr, url) {
                             xhr.withCredentials = false;
                         },
-                        // INTERCEPTOR DE RUTAS: Fuerza a que los fragmentos usen la URL correcta
-                        pLoader: function(config) {
+                        // INTERCEPTOR BLOB: Descarga manual para evadir CORS de S3
+                        fLoader: function(config) {
                             let loader = new Hls.DefaultConfig.loader(config);
                             this.abort = () => loader.abort();
                             this.destroy = () => loader.destroy();
                             this.load = (context, config, callbacks) => {
-                                // Si la URL del fragmento no es absoluta (no empieza con http)
+                                // 1. Construir ruta correcta si es relativa
                                 if (context.url && !context.url.startsWith('http')) {
-                                    // Construimos la ruta absoluta forzada hacia Hugging Face
                                     const baseUrl = `https://huggingface.co/datasets/italocajaleon/vloitz-vault/resolve/main/${currentLoadedSet.id}/`;
                                     context.url = baseUrl + context.url;
-                                    console.log(`[HLS Interceptor] Ruta forzada: ${context.url}`);
                                 }
-                                loader.load(context, config, callbacks);
+
+                                // 2. Guardamos los callbacks originales
+                                const onSuccess = callbacks.onSuccess;
+                                const onError = callbacks.onError;
+
+                                // 3. Usamos la API moderna Fetch para descargar el binario puro
+                                fetch(context.url)
+                                    .then(response => {
+                                        if (!response.ok) throw new Error("Fallo en descarga S3");
+                                        return response.arrayBuffer();
+                                    })
+                                    .then(buffer => {
+                                        // 4. Entregamos el binario a HLS.js emulando una descarga exitosa
+                                        console.log(`[Túnel HF] Fragmento descargado manual: ${context.url.split('/').pop()}`);
+                                        callbacks.onSuccess({
+                                            url: context.url,
+                                            data: buffer
+                                        }, context.stats, context);
+                                    })
+                                    .catch(err => {
+                                        console.error(`[Túnel HF] Error en ${context.url}:`, err);
+                                        callbacks.onError(err, context, context.stats);
+                                    });
                             };
                         }
                     });
