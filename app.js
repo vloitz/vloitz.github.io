@@ -366,12 +366,12 @@ document.addEventListener('DOMContentLoaded', () => {
     })();*/
     // --- FIN: Módulo PrecacheController ---
 
-// --- INICIO: Módulo PrecacheController (Nivel DIOS - Cero Latencia + Cooldown) ---
+// --- INICIO: Módulo PrecacheController (Hybrid-Tier - Precisión + Cero Latencia Virtual) ---
     const PrecacheController = (() => {
         let lastX = 0;
         let lastTime = 0;
+        let checkTimer = null;
         let preloadedSegments = new Set();
-        let lastFetchTime = 0; // El "Escudo de Enfriamiento"
         const HLS_TIME = 2;
 
         const preloadSegment = (time) => {
@@ -384,7 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
             preloadedSegments.add(segmentIndex);
 
             fetch(segmentUrl, { mode: 'no-cors' }).then(() => {
-                console.log(`%c[God-Tier UI] 0ms Latencia. Fragmento ${segmentIndex} capturado.`, "color: #ff00ff; font-weight: bold; font-size: 11px;");
+                console.log(`%c[Hybrid UI] Precisión Absoluta. Fragmento ${segmentIndex} capturado.`, "color: #ffaa00; font-weight: bold; font-size: 11px;");
             }).catch(() => {
                 preloadedSegments.delete(segmentIndex);
             });
@@ -393,7 +393,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const handleInteraction = (clientX, rect) => {
             const currentTime = performance.now();
 
-            // Inicialización
             if (lastTime === 0) {
                 lastX = clientX; lastTime = currentTime; return;
             }
@@ -405,26 +404,32 @@ document.addEventListener('DOMContentLoaded', () => {
             lastX = clientX;
             lastTime = currentTime;
 
-            // LA MAGIA ABSOLUTA:
-            // 1. ¿Está afinando puntería? (Velocidad < 0.5 px/ms)
-            // 2. ¿El escudo de enfriamiento está desactivado? (Han pasado más de 100ms desde la última descarga)
-            if (velocity < 0.5 && (currentTime - lastFetchTime > 100)) {
+            // EL ESCUDO DE PARADA (De la versión vieja):
+            // Cada vez que el mouse se mueve, cancelamos el disparo.
+            clearTimeout(checkTimer);
+
+            // LA DECISIÓN HÍBRIDA:
+            // Si está afinando (v < 0.4), esperamos solo 25ms para asegurar que es el píxel final.
+            // Si va rápido (v >= 0.4), esperamos 80ms para evitar descargar el rastro del viaje.
+            const waitTime = velocity < 0.4 ? 25 : 80;
+
+            checkTimer = setTimeout(() => {
                 const progress = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
                 const duration = wavesurfer.getDuration();
-
-                if (duration > 0) {
-                    preloadSegment(progress * duration);
-                    lastFetchTime = currentTime; // Activamos el escudo por 100ms para evitar el "rastro de frenado"
-                }
-            }
+                if (duration > 0) preloadSegment(progress * duration);
+            }, waitTime);
         };
 
         return {
             handleInteraction,
-            cancel: () => { lastTime = 0; } // Reseteo limpio
+            cancel: () => {
+                clearTimeout(checkTimer);
+                lastTime = 0;
+            }
         };
     })();
     // --- FIN: Módulo PrecacheController ---
+
 
     // --- FUNCIÓN DE PINTADO (Fase 7) ---
     function paintWaveformRegions() {
