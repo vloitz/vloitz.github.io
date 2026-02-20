@@ -461,11 +461,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const segmentIndex = Math.floor(time / HLS_TIME);
             if (preloadedSegments.has(segmentIndex)) return;
 
+            // --- ENRUTADOR DINÁMICO DE PRECARGA (VLOITZ CLUSTER READY) ---
             let segmentUrl = "";
             if (currentLoadedSet.server === "HF") {
-                const tunnel = "https://vloitz-proxy.italocajaleon.workers.dev";
+                // Balanceador de Carga para Precarga: Elegimos un túnel al azar del clúster global
+                const selectedTunnel = VLOITZ_CLUSTER[Math.floor(Math.random() * VLOITZ_CLUSTER.length)];
+
                 const direct = `https://huggingface.co/datasets/italocajaleon/vloitz-vault/resolve/main/${currentLoadedSet.id}/seg-${segmentIndex}.m4s`;
-                segmentUrl = PRECACHE_SAVE_DB ? `${tunnel}/${currentLoadedSet.id}/seg-${segmentIndex}.m4s` : direct;
+
+                // Si PRECACHE_SAVE_DB es true, forzamos el paso por el túnel para que el SW lo capture
+                segmentUrl = PRECACHE_SAVE_DB ? `${selectedTunnel}/${currentLoadedSet.id}/seg-${segmentIndex}.m4s` : direct;
+
+                if (PRECACHE_SAVE_DB) {
+                    console.log(`%c[Ballistic Engine] 🛰️ Túnel activo para precarga: ${selectedTunnel}`, "color: #94d2bd; font-size: 8px; font-style: italic;");
+                }
             } else {
                 segmentUrl = `${CLOUDFLARE_R2_URL}/${currentLoadedSet.id}/seg-${segmentIndex}.m4s`;
             }
