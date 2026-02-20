@@ -444,7 +444,7 @@ document.addEventListener('DOMContentLoaded', () => {
     })();*/
     // --- FIN: Módulo PrecacheController ---
 
-    // --- V3 INICIO: Módulo PrecacheController (Vloitz Quantum-Kinetic v4.0 - Sub-Pixel Precision) ---
+// ---  V3.1 INICIO: Módulo PrecacheController (Vloitz Quantum-Kinetic v4.0 - Sub-Pixel Precision) ---
     const PrecacheController = (() => {
         const PRECACHE_SAVE_DB = false;
 
@@ -703,6 +703,13 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log(`Tracklist poblado con ${sets.length} items.`); // LOG
     }
 
+    // LISTA MAESTRA DE TÚNELES (Añade aquí tus nuevas cuentas de Cloudflare en el futuro)
+    const VLOITZ_CLUSTER = [
+        "https://vloitz-proxy.italocajaleon.workers.dev"
+        // "https://vloitz-proxy-2.cuenta2.workers.dev",
+        // "https://vloitz-proxy-3.cuenta3.workers.dev"
+    ];
+
     // --- Cargar un set ---
     function loadTrack(set, index) {
 
@@ -719,13 +726,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- INICIO DE CONSTRUCTOR DE RUTAS HÍBRIDO (VLOITZ CLUSTER ENGINE) ---
         let hlsManifestUrl = "";
-
-        // LISTA MAESTRA DE TÚNELES (Añade aquí tus nuevas cuentas de Cloudflare en el futuro)
-        const VLOITZ_CLUSTER = [
-            "https://vloitz-proxy.italocajaleon.workers.dev"
-            // "https://vloitz-proxy-2.cuenta2.workers.dev",
-            // "https://vloitz-proxy-3.cuenta3.workers.dev"
-        ];
 
         if (set.server === "HF") {
             // Balanceador de Carga: Elegimos un túnel al azar del clúster
