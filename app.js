@@ -7,6 +7,7 @@
 // generar video MP4/AAC nativo en dispositivos Android de gama baja.
 // -------------------------------------------------------------------------
 
+console.log("2026-02-20_084528_");
 console.log(
     "%c VLOITZ ENGINE %c v1.0 (Stable) \n%c by Kevin Italo Cajaleon Zuta ",
     "background: #1DB954; color: #000; font-weight: bold; padding: 4px; border-radius: 3px;",
@@ -532,42 +533,56 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             console.log("No se encontró peaks_url. Cargando solo audio..."); // LOG
 
-            // --- INICIO: MOTOR HLS ---
+        // --- INICIO: MOTOR HLS Y PICOS UNIFICADO (Corrección de Flujo) ---
+        const initWaveSurfer = (peaks) => {
             if (magicAudioUrl.endsWith('.m3u8')) {
                 console.log("[Motor HLS] Detectado formato segmentado. Iniciando hls.js...");
+                const audioEl = document.getElementById('audio-player');
+
                 if (Hls.isSupported()) {
-                    const hls = new Hls({
-                        debug: false, // Cambiar a true si necesitas ver las entrañas del streaming
-                    });
-
-                    // Aseguramos que el audio tenga el crossorigin
-                    const audioEl = document.getElementById('audio-player');
-
+                    const hls = new Hls({ debug: false });
                     hls.loadSource(magicAudioUrl);
                     hls.attachMedia(audioEl);
-
                     hls.on(Hls.Events.MANIFEST_PARSED, function() {
-                        console.log("[Motor HLS] Manifiesto leído correctamente. Pasando flujo a WaveSurfer...");
-                        // WaveSurfer ya está escuchando el elemento de audio, no necesitamos pasarle la URL de nuevo
+                        console.log("[Motor HLS] Manifiesto atado a WaveSurfer correctamente.");
+                        // WaveSurfer dibujará la onda a medida que el audio se reproduce
                     });
-
-                    hls.on(Hls.Events.ERROR, function (event, data) {
-                        if (data.fatal) {
-                            console.error("[Motor HLS] Error fatal de streaming:", data);
-                        }
+                    hls.on(Hls.Events.ERROR, function(event, data) {
+                        if (data.fatal) console.error("[Motor HLS] Error fatal:", data);
                     });
                 } else if (audioEl.canPlayType('application/vnd.apple.mpegurl')) {
-                    // Fallback para Safari nativo (iOS/Mac)
                     console.log("[Motor HLS] Usando soporte nativo (Safari/iOS)...");
-                    wavesurfer.load(magicAudioUrl);
+                    audioEl.src = magicAudioUrl;
                 } else {
-                    console.error("[Motor HLS] Tu navegador no soporta streaming HLS.");
+                    console.error("[Motor HLS] Navegador no soporta HLS.");
                 }
             } else {
-                // Comportamiento original si no es .m3u8
-                wavesurfer.load(magicAudioUrl);
+                // Comportamiento original para archivos .flac sueltos
+                if (peaks) wavesurfer.load(magicAudioUrl, peaks);
+                else wavesurfer.load(magicAudioUrl);
             }
-            // --- FIN: MOTOR HLS ---
+        };
+
+        // Lógica de carga: Primero buscamos picos, luego iniciamos el motor
+        if (magicPeaksUrl) {
+            console.log(`[Cero Config] Buscando picos en: ${magicPeaksUrl}`);
+            fetch(magicPeaksUrl)
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
+                    return response.json();
+                })
+                .then(peaksData => {
+                    console.log("[Cero Config] Picos cargados correctamente.");
+                    initWaveSurfer(peaksData.data);
+                })
+                .catch(error => {
+                    console.warn("[Cero Config] Sin picos previos. Fallback activado:", error.message);
+                    initWaveSurfer(null);
+                });
+        } else {
+            initWaveSurfer(null);
+        }
+        // --- FIN: MOTOR HLS Y PICOS UNIFICADO ---
 
 
         }

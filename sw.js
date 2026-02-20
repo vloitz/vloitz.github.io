@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vloitz-app-v4';
+const CACHE_NAME = 'vloitz-app-v5';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -10,7 +10,7 @@ const ASSETS_TO_CACHE = [
   'https://unpkg.com/wavesurfer.js@7.7.5/dist/plugins/regions.min.js'
 ];
 
-// 1. INSTALACIÓN: Guardamos la interfaz en el caché
+// 1. INSTALACIÓN: Guardamos la interfaz en el cachénst CACHE_NA
 self.addEventListener('install', (e) => {
   console.log('[Service Worker] Instalando caché de interfaz...');
   e.waitUntil(
