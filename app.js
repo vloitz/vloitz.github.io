@@ -380,7 +380,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (preloadedSegments.has(segmentIndex)) return;
 
-            const segmentUrl = `${CLOUDFLARE_R2_URL}/${currentLoadedSet.id}/seg-${segmentIndex}.m4s`;
+            // --- INICIO: ENRUTADOR PRE-CACHE HÍBRIDO ---
+            let segmentUrl = "";
+            if (currentLoadedSet.server === "HF") {
+                segmentUrl = `https://huggingface.co/datasets/italocajaleon/vloitz-vault/resolve/main/${currentLoadedSet.id}/seg-${segmentIndex}.m4s`;
+            } else {
+                segmentUrl = `${CLOUDFLARE_R2_URL}/${currentLoadedSet.id}/seg-${segmentIndex}.m4s`;
+            }
+            // --- FIN: ENRUTADOR PRE-CACHE ---
+
+
             preloadedSegments.add(segmentIndex);
 
             fetch(segmentUrl, { mode: 'no-cors' }).then(() => {
@@ -611,7 +620,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- INICIO: CERO CONFIGURACIÓN (Actualización HLS Nivel Dios) ---
         // Ahora buscamos el index.m3u8 primero. Si no existe, WaveSurfer fallará, lo cual es esperado si el set no está en HLS aún.
-        const hlsManifestUrl = `${CLOUDFLARE_R2_URL}/${set.id}/index.m3u8`;
+
+    // --- INICIO DE CONSTRUCTOR DE RUTAS HÍBRIDO (VLOITZ ENGINE) ---
+        let hlsManifestUrl = "";
+        if (set.server === "HF") {
+            // Ruta hacia la Bóveda de Hugging Face
+            hlsManifestUrl = `https://huggingface.co/datasets/italocajaleon/vloitz-vault/resolve/main/${set.id}/index.m3u8`;
+            console.log(`[Vloitz Engine] 🧊 Conectando a Bóveda Eterna (HF) para: ${set.id}`);
+        } else {
+            // Ruta por defecto hacia Cloudflare R2 (CF)
+            hlsManifestUrl = `${CLOUDFLARE_R2_URL}/${set.id}/index.m3u8`;
+            console.log(`[Vloitz Engine] ⚡ Conectando a Zona Rápida (R2) para: ${set.id}`);
+        }
+        // --- FIN DE CONSTRUCTOR DE RUTAS ---
+
+
         // Mantenemos el fallback por si en el futuro decides volver a usar archivos únicos
         const magicAudioUrl = set.audio_url || hlsManifestUrl;
 
