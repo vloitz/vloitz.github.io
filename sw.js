@@ -137,6 +137,44 @@ self.addEventListener('activate', (e) => {
 
 // 3. INTERCEPTACIÓN: Si piden algo, miramos el caché primero
 self.addEventListener('fetch', (e) => {
+
+// --- INICIO: INTERCEPTOR DE BÓVEDA HF (Fragmentos .m4s) ---
+  // Solo interceptamos si es un pedacito de audio y viene de nuestros Workers (Túneles HF)
+  if (e.request.url.includes('.m4s') && e.request.url.includes('workers.dev')) {
+      e.respondWith(
+          async function() {
+              // 1. Buscamos en el disco duro del teléfono (IndexedDB)
+              const cachedResponse = await getFragmentFromDB(e.request.url);
+              if (cachedResponse) {
+                  return cachedResponse; // ¡Hit instantáneo! Ahorro de red al 100%
+              }
+
+              // 2. Si no está en el disco, lo descargamos de internet (Túnel Worker)
+              try {
+                  const networkResponse = await fetch(e.request);
+
+                  // Solo guardamos si la descarga fue exitosa (Estado 200)
+                  if (networkResponse.ok) {
+                      // Clonamos la respuesta porque el archivo binario solo se puede leer una vez
+                      const responseClone = networkResponse.clone();
+                      const blob = await responseClone.blob();
+
+                      // Guardamos en segundo plano (no detiene la música)
+                      saveFragmentToDB(e.request.url, blob);
+                  }
+
+                  return networkResponse; // Entregamos la música al reproductor
+              } catch (error) {
+                  console.error('[Vloitz Cache] ❌ Error de red al buscar fragmento:', error);
+                  throw error;
+              }
+          }()
+      );
+      return; // Salimos aquí para que no se ejecute tu caché de interfaz (código de abajo)
+  }
+  // --- FIN: INTERCEPTOR DE BÓVEDA HF ---
+
+
   // EXCEPCIÓN: No cachear los archivos de audio gigantes (FLAC) automáticamente
   // Dejamos que el navegador maneje el streaming para no llenar la memoria del usuario
   if (e.request.url.includes('.flac') || e.request.url.includes('media.githubusercontent.com')) {
