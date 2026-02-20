@@ -43,6 +43,77 @@ function openDB() {
 }
 // --- FIN: MOTOR DE BASE DE DATOS ---
 
+// --- INICIO: FUNCIONES DE LECTURA Y ESCRITURA (VLOITZ CACHE) ---
+
+// Función para guardar un fragmento nuevo en el disco del usuario
+async function saveFragmentToDB(url, blob) {
+    try {
+        const db = await openDB();
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction(STORE_NAME, 'readwrite');
+            const store = transaction.objectStore(STORE_NAME);
+
+            // Guardamos el archivo y la hora exacta en la que se guardó
+            const record = {
+                url: url,
+                blob: blob,
+                timestamp: Date.now() // Fundamental para el futuro camión de la basura
+            };
+
+            const request = store.put(record);
+
+            request.onsuccess = () => {
+                console.log(`[Vloitz Cache] 💾 Fragmento guardado en Disco: ${url.split('/').pop()}`);
+                resolve();
+            };
+
+            request.onerror = (e) => {
+                console.error('[Vloitz Cache] ❌ Error al guardar fragmento:', e);
+                reject(e);
+            };
+        });
+    } catch (error) {
+        console.error('[Vloitz Cache] Error de conexión DB al guardar:', error);
+    }
+}
+
+// Función para buscar un fragmento en el disco antes de usar internet
+async function getFragmentFromDB(url) {
+    try {
+        const db = await openDB();
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction(STORE_NAME, 'readonly');
+            const store = transaction.objectStore(STORE_NAME);
+            const request = store.get(url);
+
+            request.onsuccess = (event) => {
+                const record = event.target.result;
+                if (record) {
+                    console.log(`[Vloitz Cache] ⚡ Hit de caché local: ${url.split('/').pop()}`);
+                    // Reconstruimos el archivo como si viniera de internet
+                    const response = new Response(record.blob, {
+                        status: 200,
+                        statusText: 'OK',
+                        headers: { 'Content-Type': 'video/iso.segment' }
+                    });
+                    resolve(response);
+                } else {
+                    resolve(null); // No está en el disco, hay que descargarlo
+                }
+            };
+
+            request.onerror = (e) => {
+                console.error('[Vloitz Cache] ❌ Error al leer fragmento:', e);
+                resolve(null); // Si falla la lectura, devolvemos null para que use internet por seguridad
+            };
+        });
+    } catch (error) {
+        console.error('[Vloitz Cache] Error de conexión DB al leer:', error);
+        return null; // Fallback a internet
+    }
+}
+// --- FIN: FUNCIONES DE LECTURA Y ESCRITURA ---
+
 // 1. INSTALACIÓN: Guardamos la interfaz en el cachénst CACHE_NA
 self.addEventListener('install', (e) => {
   console.log('[Service Worker] Instalando caché de interfaz...');
