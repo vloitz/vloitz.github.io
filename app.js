@@ -626,23 +626,37 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- INICIO: CERO CONFIGURACIÓN (Actualización HLS Nivel Dios) ---
         // Ahora buscamos el index.m3u8 primero. Si no existe, WaveSurfer fallará, lo cual es esperado si el set no está en HLS aún.
 
-// --- INICIO DE CONSTRUCTOR DE RUTAS HÍBRIDO (VLOITZ ENGINE) ---
+
+        // --- INICIO DE CONSTRUCTOR DE RUTAS HÍBRIDO (VLOITZ CLUSTER ENGINE) ---
         let hlsManifestUrl = "";
+
+        // LISTA MAESTRA DE TÚNELES (Añade aquí tus nuevas cuentas de Cloudflare en el futuro)
+        const VLOITZ_CLUSTER = [
+            "https://vloitz-proxy.italocajaleon.workers.dev"
+            // "https://vloitz-proxy-2.cuenta2.workers.dev",
+            // "https://vloitz-proxy-3.cuenta3.workers.dev"
+        ];
+
         if (set.server === "HF") {
-            // Utilizamos el Túnel Proxy de Cloudflare para saltar el CORS de Hugging Face
-            hlsManifestUrl = `https://vloitz-proxy.italocajaleon.workers.dev/${set.id}/index.m3u8`;
-            console.log(`%c[Vloitz Engine] 🧊 CONECTANDO A BÓVEDA ETERNA (HF TUNNEL): ${set.id}`, "background: #005f73; color: #94d2bd; font-weight: bold; padding: 4px; border-radius: 3px;");
+            // Balanceador de Carga: Elegimos un túnel al azar del clúster
+            const selectedTunnel = VLOITZ_CLUSTER[Math.floor(Math.random() * VLOITZ_CLUSTER.length)];
+            hlsManifestUrl = `${selectedTunnel}/${set.id}/index.m3u8`;
+
+            console.log(`%c[Cluster Manager] 🛰️ Túnel activo: ${selectedTunnel}`, "color: #94d2bd; font-size: 10px; font-style: italic;");
+            console.log(`%c[Vloitz Engine] 🧊 CONECTANDO A BÓVEDA ETERNA (HF CLUSTER): ${set.id}`, "background: #005f73; color: #94d2bd; font-weight: bold; padding: 4px; border-radius: 3px;");
         } else {
             hlsManifestUrl = `${CLOUDFLARE_R2_URL}/${set.id}/index.m3u8`;
             console.log(`%c[Vloitz Engine] ⚡ CONECTANDO A ZONA RÁPIDA (R2): ${set.id}`, "background: #ee9b00; color: #001219; font-weight: bold; padding: 4px; border-radius: 3px;");
         }
 
-        // --- MICRO-FIX: DETECTOR DE ESTADO DE RED (AUTOPSIA) ---
-        fetch(hlsManifestUrl, { method: 'HEAD' }).then(res => {
+        // --- MICRO-FIX: DETECTOR DE ESTADO DE RED (DIAGNÓSTICO CONTINUO) ---
+        fetch(hlsManifestUrl, {
+            method: 'HEAD'
+        }).then(res => {
             console.log(`%c[Network Check] Recurso: ${set.id} | Estado: ${res.status} (${res.statusText})`, res.ok ? "color: #00ff00" : "color: #ff0000");
-            if (!res.ok) console.warn(`⚠️ ALERTA: Hugging Face responde con error ${res.status}. Posible delay de indexación o CORS.`);
+            if (!res.ok) console.warn(`⚠️ ALERTA: El recurso devolvió error ${res.status}. Verifica el Worker o CORS.`);
         }).catch(err => console.error("[Network Check] Error de conexión crítico:", err));
-    // --- FIN DE CONSTRUCTOR DE RUTAS ---
+        // --- FIN DE CONSTRUCTOR DE RUTAS ---
 
 
         // Mantenemos el fallback por si en el futuro decides volver a usar archivos únicos
@@ -690,7 +704,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         enableWorker: true,
                         lowLatencyMode: false,
                         // Configuración mínima recomendada
-                        xhrSetup: function(xhr, url) {
+                        xhrSetup: function (xhr, url) {
                             xhr.withCredentials = false;
                         }
                     });
