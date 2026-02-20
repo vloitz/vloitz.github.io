@@ -527,7 +527,7 @@ document.addEventListener('DOMContentLoaded', () => {
     })();*/
 
     // --- V4.2 INICIO: Módulo PrecacheController (Vloitz Quantum-Kinetic - Nivel Dios Debug) ---
-    const PrecacheController = (() => {
+    /*const PrecacheController = (() => {
         const PRECACHE_SAVE_DB = true;
         const DEBUG_MODE = true; // MODO DEBUG: Telemetría constante en consola
 
@@ -596,6 +596,100 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Condición Micro-Cinética: v < 0.25 para detectar el "toque" final
             if (!hasFired && v < 0.25 && a < -0.0001 && stoppingDistance < 15) {
+                hasFired = true;
+                lastRestingX = last.x; // Guardamos donde se detuvo el auto
+
+                const wsWrapper = wavesurfer.getWrapper();
+                const wsRect = wsWrapper.getBoundingClientRect();
+                const progress = Math.max(0, Math.min(1, (last.x - wsRect.left) / wsRect.width));
+                const duration = wavesurfer.getDuration();
+                const predictedTime = progress * duration;
+
+                if (duration > 0) {
+                    console.log(`%c[Quantum Engine] 🧠 REPOSO DETECTADO (Tiempo: ${predictedTime.toFixed(2)}s)`, "background: #00F3FF; color: #000; font-weight: bold; padding: 2px 4px; border-radius: 3px;");
+                    preloadSegment(predictedTime);
+                }
+            }
+        };
+
+        return {
+            handleInteraction,
+            cancel: () => { samples = []; hasFired = false; }
+        };
+    })();*/
+    // --- FIN: Módulo PrecacheController ---
+
+        // --- V4.3 INICIO: Módulo PrecacheController (Vloitz Quantum-Kinetic - Nivel Dios Debug) ---
+    const PrecacheController = (() => {
+        const PRECACHE_SAVE_DB = true;
+        const DEBUG_MODE = true; // MODO DEBUG: Telemetría constante en consola
+
+        let samples = [];
+        const SAMPLE_LIMIT = 3; // Bajamos a 3 para capturar micro-ajustes milimétricos
+        let hasFired = false;
+        let preloadedSegments = new Set();
+
+        // --- MEMORIA DE REPOSO (God Level) ---
+        let lastRestingX = 0;
+        let lastRestingTimeAudio = 0;
+
+        const preloadSegment = (time) => {
+            if (!currentLoadedSet || !currentLoadedSet.id) return;
+            const actualHlsTime = (currentLoadedSet.server === "HF") ? 60 : 2;
+            const segmentIndex = Math.floor(time / actualHlsTime);
+            if (preloadedSegments.has(segmentIndex)) return;
+
+            let segmentUrl = "";
+            if (currentLoadedSet.server === "HF") {
+                const tunnel = VLOITZ_CLUSTER[Math.floor(Math.random() * VLOITZ_CLUSTER.length)];
+                const direct = `https://huggingface.co/datasets/italocajaleon/vloitz-vault/resolve/main/${currentLoadedSet.id}/seg-${segmentIndex}.m4s`;
+                segmentUrl = PRECACHE_SAVE_DB ? `${tunnel}/${currentLoadedSet.id}/seg-${segmentIndex}.m4s` : direct;
+            } else {
+                segmentUrl = `${CLOUDFLARE_R2_URL}/${currentLoadedSet.id}/seg-${segmentIndex}.m4s`;
+            }
+
+            preloadedSegments.add(segmentIndex);
+            fetch(segmentUrl, { mode: 'no-cors' }).then(() => {
+                console.log(`%c[Quantum Engine] 🎯 Impacto: Fragmento ${segmentIndex}`, "color: #ffaa00; font-weight: bold; font-size: 10px;");
+            }).catch(() => preloadedSegments.delete(segmentIndex));
+        };
+
+        const handleInteraction = (clientX, rect) => {
+            const now = performance.now();
+            samples.push({ x: clientX, t: now });
+            if (samples.length > SAMPLE_LIMIT) samples.shift();
+            if (samples.length < 2) return;
+
+            const first = samples[0];
+            const last = samples[samples.length - 1];
+            const dt = last.t - first.t;
+            const dx = last.x - first.x;
+            const v = Math.abs(dx) / dt;
+            const v_prev = samples.length > 2 ? Math.abs(samples[samples.length-1].x - samples[samples.length-2].x) / (samples[samples.length-1].t - samples[samples.length-2].t) : v;
+            const a = (v - v_prev) / (last.t - samples[samples.length-2].t);
+            const stoppingDistance = (v * v) / (2 * Math.abs(a || 0.0001));
+
+            // --- TELEMETRÍA CONSTANTE (MODO DEBUG) ---
+            if (DEBUG_MODE) {
+                const wsWrapper = wavesurfer.getWrapper();
+                const wsRect = wsWrapper.getBoundingClientRect();
+                const progress = Math.max(0, Math.min(1, (last.x - wsRect.left) / wsRect.width));
+                const currentTime = progress * wavesurfer.getDuration();
+                console.log(`%c[Física] v:${v.toFixed(5)} | a:${a.toFixed(5)} | stop_d:${stoppingDistance.toFixed(2)}px | T:${currentTime.toFixed(2)}s | Fired:${hasFired}`, "color: #777; font-size: 9px;");
+            }
+
+            // REARMADO POR DESPLAZAMIENTO (Nivel Dios):
+            // REARMADO QUIRÚRGICO: Con solo 4px de movimiento el sistema vuelve a estar listo
+            if (Math.abs(last.x - lastRestingX) > 4) {
+                if (hasFired) {
+                    hasFired = false;
+                    if (DEBUG_MODE) console.log("%c[Quantum Engine] ⚡ Rearmado por desplazamiento espacial.", "color: #00FF00; font-size: 8px;");
+                }
+            }
+
+            // Condición de Disparo: Si hay frenado activo O si la velocidad es casi nula (Reposos cortos)
+            const isAbsoluteRest = (v < 0.01);
+            if (!hasFired && (isAbsoluteRest || (v < 0.35 && a < -0.00005 && stoppingDistance < 20))) {
                 hasFired = true;
                 lastRestingX = last.x; // Guardamos donde se detuvo el auto
 
