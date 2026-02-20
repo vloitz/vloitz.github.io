@@ -7,7 +7,7 @@
 // generar video MP4/AAC nativo en dispositivos Android de gama baja.
 // -------------------------------------------------------------------------
 
-console.log("2026-02-20_085835");
+console.log("2026-02-20_090846_");
 console.log(
     "%c VLOITZ ENGINE %c v1.0 (Stable) \n%c by Kevin Italo Cajaleon Zuta ",
     "background: #1DB954; color: #000; font-weight: bold; padding: 4px; border-radius: 3px;",
@@ -466,7 +466,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log(`Tracklist poblado con ${sets.length} items.`); // LOG
     }
 
-    // --- Cargar un set ---
+// --- Cargar un set ---
     function loadTrack(set, index) {
 
         // --- AGREGA ESTO AQUÍ (INICIO) ---
