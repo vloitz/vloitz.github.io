@@ -73,6 +73,7 @@ async function saveFragmentToDB(url, blob) {
         timestamp: Date.now() // Fundamental para el futuro camión de la basura
       };
 
+
       const request = store.put(record);
 
       request.onsuccess = () => {
@@ -97,6 +98,8 @@ async function saveFragmentToDB(url, blob) {
 async function getFragmentFromDB(url) {
   try {
     const db = await openDB();
+    // Antes de guardar, verificamos si el disco está lleno según el Tier de hardware
+    await enforceCacheLimit();
     return new Promise((resolve, reject) => {
       const transaction = db.transaction(STORE_NAME, 'readonly');
       const store = transaction.objectStore(STORE_NAME);
@@ -130,6 +133,38 @@ async function getFragmentFromDB(url) {
     return null; // Fallback a internet
   }
 }
+
+// El Camión de la Basura: Borra el fragmento más antiguo si superamos el límite
+async function enforceCacheLimit() {
+    try {
+        const db = await openDB();
+        const transaction = db.transaction(STORE_NAME, 'readwrite');
+        const store = transaction.objectStore(STORE_NAME);
+        const countRequest = store.count();
+
+        countRequest.onsuccess = async () => {
+            if (countRequest.result > cacheLimit) {
+                // Si hay demasiados, abrimos un cursor para buscar el más viejo (timestamp menor)
+                // IndexedDB no ordena por defecto por timestamp, así que buscamos el primero
+                const cursorRequest = store.openCursor();
+                cursorRequest.onsuccess = (event) => {
+                    const cursor = event.target.result;
+                    if (cursor) {
+                        const urlToDelete = cursor.value.url;
+                        store.delete(urlToDelete);
+                        console.log(
+                            `%c[Vloitz Cache] 🗑️ Purga Automática: Límite excedido. Borrado: ${urlToDelete.split('/').pop()}`,
+                            "background: #121212; color: #FF3131; font-weight: bold; padding: 2px 4px; border: 1px solid #FF3131; border-radius: 3px;"
+                        );
+                    }
+                };
+            }
+        };
+    } catch (error) {
+        console.error('[Vloitz Cache] Error en la purga:', error);
+    }
+}
+
 // --- FIN: FUNCIONES DE LECTURA Y ESCRITURA ---
 
 // --- INICIO: RECEPTOR DE CONFIGURACIÓN (OÍDO DEL ESCUDO) ---

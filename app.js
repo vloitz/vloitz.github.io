@@ -297,7 +297,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     })();
 
-    // --- INICIO: Módulo PrecacheController (Fase 11 - Física y Afinación de Puntería) ---
+    // --- V1 INICIO: Módulo PrecacheController (Fase 11 - Física y Afinación de Puntería) ---
     //ANTERIOR VERSION LA MANTENGO POR QUE YA CASI ERA PEREFCTA SE PODIRA CONSIDERAR EXELENTE
     /* const PrecacheController = (() => {
          let lastX = 0;
@@ -366,8 +366,8 @@ document.addEventListener('DOMContentLoaded', () => {
      })();*/
     // --- FIN: Módulo PrecacheController ---
 
-    // --- INICIO: Módulo PrecacheController (Hybrid-Tier - Precisión + Cero Latencia Virtual) ---
-    const PrecacheController = (() => {
+    // --- V2 INICIO: Módulo PrecacheController (Hybrid-Tier - Precisión + Cero Latencia Virtual) ---
+    /*const PrecacheController = (() => {
         let lastX = 0;
         let lastTime = 0;
         let checkTimer = null;
@@ -431,6 +431,98 @@ document.addEventListener('DOMContentLoaded', () => {
                 const progress = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
                 const duration = wavesurfer.getDuration();
                 if (duration > 0) preloadSegment(progress * duration);
+            }, waitTime);
+        };
+
+        return {
+            handleInteraction,
+            cancel: () => {
+                clearTimeout(checkTimer);
+                lastTime = 0;
+            }
+        };
+    })();*/
+    // --- FIN: Módulo PrecacheController ---
+
+// --- V3 INICIO: Módulo PrecacheController (Vloitz Kinetic Engine v2.0 - Física de Reposo) ---
+    const PrecacheController = (() => {
+        // --- CONFIGURACIÓN DE CONTROL ---
+        const PRECACHE_SAVE_DB = false; // [TRUE]: Guarda precargas en Disco | [FALSE]: Solo precarga en RAM
+
+        let lastX = 0;
+        let lastTime = 0;
+        let checkTimer = null;
+        let preloadedSegments = new Set();
+        const HLS_TIME = 2; // Sincronizado con R2 (perfil alta velocidad)
+
+        const preloadSegment = (time) => {
+            if (!currentLoadedSet || !currentLoadedSet.id) return;
+
+            // Usamos el perfil de 2s para precarga predictiva por ser más ligero
+            const segmentIndex = Math.floor(time / HLS_TIME);
+            if (preloadedSegments.has(segmentIndex)) return;
+
+            // --- ENRUTADOR DINÁMICO DE PRECARGA ---
+            let segmentUrl = "";
+            if (currentLoadedSet.server === "HF") {
+                if (PRECACHE_SAVE_DB) {
+                    // RUTA A: Pasamos por el Túnel (Worker) para que el SW lo guarde en IndexedDB
+                    // Usamos el primer túnel del clúster por simplicidad en la precarga
+                    const tunnel = "https://vloitz-proxy.italocajaleon.workers.dev";
+                    segmentUrl = `${tunnel}/${currentLoadedSet.id}/seg-${segmentIndex}.m4s`;
+                } else {
+                    // RUTA B: Petición directa a HF (ignora el Escudo de Datos, solo para RAM)
+                    segmentUrl = `https://huggingface.co/datasets/italocajaleon/vloitz-vault/resolve/main/${currentLoadedSet.id}/seg-${segmentIndex}.m4s`;
+                }
+            } else {
+                // Cloudflare R2 directo
+                segmentUrl = `${CLOUDFLARE_R2_URL}/${currentLoadedSet.id}/seg-${segmentIndex}.m4s`;
+            }
+
+            preloadedSegments.add(segmentIndex);
+
+            fetch(segmentUrl, { mode: 'no-cors' }).then(() => {
+                const destination = PRECACHE_SAVE_DB ? "Disco (IndexedDB)" : "RAM";
+                console.log(`%c[Kinetic Engine] 🚀 Fragmento ${segmentIndex} capturado en ${destination}.`, "color: #ffaa00; font-weight: bold; font-size: 10px;");
+            }).catch(() => {
+                preloadedSegments.delete(segmentIndex);
+            });
+        };
+
+        const handleInteraction = (clientX, rect) => {
+            const currentTime = performance.now();
+
+            if (lastTime === 0) {
+                lastX = clientX;
+                lastTime = currentTime;
+                return;
+            }
+
+            const deltaX = Math.abs(clientX - lastX);
+            const deltaTime = currentTime - lastTime;
+            const velocity = deltaTime > 0 ? (deltaX / deltaTime) : 0;
+
+            lastX = clientX;
+            lastTime = currentTime;
+
+            // Limpiamos el disparo anterior (frenado en curso)
+            clearTimeout(checkTimer);
+
+            // --- ALGORITMO DE FÍSICA VLOITZ (REPOSO SECO) ---
+            // Si la velocidad es < 0.15 (Casi detenido), disparamos en 15ms (instantáneo al ojo).
+            // Si la velocidad es > 0.40 (Viaje largo), esperamos 90ms para evitar ruido.
+            const waitTime = velocity < 0.15 ? 15 : 90;
+
+            checkTimer = setTimeout(() => {
+                const progress = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+                const duration = wavesurfer.getDuration();
+
+                if (duration > 0) {
+                    if (waitTime === 15) {
+                        console.log(`%c[Kinetic Engine] 🛑 ESTADO DE REPOSO DETECTADO (v:${velocity.toFixed(2)}). Disparando precarga...`, "color: #39FF14; font-size: 9px;");
+                    }
+                    preloadSegment(progress * duration);
+                }
             }, waitTime);
         };
 
