@@ -475,11 +475,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         console.log(`Cargando track ${index}: ${set.title}`); // LOG
 
-        // --- INICIO: CERO CONFIGURACIÓN (Deducción automática) ---
-        const magicAudioUrl = set.audio_url || `${CLOUDFLARE_R2_URL}/${set.id}.flac`;
+// --- INICIO: CERO CONFIGURACIÓN (Actualización HLS Nivel Dios) ---
+        // Ahora buscamos el index.m3u8 primero. Si no existe, WaveSurfer fallará, lo cual es esperado si el set no está en HLS aún.
+        const hlsManifestUrl = `${CLOUDFLARE_R2_URL}/${set.id}/index.m3u8`;
+        // Mantenemos el fallback por si en el futuro decides volver a usar archivos únicos
+        const magicAudioUrl = set.audio_url || hlsManifestUrl;
+
         const magicPeaksUrl = set.peaks_url || `./peaks/${set.id}.json`;
         const magicCoverUrl = set.cover_art_url || `./Artwork/${set.id}.jpg`;
-        console.log(`[Cero Config] Audio: ${magicAudioUrl}`);
+        console.log(`[Cero Config HLS] Intentando cargar Manifest: ${magicAudioUrl}`);
         console.log(`[Cero Config] Picos: ${magicPeaksUrl}`);
         console.log(`[Cero Config] Portada: ${magicCoverUrl}`);
         // --- FIN: CERO CONFIGURACIÓN ---
@@ -527,7 +531,45 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
         } else {
             console.log("No se encontró peaks_url. Cargando solo audio..."); // LOG
-            wavesurfer.load(magicAudioUrl);
+
+            // --- INICIO: MOTOR HLS ---
+            if (magicAudioUrl.endsWith('.m3u8')) {
+                console.log("[Motor HLS] Detectado formato segmentado. Iniciando hls.js...");
+                if (Hls.isSupported()) {
+                    const hls = new Hls({
+                        debug: false, // Cambiar a true si necesitas ver las entrañas del streaming
+                    });
+
+                    // Aseguramos que el audio tenga el crossorigin
+                    const audioEl = document.getElementById('audio-player');
+
+                    hls.loadSource(magicAudioUrl);
+                    hls.attachMedia(audioEl);
+
+                    hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                        console.log("[Motor HLS] Manifiesto leído correctamente. Pasando flujo a WaveSurfer...");
+                        // WaveSurfer ya está escuchando el elemento de audio, no necesitamos pasarle la URL de nuevo
+                    });
+
+                    hls.on(Hls.Events.ERROR, function (event, data) {
+                        if (data.fatal) {
+                            console.error("[Motor HLS] Error fatal de streaming:", data);
+                        }
+                    });
+                } else if (audioEl.canPlayType('application/vnd.apple.mpegurl')) {
+                    // Fallback para Safari nativo (iOS/Mac)
+                    console.log("[Motor HLS] Usando soporte nativo (Safari/iOS)...");
+                    wavesurfer.load(magicAudioUrl);
+                } else {
+                    console.error("[Motor HLS] Tu navegador no soporta streaming HLS.");
+                }
+            } else {
+                // Comportamiento original si no es .m3u8
+                wavesurfer.load(magicAudioUrl);
+            }
+            // --- FIN: MOTOR HLS ---
+
+
         }
 
         currentLoadedSet = set;
