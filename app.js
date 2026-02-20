@@ -518,7 +518,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     hls.attachMedia(audioEl);
                     hls.on(Hls.Events.MANIFEST_PARSED, function() {
                         console.log("[Motor HLS] Manifiesto atado a WaveSurfer correctamente.");
-                        // WaveSurfer dibujará la onda a medida que el audio se reproduce
+                        // TRUCO SENIOR: Forzar el evento 'ready' para quitar el Cargando y activar el Play
+                        wavesurfer.emit('ready');
                     });
                     hls.on(Hls.Events.ERROR, function(event, data) {
                         // FIX: Se cambió data.message por el objeto data para evitar error de undefined
@@ -527,6 +528,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else if (audioEl.canPlayType('application/vnd.apple.mpegurl')) {
                     console.log("[Motor HLS] Usando soporte nativo (Safari/iOS)...");
                     audioEl.src = magicAudioUrl;
+                    audioEl.addEventListener('loadedmetadata', () => wavesurfer.emit('ready'), { once: true });
                 } else {
                     console.error("[Motor HLS] Navegador no soporta HLS.");
                 }
@@ -871,6 +873,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     wavesurfer.on('error', (err) => {
+        // FIX CRÍTICO: WaveSurfer emite 'undefined' cuando HLS toma el control del audio.
+        if (!err) {
+            console.warn("[Motor HLS] Ignorando evento de red nativo (HLS.js tiene el control).");
+            return;
+        }
         console.error('Error de WaveSurfer al cargar audio:', err); // LOG ERROR
         currentTrackTitle.textContent = `Error: ${err.message || err}`;
         playPauseBtn.textContent = '❌';
