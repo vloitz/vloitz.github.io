@@ -629,13 +629,19 @@ document.addEventListener('DOMContentLoaded', () => {
 // --- INICIO DE CONSTRUCTOR DE RUTAS HÍBRIDO (VLOITZ ENGINE) ---
         let hlsManifestUrl = "";
         if (set.server === "HF") {
-            // Usamos 'resolve' para que Hugging Face gestione el streaming de archivos grandes
-            hlsManifestUrl = `https://huggingface.co/datasets/italocajaleon/vloitz-vault/resolve/main/${set.id}/index.m3u8`;
-            console.log(`%c[Vloitz Engine] 🧊 CONECTANDO A BÓVEDA ETERNA (HF): ${set.id}`, "background: #005f73; color: #94d2bd; font-weight: bold; padding: 4px; border-radius: 3px;");
+            // Usamos endpoint 'raw' para saltar redirecciones y mejorar compatibilidad CORS
+            hlsManifestUrl = `https://huggingface.co/datasets/italocajaleon/vloitz-vault/raw/main/${set.id}/index.m3u8`;
+            console.log(`%c[Vloitz Engine] 🧊 CONECTANDO A BÓVEDA ETERNA (HF RAW): ${set.id}`, "background: #005f73; color: #94d2bd; font-weight: bold; padding: 4px; border-radius: 3px;");
         } else {
             hlsManifestUrl = `${CLOUDFLARE_R2_URL}/${set.id}/index.m3u8`;
             console.log(`%c[Vloitz Engine] ⚡ CONECTANDO A ZONA RÁPIDA (R2): ${set.id}`, "background: #ee9b00; color: #001219; font-weight: bold; padding: 4px; border-radius: 3px;");
         }
+
+        // --- MICRO-FIX: DETECTOR DE ESTADO DE RED (AUTOPSIA) ---
+        fetch(hlsManifestUrl, { method: 'HEAD' }).then(res => {
+            console.log(`%c[Network Check] Recurso: ${set.id} | Estado: ${res.status} (${res.statusText})`, res.ok ? "color: #00ff00" : "color: #ff0000");
+            if (!res.ok) console.warn(`⚠️ ALERTA: Hugging Face responde con error ${res.status}. Posible delay de indexación o CORS.`);
+        }).catch(err => console.error("[Network Check] Error de conexión crítico:", err));
     // --- FIN DE CONSTRUCTOR DE RUTAS ---
 
 
