@@ -691,13 +691,23 @@ document.addEventListener('DOMContentLoaded', () => {
                         lowLatencyMode: false,
                         // Configuración crítica para Bóveda Hugging Face:
                         xhrSetup: function(xhr, url) {
-                            xhr.withCredentials = false; // No enviar cookies
-                            // Forzamos a que no se añadan cabeceras que S3 rechaza
-                            if (xhr.readyState === 0) {
-                                xhr.setRequestHeader = function() {
-                                    console.log("[HLS Debug] Cabecera omitida para evitar bloqueo CORS.");
-                                };
-                            }
+                            xhr.withCredentials = false;
+                        },
+                        // INTERCEPTOR DE RUTAS: Fuerza a que los fragmentos usen la URL correcta
+                        pLoader: function(config) {
+                            let loader = new Hls.DefaultConfig.loader(config);
+                            this.abort = () => loader.abort();
+                            this.destroy = () => loader.destroy();
+                            this.load = (context, config, callbacks) => {
+                                // Si la URL del fragmento no es absoluta (no empieza con http)
+                                if (context.url && !context.url.startsWith('http')) {
+                                    // Construimos la ruta absoluta forzada hacia Hugging Face
+                                    const baseUrl = `https://huggingface.co/datasets/italocajaleon/vloitz-vault/resolve/main/${currentLoadedSet.id}/`;
+                                    context.url = baseUrl + context.url;
+                                    console.log(`[HLS Interceptor] Ruta forzada: ${context.url}`);
+                                }
+                                loader.load(context, config, callbacks);
+                            };
                         }
                     });
                     hls.loadSource(magicAudioUrl);
