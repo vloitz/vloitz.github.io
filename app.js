@@ -444,20 +444,23 @@ document.addEventListener('DOMContentLoaded', () => {
     })();*/
     // --- FIN: Módulo PrecacheController ---
 
-// ---  V3.1 INICIO: Módulo PrecacheController (Vloitz Quantum-Kinetic v4.0 - Sub-Pixel Precision) ---
+// --- V4.1 INICIO: Módulo PrecacheController (Vloitz Quantum-Kinetic - Exactitud de Segmento) ---
     const PrecacheController = (() => {
-        const PRECACHE_SAVE_DB = false;
+        const PRECACHE_SAVE_DB = true; // ACTIVADO: Para que use la Bóveda
 
-        // Memoria Cuántica (Buffer de muestras para suavizado)
         let samples = [];
-        const SAMPLE_LIMIT = 5; // Promediamos las últimas 5 micro-muestras
+        const SAMPLE_LIMIT = 5;
         let hasFired = false;
         let preloadedSegments = new Set();
-        const HLS_TIME = 2;
 
         const preloadSegment = (time) => {
             if (!currentLoadedSet || !currentLoadedSet.id) return;
-            const segmentIndex = Math.floor(time / HLS_TIME);
+
+            // --- AJUSTE QUIRÚRGICO: Sincronización con el servidor real ---
+            // Si es HF usamos 60s (uploader nuevo), si no usamos 2s (R2/Old)
+            const actualHlsTime = (currentLoadedSet.server === "HF") ? 60 : 2;
+            const segmentIndex = Math.floor(time / actualHlsTime);
+
             if (preloadedSegments.has(segmentIndex)) return;
 
             let segmentUrl = "";
@@ -471,59 +474,48 @@ document.addEventListener('DOMContentLoaded', () => {
 
             preloadedSegments.add(segmentIndex);
             fetch(segmentUrl, { mode: 'no-cors' }).then(() => {
-                console.log(`%c[Quantum Engine] 🎯 Impacto confirmado: Fragmento ${segmentIndex}`, "color: #ffaa00; font-weight: bold; font-size: 10px;");
+                console.log(`%c[Quantum Engine] 🎯 Impacto confirmado: Fragmento ${segmentIndex} (${actualHlsTime}s/seg)`, "color: #ffaa00; font-weight: bold; font-size: 10px;");
             }).catch(() => preloadedSegments.delete(segmentIndex));
         };
 
         const handleInteraction = (clientX, rect) => {
-            const now = performance.now(); // Precisión en microsegundos
+            const now = performance.now();
 
-            // Registramos la muestra (Sub-pixel data)
+            // Captura de coordenadas con precisión decimal (Sub-pixel)
             samples.push({ x: clientX, t: now });
             if (samples.length > SAMPLE_LIMIT) samples.shift();
-
             if (samples.length < 2) return;
 
-            // --- CÁLCULO DE CINEMÁTICA SUAVIZADA (Filtro de Paso Bajo) ---
             const first = samples[0];
             const last = samples[samples.length - 1];
-
             const dt = last.t - first.t;
-            const dx = Math.abs(last.x - first.x);
+            const dx = last.x - first.x; // Dirección real
+            const v = Math.abs(dx) / dt;
 
-            const v = dx / dt; // Velocidad real (px/ms)
-
-            // Calculamos el "Jerk" (cambio de aceleración) para detectar intención real
             const v_prev = samples.length > 2 ? Math.abs(samples[samples.length-1].x - samples[samples.length-2].x) / (samples[samples.length-1].t - samples[samples.length-2].t) : v;
             const a = (v - v_prev) / (last.t - samples[samples.length-2].t);
 
-            // --- LÓGICA DE DISPARO CUÁNTICO ---
-
-            // Umbral de Rearmado: Debe haber un movimiento limpio y rápido para desbloquear
-            if (v > 0.8) {
-                if (hasFired) {
-                    hasFired = false;
-                    console.log("%c[Quantum Engine] ⚡ Rearmando por inercia...", "color: #555; font-size: 8px;");
-                }
+            if (v > 0.6) {
+                if (hasFired) { hasFired = false; console.log("%c[Quantum Engine] ⚡ Sistema rearmado.", "color: #555; font-size: 8px;"); }
             }
 
-            // Condición de Frenado Predictivo:
-            // 1. No hemos disparado aún.
-            // 2. La velocidad es baja pero el movimiento es hacia el reposo (a < 0).
-            // 3. El Stopping Distance predice que te detendrás en menos de 5 micro-píxeles.
+            // Stopping Distance con factor de fricción humana
             const stoppingDistance = (v * v) / (2 * Math.abs(a || 0.0001));
 
-            if (!hasFired && v < 0.3 && a < -0.001) {
-                if (stoppingDistance < 5) {
-                    hasFired = true; // Bloqueo preventivo
+            // Ajuste de umbral: v < 0.25 y a < -0.001 para detectar el frenado antes del reposo
+            if (!hasFired && v < 0.25 && a < -0.001 && stoppingDistance < 8) {
+                hasFired = true;
 
-                    const progress = Math.max(0, Math.min(1, (last.x - rect.left) / rect.width));
-                    const duration = wavesurfer.getDuration();
+                // Usamos el wrapper de WaveSurfer para el cálculo de tiempo para máxima coincidencia
+                const wsWrapper = wavesurfer.getWrapper();
+                const wsRect = wsWrapper.getBoundingClientRect();
+                const progress = Math.max(0, Math.min(1, (last.x - wsRect.left) / wsRect.width));
+                const duration = wavesurfer.getDuration();
+                const predictedTime = progress * duration;
 
-                    const predictedTime = progress * duration;
-                    console.log(`%c[Quantum Engine] 🧠 PREDICCIÓN DE PARADA (v:${v.toFixed(4)} | dist_frenado:${stoppingDistance.toFixed(2)}px | Tiempo Audio: ${predictedTime.toFixed(3)}s)`, "background: #00F3FF; color: #000; font-weight: bold; padding: 2px 4px; border-radius: 3px;");
-
-                    if (duration > 0) preloadSegment(progress * duration);
+                if (duration > 0) {
+                    console.log(`%c[Quantum Engine] 🧠 PREDICCIÓN (v:${v.toFixed(4)} | dist:${stoppingDistance.toFixed(2)}px | Tiempo: ${predictedTime.toFixed(2)}s)`, "background: #00F3FF; color: #000; font-weight: bold; padding: 2px 4px; border-radius: 3px;");
+                    preloadSegment(predictedTime);
                 }
             }
         };
@@ -533,7 +525,6 @@ document.addEventListener('DOMContentLoaded', () => {
             cancel: () => { samples = []; hasFired = false; }
         };
     })();
-    // --- FIN: Módulo PrecacheController ---
 
 
     // --- FUNCIÓN DE PINTADO (Fase 7) ---
@@ -998,20 +989,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     }
 
-    // --- Función SeekWaveform (Requerida por Drag Logic) ---
+// --- Función SeekWaveform (Requerida por Drag Logic) ---
     const seekWaveform = (clientX, rect, eventType) => {
         console.log(`[Drag v6 Final Corrected] seekWaveform llamado desde: ${eventType}`); // LOG (Prefijo actualizado)
         if (!wavesurfer) {
             console.warn("[Drag v6 Final Corrected] Seek ignorado: WS no inicializado.");
             return false;
         }
-        const x = Math.max(0, clientX - rect.left);
-        const width = rect.width;
-        if (width === 0) {
-            console.warn("[Drag v6 Final Corrected] Seek abortado: Ancho 0.");
-            return false;
-        }
-        const progress = Math.max(0, Math.min(1, x / width));
+
+        // --- AJUSTE DE PRECISIÓN: Sincronización con Quantum Engine ---
+        const wsWrapper = wavesurfer.getWrapper();
+        const wsRect = wsWrapper.getBoundingClientRect();
+        const x = Math.max(0, clientX - wsRect.left);
+        const progress = Math.max(0, Math.min(1, x / wsRect.width));
+        // --------------------------------------------------------------
+
         try {
             // --- INICIO CORRECCIÓN ---
             // Eliminamos check isReady aquí para permitir seek durante drag
