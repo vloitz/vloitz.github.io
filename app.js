@@ -298,7 +298,8 @@ document.addEventListener('DOMContentLoaded', () => {
     })();
 
 // --- INICIO: Módulo PrecacheController (Fase 11 - Física y Afinación de Puntería) ---
-    const PrecacheController = (() => {
+//ANTERIOR VERSION LA MANTENGO POR QUE YA CASI ERA PEREFCTA SE PODIRA CONSIDERAR EXELENTE
+   /* const PrecacheController = (() => {
         let lastX = 0;
         let lastTime = 0;
         let checkTimer = null;
@@ -362,9 +363,68 @@ document.addEventListener('DOMContentLoaded', () => {
                 lastTime = 0; // Reseteamos la física al sacar el mouse
             }
         };
-    })();
+    })();*/
     // --- FIN: Módulo PrecacheController ---
 
+// --- INICIO: Módulo PrecacheController (Nivel DIOS - Cero Latencia + Cooldown) ---
+    const PrecacheController = (() => {
+        let lastX = 0;
+        let lastTime = 0;
+        let preloadedSegments = new Set();
+        let lastFetchTime = 0; // El "Escudo de Enfriamiento"
+        const HLS_TIME = 2;
+
+        const preloadSegment = (time) => {
+            if (!currentLoadedSet || !currentLoadedSet.id) return;
+            const segmentIndex = Math.floor(time / HLS_TIME);
+
+            if (preloadedSegments.has(segmentIndex)) return;
+
+            const segmentUrl = `${CLOUDFLARE_R2_URL}/${currentLoadedSet.id}/seg-${segmentIndex}.m4s`;
+            preloadedSegments.add(segmentIndex);
+
+            fetch(segmentUrl, { mode: 'no-cors' }).then(() => {
+                console.log(`%c[God-Tier UI] 0ms Latencia. Fragmento ${segmentIndex} capturado.`, "color: #ff00ff; font-weight: bold; font-size: 11px;");
+            }).catch(() => {
+                preloadedSegments.delete(segmentIndex);
+            });
+        };
+
+        const handleInteraction = (clientX, rect) => {
+            const currentTime = performance.now();
+
+            // Inicialización
+            if (lastTime === 0) {
+                lastX = clientX; lastTime = currentTime; return;
+            }
+
+            const deltaX = Math.abs(clientX - lastX);
+            const deltaTime = currentTime - lastTime;
+            const velocity = deltaTime > 0 ? (deltaX / deltaTime) : 0;
+
+            lastX = clientX;
+            lastTime = currentTime;
+
+            // LA MAGIA ABSOLUTA:
+            // 1. ¿Está afinando puntería? (Velocidad < 0.5 px/ms)
+            // 2. ¿El escudo de enfriamiento está desactivado? (Han pasado más de 100ms desde la última descarga)
+            if (velocity < 0.5 && (currentTime - lastFetchTime > 100)) {
+                const progress = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+                const duration = wavesurfer.getDuration();
+
+                if (duration > 0) {
+                    preloadSegment(progress * duration);
+                    lastFetchTime = currentTime; // Activamos el escudo por 100ms para evitar el "rastro de frenado"
+                }
+            }
+        };
+
+        return {
+            handleInteraction,
+            cancel: () => { lastTime = 0; } // Reseteo limpio
+        };
+    })();
+    // --- FIN: Módulo PrecacheController ---
 
     // --- FUNCIÓN DE PINTADO (Fase 7) ---
     function paintWaveformRegions() {
