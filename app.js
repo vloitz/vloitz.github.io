@@ -444,94 +444,82 @@ document.addEventListener('DOMContentLoaded', () => {
     })();*/
     // --- FIN: Módulo PrecacheController ---
 
-// --- V3 INICIO: Módulo PrecacheController (Vloitz Kinetic Engine v2.0 - Física de Reposo) ---
+// --- V3 INICIO: Módulo PrecacheController (Vloitz Ballistic Engine v3.0 - Predicción de Impacto) ---
     const PrecacheController = (() => {
         // --- CONFIGURACIÓN DE CONTROL ---
-        const PRECACHE_SAVE_DB = false; // [TRUE]: Guarda precargas en Disco | [FALSE]: Solo precarga en RAM
+        const PRECACHE_SAVE_DB = false; // [TRUE]: Bóveda | [FALSE]: RAM
 
         let lastX = 0;
+        let lastV = 0;
         let lastTime = 0;
-        let checkTimer = null;
+        let hasFired = false; // Bloqueo de seguridad para disparo único
         let preloadedSegments = new Set();
-        const HLS_TIME = 2; // Sincronizado con R2 (perfil alta velocidad)
+        const HLS_TIME = 2;
 
         const preloadSegment = (time) => {
             if (!currentLoadedSet || !currentLoadedSet.id) return;
-
-            // Usamos el perfil de 2s para precarga predictiva por ser más ligero
             const segmentIndex = Math.floor(time / HLS_TIME);
             if (preloadedSegments.has(segmentIndex)) return;
 
-            // --- ENRUTADOR DINÁMICO DE PRECARGA ---
             let segmentUrl = "";
             if (currentLoadedSet.server === "HF") {
-                if (PRECACHE_SAVE_DB) {
-                    // RUTA A: Pasamos por el Túnel (Worker) para que el SW lo guarde en IndexedDB
-                    // Usamos el primer túnel del clúster por simplicidad en la precarga
-                    const tunnel = "https://vloitz-proxy.italocajaleon.workers.dev";
-                    segmentUrl = `${tunnel}/${currentLoadedSet.id}/seg-${segmentIndex}.m4s`;
-                } else {
-                    // RUTA B: Petición directa a HF (ignora el Escudo de Datos, solo para RAM)
-                    segmentUrl = `https://huggingface.co/datasets/italocajaleon/vloitz-vault/resolve/main/${currentLoadedSet.id}/seg-${segmentIndex}.m4s`;
-                }
+                const tunnel = "https://vloitz-proxy.italocajaleon.workers.dev";
+                const direct = `https://huggingface.co/datasets/italocajaleon/vloitz-vault/resolve/main/${currentLoadedSet.id}/seg-${segmentIndex}.m4s`;
+                segmentUrl = PRECACHE_SAVE_DB ? `${tunnel}/${currentLoadedSet.id}/seg-${segmentIndex}.m4s` : direct;
             } else {
-                // Cloudflare R2 directo
                 segmentUrl = `${CLOUDFLARE_R2_URL}/${currentLoadedSet.id}/seg-${segmentIndex}.m4s`;
             }
 
             preloadedSegments.add(segmentIndex);
-
             fetch(segmentUrl, { mode: 'no-cors' }).then(() => {
-                const destination = PRECACHE_SAVE_DB ? "Disco (IndexedDB)" : "RAM";
-                console.log(`%c[Kinetic Engine] 🚀 Fragmento ${segmentIndex} capturado en ${destination}.`, "color: #ffaa00; font-weight: bold; font-size: 10px;");
-            }).catch(() => {
-                preloadedSegments.delete(segmentIndex);
-            });
+                console.log(`%c[Ballistic Engine] 🎯 Bala capturada: Fragmento ${segmentIndex}`, "color: #ffaa00; font-weight: bold; font-size: 10px;");
+            }).catch(() => preloadedSegments.delete(segmentIndex));
         };
 
         const handleInteraction = (clientX, rect) => {
             const currentTime = performance.now();
-
-            if (lastTime === 0) {
-                lastX = clientX;
-                lastTime = currentTime;
-                return;
-            }
+            if (lastTime === 0) { lastX = clientX; lastTime = currentTime; return; }
 
             const deltaX = Math.abs(clientX - lastX);
             const deltaTime = currentTime - lastTime;
             const velocity = deltaTime > 0 ? (deltaX / deltaTime) : 0;
+            const acceleration = (velocity - lastV) / deltaTime; // Física real: cambio de velocidad
+
+            // --- LÓGICA DE ESTADOS (MÁQUINA DE ESTADOS CINÉTICA) ---
+
+            // 1. Reset: Si el usuario mueve el mouse rápido, habilitamos el próximo disparo
+            if (velocity > 0.6) {
+                if (hasFired) {
+                    hasFired = false;
+                    console.log("%c[Ballistic Engine] ⚡ Alta velocidad detectada. Sistema rearmado.", "color: #888; font-size: 8px;");
+                }
+            }
+
+            // 2. Predicción de Impacto (Stopping Distance): d = v^2 / (2 * |a|)
+            // Si la aceleración es negativa (frenando) y la distancia para detenerse es < 10px
+            const stoppingDistance = (velocity * velocity) / (2 * Math.abs(acceleration || 0.001));
+
+            if (!hasFired && acceleration < -0.002 && velocity < 0.25) {
+                if (stoppingDistance < 10) {
+                    hasFired = true; // BLOQUEO INMEDIATO: Un solo disparo por cada frenado
+
+                    const progress = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+                    const duration = wavesurfer.getDuration();
+
+                    console.log(`%c[Ballistic Engine] 🔫 DISPARO ÚNICO (v:${velocity.toFixed(2)} | d_stop:${stoppingDistance.toFixed(1)}px)`, "background: #39FF14; color: #000; font-weight: bold; padding: 2px 4px; border-radius: 3px;");
+
+                    if (duration > 0) preloadSegment(progress * duration);
+                }
+            }
 
             lastX = clientX;
+            lastV = velocity;
             lastTime = currentTime;
-
-            // Limpiamos el disparo anterior (frenado en curso)
-            clearTimeout(checkTimer);
-
-            // --- ALGORITMO DE FÍSICA VLOITZ (REPOSO SECO) ---
-            // Si la velocidad es < 0.15 (Casi detenido), disparamos en 15ms (instantáneo al ojo).
-            // Si la velocidad es > 0.40 (Viaje largo), esperamos 90ms para evitar ruido.
-            const waitTime = velocity < 0.15 ? 15 : 90;
-
-            checkTimer = setTimeout(() => {
-                const progress = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-                const duration = wavesurfer.getDuration();
-
-                if (duration > 0) {
-                    if (waitTime === 15) {
-                        console.log(`%c[Kinetic Engine] 🛑 ESTADO DE REPOSO DETECTADO (v:${velocity.toFixed(2)}). Disparando precarga...`, "color: #39FF14; font-size: 9px;");
-                    }
-                    preloadSegment(progress * duration);
-                }
-            }, waitTime);
         };
 
         return {
             handleInteraction,
-            cancel: () => {
-                clearTimeout(checkTimer);
-                lastTime = 0;
-            }
+            cancel: () => { lastTime = 0; hasFired = false; }
         };
     })();
     // --- FIN: Módulo PrecacheController ---
