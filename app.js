@@ -698,10 +698,13 @@ document.addEventListener('DOMContentLoaded', () => {
                             this.abort = () => loader.abort();
                             this.destroy = () => loader.destroy();
                             this.load = (context, config, callbacks) => {
-                                // 1. Construir ruta correcta si es relativa
-                                if (context.url && !context.url.startsWith('http')) {
+                                // 1. Forçar SEMPRE a URL limpa (Ignorar redireccionamentos em cache do HLS)
+                                if (context.url) {
+                                    // Extrai apenas o nome do ficheiro (ex: init.mp4 ou seg-0.m4s)
+                                    const fileName = context.url.split('/').pop();
+                                    // Reconstrói a URL usando a base oficial
                                     const baseUrl = `https://huggingface.co/datasets/italocajaleon/vloitz-vault/resolve/main/${currentLoadedSet.id}/`;
-                                    context.url = baseUrl + context.url;
+                                    context.url = baseUrl + fileName;
                                 }
 
                                 // 2. Guardamos los callbacks originales
