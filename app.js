@@ -502,8 +502,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // Stopping Distance con factor de fricción humana
             const stoppingDistance = (v * v) / (2 * Math.abs(a || 0.0001));
 
-            // Ajuste de umbral: v < 0.25 y a < -0.001 para detectar el frenado antes del reposo
-            if (!hasFired && v < 0.25 && a < -0.001 && stoppingDistance < 8) {
+            // Ajuste de sensibilidad: v < 0.35 y stoppingDistance < 15 para capturar micro-movimientos
+            if (!hasFired && v < 0.35 && a < -0.0005 && stoppingDistance < 15) {
                 hasFired = true;
 
                 // Usamos el wrapper de WaveSurfer para el cálculo de tiempo para máxima coincidencia
