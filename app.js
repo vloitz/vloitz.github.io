@@ -2105,7 +2105,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log('%c[PWA] Service Worker Registrado Correctamente', 'color: #39FF14; font-weight: bold;');
 
                 // --- MOTOR ADAPTATIVO VLOITZ (3 NIVELES) ---
-                const ram = navigator.deviceMemory || 4;
+                const ram = navigator.deviceMemory || 4; // RAM en GB
                 const cores = navigator.hardwareConcurrency || 2;
                 const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
@@ -2130,7 +2130,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 };
 
-                // Sincronización del mensaje
+                // Sincronización: Si el SW ya está activo enviamos, si no, esperamos al cambio de estado
                 if (registration.active) {
                     sendHardwareConfig();
                 } else {
@@ -2148,6 +2148,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
-    // --- FIN: REGISTRO PWA ---
+// --- FIN: REGISTRO PWA ---
 
-}); // Este cierra el DOMContentLoaded del inicio del archivo
+}); // Este cierra el DOMContentLoaded del inicio del archivo (Línea 27)
