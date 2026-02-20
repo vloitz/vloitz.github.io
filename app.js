@@ -2097,40 +2097,50 @@ document.addEventListener('DOMContentLoaded', () => {
         if (ghostTimer) clearTimeout(ghostTimer);
     });
 
-    // --- INICIO: REGISTRO PWA CON AUTOPSIA DE HARDWARE (MODO TORTUGA) ---
+
+// --- INICIO: REGISTRO PWA CON AUTOPSIA DE HARDWARE (MODO TORTUGA) ---
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('./sw.js').then((registration) => {
                 console.log('%c[PWA] Service Worker Registrado Correctamente', 'color: #39FF14; font-weight: bold;');
 
-                // Autopsia de Hardware: Detectamos RAM (Gama Alta >= 4GB)
-                // Usamos fallback a 4 si el navegador no permite leerlo (ej. Safari antiguo)
-                const ramDetected = navigator.deviceMemory || 4;
-                const coresDetected = navigator.hardwareConcurrency || 2;
+                // --- MOTOR ADAPTATIVO VLOITZ (3 NIVELES) ---
+                const ram = navigator.deviceMemory || 4;
+                const cores = navigator.hardwareConcurrency || 2;
+                const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
-                console.log(`%c[Hardware] Detección finalizada: RAM: ${ramDetected}GB | Cores: ${coresDetected}`, 'color: #00F3FF;');
+                // Determinamos el Tier (Nivel) de rendimiento
+                let performanceTier = "ALTA/PC";
+                if (ram < 4) performanceTier = "BAJA";
+                else if (ram >= 4 && ram < 8) performanceTier = "MEDIA";
 
-                // Esperamos a que el SW esté activo para enviarle el reporte
+                console.log(`%c[Hardware] Perfil Detectado: ${performanceTier} | RAM: ${ram}GB | Cores: ${cores} | Tipo: ${isTouch ? 'Móvil/Tablet' : 'Desktop'}`, 'color: #00F3FF;');
+
+                // Función única para enviar la configuración al SW
                 const sendHardwareConfig = () => {
                     if (registration.active) {
                         registration.active.postMessage({
                             type: 'CONFIG_HARDWARE',
-                            isLowEnd: ramDetected < 4,
-                            ram: ramDetected
+                            tier: performanceTier,
+                            isLowEnd: ram < 4,
+                            ram: ram,
+                            device: isTouch ? 'mobile' : 'desktop'
                         });
                         console.log('%c[PWA] Reporte de hardware enviado al Escudo de Datos.', 'color: #39FF14; font-size: 10px;');
                     }
                 };
 
-                // Si ya está activo lo enviamos, si no, esperamos al cambio de estado
+                // Sincronización del mensaje
                 if (registration.active) {
                     sendHardwareConfig();
                 } else {
                     registration.addEventListener('updatefound', () => {
                         const newWorker = registration.installing;
-                        newWorker.addEventListener('statechange', () => {
-                            if (newWorker.state === 'activated') sendHardwareConfig();
-                        });
+                        if (newWorker) {
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'activated') sendHardwareConfig();
+                            });
+                        }
                     });
                 }
             }).catch((err) => {
@@ -2140,5 +2150,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     // --- FIN: REGISTRO PWA ---
 
-
-});
+}); // Este cierra el DOMContentLoaded del inicio del archivo
