@@ -874,6 +874,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- FIN: Módulo PrecacheController ---
 
     // --- FASE 1 INICIO: Módulo TracklistPreloader (Phantom Motor) ---
+
     const TracklistPreloader = (() => {
         let abortController = null;
         const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache';
