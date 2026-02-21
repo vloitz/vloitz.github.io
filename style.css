@@ -596,8 +596,15 @@ body, html {
 /* --- Ajustes Desktop --- */
 @media (min-width: 769px) {
 
+    .profile-info {
+        padding-left: 20px; /* Mismo padding izquierdo que el reproductor */
+        gap: 20px; /* Mismo espacio entre foto y texto que el reproductor */
+    }
+
     .profile-pic {
-        transform: translateX(100px); /* Desliza la foto a la derecha sin empujar el texto */
+        width: 200px; /* Tamaño exacto de la carátula del set */
+        height: 200px; /* Tamaño exacto de la carátula del set */
+        margin-top: 0px; /* Ajuste para compensar el crecimiento */
     }
 
     .player-controls {
