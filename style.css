@@ -597,7 +597,7 @@ body, html {
 @media (min-width: 769px) {
 
     .profile-pic {
-        margin-left: 45px; /* Empuja la foto a la derecha solo en PC */
+        transform: translateX(80px); /* Desliza la foto a la derecha sin empujar el texto */
     }
 
     .player-controls {
