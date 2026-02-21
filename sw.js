@@ -1,4 +1,5 @@
 const CACHE_NAME = 'vloitz-app-v7';
+const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache'; // Bóveda de 2s para Latencia Cero
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -210,6 +211,24 @@ self.addEventListener('activate', (e) => {
 
 // 3. INTERCEPTACIÓN: Si piden algo, miramos el caché primero
 self.addEventListener('fetch', (e) => {
+
+// --- INICIO: INTERCEPTOR DE BÓVEDA TÁCTICA (Cloudflare 2s) ---
+  // Si es un fragmento de Cloudflare R2, miramos primero en la caché de precarga de 2s
+  if (e.request.url.includes('.m4s') && e.request.url.includes('pub-1bd5ca00f737488cae44be74016d8499.r2.dev')) {
+    e.respondWith(
+      caches.open(PRELOAD_CACHE_NAME).then((cache) => {
+        return cache.match(e.request).then((response) => {
+          if (response) {
+            console.log(`%c[Service Worker] 🧲 Hit de Bóveda Táctica (0ms): ${e.request.url.split('/').pop()}`, "color: #ff00ff; font-weight: bold;");
+            return response;
+          }
+          return fetch(e.request); // Si no está en precarga, va normal por red
+        });
+      })
+    );
+    return;
+  }
+  // --- FIN: INTERCEPTOR DE BÓVEDA TÁCTICA ---
 
   // --- INICIO: INTERCEPTOR DE BÓVEDA HF (Fragmentos .m4s) ---
   // Solo interceptamos si es un pedacito de audio y viene de nuestros Workers (Túneles HF)
