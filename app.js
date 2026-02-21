@@ -1259,7 +1259,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }, // Deducido automáticamente
                 ]
             });
-            console.log("[MediaSession] Metadatos aplicados."); // LOG
+            //console.log("[MediaSession] Metadatos aplicados."); // LOG
         } else {
             console.log("[MediaSession] API no soportada o 'set' no válido."); // LOG
         }
