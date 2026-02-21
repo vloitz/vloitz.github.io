@@ -856,7 +856,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const predictedTime = progress * duration;
 
                 if (duration > 0) {
-                    console.log(`%c[Quantum Engine] 🧠 REPOSO DETECTADO (Tiempo: ${predictedTime.toFixed(2)}s)`, "background: #00F3FF; color: #000; font-weight: bold; padding: 2px 4px; border-radius: 3px;");
+                    //console.log(`%c[Quantum Engine] 🧠 REPOSO DETECTADO (Tiempo: ${predictedTime.toFixed(2)}s)`, "background: #00F3FF; color: #000; font-weight: bold; padding: 2px 4px; border-radius: 3px;");
                     preloadSegment(predictedTime);
                 }
             }
@@ -1365,7 +1365,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const clickTime = progress * wavesurfer.getDuration();
-            console.log(`%c[CLICK REAL] 🎯 Posición de impacto: ${clickTime.toFixed(3)}s (progress: ${progress.toFixed(4)})`, "background: #FFD700; color: #000; font-weight: bold; padding: 2px 4px; border-radius: 3px;");
+            //console.log(`%c[CLICK REAL] 🎯 Posición de impacto: ${clickTime.toFixed(3)}s (progress: ${progress.toFixed(4)})`, "background: #FFD700; color: #000; font-weight: bold; padding: 2px 4px; border-radius: 3px;");
 
             return true;
             // } else {
