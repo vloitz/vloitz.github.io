@@ -932,7 +932,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     await downloadToCache(segmentUrl);
                 } else {
                     // Modo PC/Alta: Descarga en paralelo (Ráfaga asíncrona)
-                    await downloadToCache(segmentUrl);
+                    downloadToCache(segmentUrl);
                 }
                 // --------------------------------------------------
             }
