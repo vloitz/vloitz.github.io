@@ -859,7 +859,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const predictedTime = progress * duration;
 
                 if (duration > 0) {
-                    //console.log(`%c[Quantum Engine] 🧠 REPOSO DETECTADO (Tiempo: ${predictedTime.toFixed(2)}s)`, "background: #00F3FF; color: #000; font-weight: bold; padding: 2px 4px; border-radius: 3px;");
+                    if (DEBUG_MODE) console.log(`%c[Quantum Engine] 🧠 REPOSO DETECTADO (Tiempo: ${predictedTime.toFixed(2)}s)`, "background: #00F3FF; color: #000; font-weight: bold; padding: 2px 4px; border-radius: 3px;");
                     preloadSegment(predictedTime);
                 }
             }
@@ -1304,7 +1304,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateMediaSessionMetadata(set, currentTrackName = null) { // <-- MODIFICADO: Añadir currentTrackName
         if ('mediaSession' in navigator && set) {
             const trackTitle = currentTrackName || "Loading Track..."; // <-- AÑADIDO: Título por defecto si no hay track
-           //console.log(`[MediaSession] Actualizando metadatos. Set: "${set.title}", Track: "${trackTitle}"`); // LOG MODIFICADO
+           console.log(`[MediaSession] Actualizando metadatos. Set: "${set.title}", Track: "${trackTitle}"`); // LOG MODIFICADO
 
             navigator.mediaSession.metadata = new MediaMetadata({
                 title: set.title, // El título principal sigue siendo el del Set
@@ -1317,7 +1317,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }, // Deducido automáticamente
                 ]
             });
-            //console.log("[MediaSession] Metadatos aplicados."); // LOG
+            console.log("[MediaSession] Metadatos aplicados."); // LOG
         } else {
             console.log("[MediaSession] API no soportada o 'set' no válido."); // LOG
         }
