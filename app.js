@@ -750,7 +750,8 @@ document.addEventListener('DOMContentLoaded', () => {
             preloadedSegments.add(segmentIndex);
 
             // Si es un fragmento secundario (Area of Effect), bajamos su prioridad en la red
-            const fetchOptions = isSecondary ? { mode: 'no-cors', priority: 'low' } : { mode: 'no-cors' };
+            // --- CORREGIDO (PASO FINAL) ---
+            const fetchOptions = isSecondary ? { priority: 'low' } : {};
 
             fetch(segmentUrl, fetchOptions).then(() => {
                 const logStyle = isSecondary
