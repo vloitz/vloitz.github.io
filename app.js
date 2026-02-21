@@ -1246,7 +1246,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateMediaSessionMetadata(set, currentTrackName = null) { // <-- MODIFICADO: Añadir currentTrackName
         if ('mediaSession' in navigator && set) {
             const trackTitle = currentTrackName || "Loading Track..."; // <-- AÑADIDO: Título por defecto si no hay track
-            console.log(`[MediaSession] Actualizando metadatos. Set: "${set.title}", Track: "${trackTitle}"`); // LOG MODIFICADO
+           //console.log(`[MediaSession] Actualizando metadatos. Set: "${set.title}", Track: "${trackTitle}"`); // LOG MODIFICADO
 
             navigator.mediaSession.metadata = new MediaMetadata({
                 title: set.title, // El título principal sigue siendo el del Set
