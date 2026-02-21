@@ -934,12 +934,12 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const cache = await caches.open(PRELOAD_CACHE_NAME);
                 const cachedResponse = await cache.match(url);
-
-                if (cachedResponse) return; // Ya está en la bóveda, abortamos para ahorrar datos
+                if (cachedResponse) return;
 
                 const response = await fetch(url, {
                     signal: abortController.signal,
-                    priority: 'low' // No interfiere con la música que suena ahora
+                    // ELIMINADO: mode: 'no-cors' (Para que el audio no sea opaco)
+                    priority: 'low'
                 });
 
                 if (response.ok) {
