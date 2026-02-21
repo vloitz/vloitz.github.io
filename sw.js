@@ -213,20 +213,30 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
 
 // --- INICIO: INTERCEPTOR DE BÓVEDA TÁCTICA (Cloudflare 2s) ---
-// Localiza la sección del Interceptor de Cloudflare (aprox. línea 166)
+// --- VERSIÓN CORREGIDA (PASO 1) ---
 if (e.request.url.includes('.m4s') && e.request.url.includes('pub-1bd5ca00f737488cae44be74016d8499.r2.dev')) {
     e.respondWith(
         caches.open(PRELOAD_CACHE_NAME).then((cache) => {
             return cache.match(e.request).then((cachedResponse) => {
-                // Si el archivo existe y es una respuesta válida (ok)...
+
+                // Si existe en caché y la respuesta es válida...
                 if (cachedResponse && cachedResponse.ok) {
-                    // REGLA SENIOR: Verificamos el tamaño real del contenido (Blob)
-                    return cachedResponse.blob().then(blob => {
-                        if (blob.size > 500) return cachedResponse; // Solo entregamos si tiene audio real
-                        return fetch(e.request); // Si es basura técnica, vamos a internet
+                    // Verificamos el tamaño real del archivo (Blob)
+                    return cachedResponse.clone().blob().then(blob => {
+                        // Si el archivo es mayor a 500 bytes, es audio real.
+                        if (blob.size > 500) {
+                            console.log(`%c[Service Worker] 🧲 Hit Válido (0ms): ${e.request.url.split('/').pop()}`, "color: #39FF14; font-weight: bold;");
+                            return cachedResponse;
+                        }
+                        // Si es basura técnica (0 bytes), lo borramos y vamos a red
+                        console.warn(`[Service Worker] 🗑️ Fragmento corrupto detectado. Saltando a red.`);
+                        cache.delete(e.request);
+                        return fetch(e.request);
                     }).catch(() => fetch(e.request));
                 }
-                return fetch(e.request); // No está en caché, descarga normal
+
+                // Si no está en caché, descarga normal de internet
+                return fetch(e.request);
             });
         })
     );
