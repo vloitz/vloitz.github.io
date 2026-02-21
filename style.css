@@ -595,6 +595,11 @@ body, html {
 
 /* --- Ajustes Desktop --- */
 @media (min-width: 769px) {
+
+    .profile-pic {
+        margin-left: 45px; /* Empuja la foto a la derecha solo en PC */
+    }
+
     .player-controls {
         margin-top: 25px;
     }
