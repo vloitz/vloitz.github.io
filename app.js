@@ -1602,6 +1602,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         // --- FIN: Lógica Deep Linking Time Seek ---
 
+        // ========================================================
+        // 🧹 NUEVO: LIMPIADOR DE URL (UX)
+        // Si hay parámetros en la URL, los borramos sin recargar
+        // ========================================================
+        if (window.location.search) {
+            window.history.replaceState({}, document.title, window.location.pathname);
+            console.log("[UX] 🧹 URL limpiada en la barra de direcciones.");
+        }
+
     });
 
     wavesurfer.on('loading', (percent) => {

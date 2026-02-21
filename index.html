@@ -11,6 +11,9 @@
     <meta name="designer" content="Kevin Italo Cajaleon Zuta">
     <meta name="description" content="Plataforma de música Hi-Fi con tecnología exclusiva Vloitz Engine para generar video-stories compatibles con WhatsApp directamente desde navegadores móviles.">
 
+    <link rel="preconnect" href="https://pub-1bd5ca00f737488cae44be74016d8499.r2.dev">
+    <link rel="preconnect" href="https://unpkg.com">
+
     <link rel="stylesheet" href="style.css">
 
 
@@ -29,7 +32,7 @@
     <meta property="og:url" content="https://vloitz.github.io/">
     <meta property="og:type" content="website">
 
-    <meta property="og:image" content="https://raw.githubusercontent.com/vloitz/wav-sets/13cd4e385c41b2f2f3ba6bfaec022629a41f898e/perfil/LOGO_1200x1200_COMPRESS.png">
+    <meta property="og:image" content="https://vloitz.github.io/perfil/LOGO_1200x1200_COMPRESS.png">
     <meta property="og:image:type" content="image/png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="1200">
@@ -265,7 +268,7 @@
                 .catch(err => console.error('[PWA] Error al registrar SW:', err));
         }
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest" defer></script>
     <script src="app.js?v=2.0"></script>
 
 <div id="storyOverlay">
