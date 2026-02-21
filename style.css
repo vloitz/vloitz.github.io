@@ -45,7 +45,7 @@ body, html {
 .profile-pic {
     width: 150px; height: 150px; border-radius: 50%; border: 4px solid var(--dark-bg);
     object-fit: cover; background-color: var(--dark-bg); flex-shrink: 0;
-    margin-top: 10px;
+    margin-top: 15px;
 }
 
 .profile-details-container {
@@ -597,7 +597,7 @@ body, html {
 @media (min-width: 769px) {
 
     .profile-pic {
-        transform: translateX(120px); /* Desliza la foto a la derecha sin empujar el texto */
+        transform: translateX(100px); /* Desliza la foto a la derecha sin empujar el texto */
     }
 
     .player-controls {
