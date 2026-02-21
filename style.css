@@ -521,13 +521,31 @@ body, html {
         height: 170px;  /* Tu medida personalizada */
         background-position: center center; /* Centrar la imagen en el nuevo espacio */
     }
-    .profile-info { flex-direction: column; align-items: center; margin-top: -75px; text-align: center; padding: 0 15px; gap: 0; }
-    .profile-pic { margin-right: 0; margin-bottom: 15px; width: 120px; height: 120px; margin-top: 0; }
-    .profile-details-container { align-items: center; padding-top: 0; max-width: 100%; }
-    .profile-name { font-size: 2em; margin: 0 0 5px 0; }
+
+.profile-info {
+        flex-direction: row; /* Mantiene la foto al lado del texto */
+        align-items: flex-end; /* Alinea el texto con la base de la foto (opcional, puedes usar flex-start) */
+        margin-top: -40px; /* Sube menos para no tapar tanto el banner */
+        text-align: left; /* Alinea el texto a la izquierda */
+        padding: 0 20px; /* Mismo padding que tiene el player-card */
+        gap: 15px; /* Espacio entre la foto y el texto */
+    }
+    .profile-pic {
+        width: 100px; /* Reducimos la foto en móvil para que quepa bien con el texto */
+        height: 100px;
+        margin: 0;
+        flex-shrink: 0;
+    }
+    .profile-details-container {
+        align-items: flex-start; /* Asegura que el nombre y demás empiecen desde la izquierda */
+        padding-top: 0;
+    }
+    .profile-name { font-size: 1.8em; margin: 0 0 5px 0; } /* Ajuste de nombre en móvil */
+    .profile-socials { justify-content: flex-start; } /* Alineamos iconos sociales a la izquierda */
+
     .profile-location { margin: 0 0 10px 0; font-size: 1em; }
     .profile-bio { max-width: 100%; margin-bottom: 15px; font-size: 0.9em; }
-    .profile-socials { justify-content: center; }
+
 
     .player-card { flex-direction: column; padding: 0; }
     .player-cover-art { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; opacity: 0.45; border-radius: 8px; }
