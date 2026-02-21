@@ -881,6 +881,14 @@ document.addEventListener('DOMContentLoaded', () => {
         // Mapeo de Concurrencia Senior: BAJA/MEDIA = 1 en 1 | ALTA = 4 en 4
         const getConcurrencyLimit = () => (globalPerformanceTier === 'ALTA/PC') ? 4 : 1;
 
+        // TRADUCTOR TÁCTICO: Convierte "04:30" -> Segmento 135
+        const timeToSegmentIndex = (timeStr) => {
+            const parts = timeStr.split(':');
+            if (parts.length !== 2) return null;
+            const totalSeconds = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+            return Math.floor(totalSeconds / 2); // 2s es el estándar Cloudflare (CF)
+        };
+
         const start = (set) => {
             // Regla de Oro: Solo en Cloudflare
             if (!set || set.server !== "CF") return;
@@ -898,10 +906,29 @@ document.addEventListener('DOMContentLoaded', () => {
             processQueue(set.tracklist);
         };
 
-        const processQueue = async (tracklist) => {
-            if (!tracklist) return;
-            console.log(`[Phantom Preloader] Preparando cola de ${tracklist.length} fragmentos.`);
-            // Espacio reservado para la lógica de iteración secuencial de la Fase 3...
+            const processQueue = async (tracklist) => {
+            if (!tracklist || !currentLoadedSet) return;
+
+            console.log(`%c[Phantom Preloader] 🚀 Iniciando traducción de ${tracklist.length} tracks.`, "color: #bb86fc; font-size: 10px;");
+
+            for (const track of tracklist) {
+                // Verificar si el usuario abortó la operación (cambió de set)
+                if (abortController.signal.aborted) break;
+
+                const segmentIndex = timeToSegmentIndex(track.time);
+                if (segmentIndex === null) continue;
+
+                // Construcción de la URL (Ruta absoluta de Cloudflare R2)
+                const segmentUrl = `${CLOUDFLARE_R2_URL}/${currentLoadedSet.id}/seg-${segmentIndex}.m4s`;
+
+                console.log(`[Phantom Preloader] 📑 Track: "${track.title}" -> Segmento: ${segmentIndex}`);
+
+                // --- ESPACIO PARA FASE 4: Descarga y Cache API ---
+                // await downloadToCache(segmentUrl);
+                // -------------------------------------------------
+            }
+
+            console.log("%c[Phantom Preloader] ✅ Traducción de cola completada.", "color: #00FF00; font-weight: bold;");
         };
 
         return { start };
