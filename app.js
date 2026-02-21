@@ -719,7 +719,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- V4.4 INICIO: Módulo PrecacheController (Vloitz Quantum-Kinetic - Nivel Dios Debug) + AreaofEffect y FuzzyHoming ---
       const PrecacheController = (() => {
         const PRECACHE_SAVE_DB = true;
-        const DEBUG_MODE = false; // MODO DEBUG: Telemetría constante en consola
+        const DEBUG_MODE = true; // MODO DEBUG: Telemetría constante en consola
 
         let samples = [];
         const SAMPLE_LIMIT = 3; // Bajamos a 3 para capturar micro-ajustes milimétricos
