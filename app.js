@@ -757,7 +757,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     ? "color: #ffaa00; font-size: 9px; opacity: 0.7;"
                     : "color: #ffaa00; font-weight: bold; font-size: 10px;";
                 const logPrefix = isSecondary ? "🛡️ Escudo:" : "🎯 Impacto:";
-                if (DEBUG_MODE) console.log(`%c[Quantum Engine] ${logPrefix} Fragmento ${segmentIndex}`, logStyle);
+                console.log(`%c[Quantum Engine] ${logPrefix} Fragmento ${segmentIndex}`, logStyle);
             }).catch(() => preloadedSegments.delete(segmentIndex));
         };
 
@@ -1647,7 +1647,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Si encontramos un track y es diferente al último mostrado, actualizamos
             if (foundTrackName && foundTrackName !== currentTrackNameForNotification) {
-                if (DEBUG_MODE) console.log(`[MediaSession TimeUpdate] Cambio de track detectado: "${foundTrackName}"`); // LOG
+                console.log(`[MediaSession TimeUpdate] Cambio de track detectado: "${foundTrackName}"`); // LOG
                 currentTrackNameForNotification = foundTrackName; // Guardar el nuevo nombre
                 updateMediaSessionMetadata(currentLoadedSet, currentTrackNameForNotification); // Actualizar notificación
 
