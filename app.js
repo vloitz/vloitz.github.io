@@ -1543,7 +1543,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Si encontramos un track y es diferente al último mostrado, actualizamos
             if (foundTrackName && foundTrackName !== currentTrackNameForNotification) {
-                console.log(`[MediaSession TimeUpdate] Cambio de track detectado: "${foundTrackName}"`); // LOG
+                //console.log(`[MediaSession TimeUpdate] Cambio de track detectado: "${foundTrackName}"`); // LOG
                 currentTrackNameForNotification = foundTrackName; // Guardar el nuevo nombre
                 updateMediaSessionMetadata(currentLoadedSet, currentTrackNameForNotification); // Actualizar notificación
 
