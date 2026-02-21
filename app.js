@@ -784,7 +784,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // de Wavesurfer/HLS.js. Cuando esté en 'true', interceptaremos
                 // el clic del usuario y si está a +/- 1 segmento del targetSegment,
                 // forzaremos el inicio en el targetSegment para asegurar 0ms latencia.
-                //console.log(`%c[Quantum Engine] 🧲 FuzzyHoming Activo para Fragmento ${targetSegment}`, "color: #ff00ff; font-size: 9px;");
+                if (DEBUG_MODE) console.log(`%c[Quantum Engine] 🧲 FuzzyHoming Activo para Fragmento ${targetSegment}`, "color: #ff00ff; font-size: 9px;");
             }
         };
 
