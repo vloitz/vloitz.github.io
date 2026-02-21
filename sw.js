@@ -13,7 +13,7 @@ const ASSETS_TO_CACHE = [
 // --- INICIO: MOTOR DE BASE DE DATOS (VLOITZ VAULT DB) ---
 const DB_NAME = 'vloitz_vault_db';
 const STORE_NAME = 'audio_fragments';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 let performanceTier = 'ALTA/PC';
 let cacheLimit = 200; // Límite de fragmentos (Default Alta)
@@ -34,13 +34,18 @@ function openDB() {
     // Se ejecuta si es la primera vez o si cambiamos la versión
     request.onupgradeneeded = (event) => {
       const db = event.target.result;
-      // Creamos el "almacén" si no existe.
-      // Usamos 'url' como llave única para cada fragmento de audio.
+      let store;
       if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME, {
-          keyPath: 'url'
-        });
-        console.log('[Vloitz DB] 🏗️ Almacén de fragmentos creado exitosamente.');
+        store = db.createObjectStore(STORE_NAME, { keyPath: 'url' });
+        console.log('[Vloitz DB] 🏗️ Almacén de fragmentos creado.');
+      } else {
+        store = event.target.transaction.objectStore(STORE_NAME);
+      }
+
+      // Creamos el índice para poder borrar por el más antiguo (LRU)
+      if (!store.indexNames.contains('by_timestamp')) {
+        store.createIndex('by_timestamp', 'timestamp');
+        console.log('[Vloitz DB] 🕒 Índice de tiempo (LRU) activado.');
       }
     };
 
@@ -146,7 +151,8 @@ async function enforceCacheLimit() {
             if (countRequest.result > cacheLimit) {
                 // Si hay demasiados, abrimos un cursor para buscar el más viejo (timestamp menor)
                 // IndexedDB no ordena por defecto por timestamp, así que buscamos el primero
-                const cursorRequest = store.openCursor();
+                const index = store.index('by_timestamp');
+                const cursorRequest = index.openCursor(); // Ordena de menor a mayor tiempo
                 cursorRequest.onsuccess = (event) => {
                     const cursor = event.target.result;
                     if (cursor) {
