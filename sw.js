@@ -213,23 +213,24 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
 
 // --- INICIO: INTERCEPTOR DE BÓVEDA TÁCTICA (Cloudflare 2s) ---
-  // Si es un fragmento de Cloudflare R2, miramos primero en la caché de precarga de 2s
-// --- MEJORA DE SEGURIDAD EN sw.js ---
-if (e.request.url.includes('.m4s') && e.request.url.includes('pub-1bd5ca...')) {
-  e.respondWith(
-    caches.open(PRELOAD_CACHE_NAME).then((cache) => {
-      return cache.match(e.request).then((response) => {
-        // CAMBIO QUIRÚRGICO: Solo devolver si el archivo NO está vacío
-        if (response && response.ok && response.headers.get('content-length') !== '0') {
-          return response;
-        }
-        // Si el archivo está corrupto o vacío, lo borramos y vamos a internet
-        if (response) cache.delete(e.request);
-        return fetch(e.request);
-      });
-    })
-  );
-  return;
+// Localiza la sección del Interceptor de Cloudflare (aprox. línea 166)
+if (e.request.url.includes('.m4s') && e.request.url.includes('pub-1bd5ca00f737488cae44be74016d8499.r2.dev')) {
+    e.respondWith(
+        caches.open(PRELOAD_CACHE_NAME).then((cache) => {
+            return cache.match(e.request).then((cachedResponse) => {
+                // Si el archivo existe y es una respuesta válida (ok)...
+                if (cachedResponse && cachedResponse.ok) {
+                    // REGLA SENIOR: Verificamos el tamaño real del contenido (Blob)
+                    return cachedResponse.blob().then(blob => {
+                        if (blob.size > 500) return cachedResponse; // Solo entregamos si tiene audio real
+                        return fetch(e.request); // Si es basura técnica, vamos a internet
+                    }).catch(() => fetch(e.request));
+                }
+                return fetch(e.request); // No está en caché, descarga normal
+            });
+        })
+    );
+    return;
 }
   // --- FIN: INTERCEPTOR DE BÓVEDA TÁCTICA ---
 
