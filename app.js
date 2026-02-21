@@ -754,7 +754,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     ? "color: #ffaa00; font-size: 9px; opacity: 0.7;"
                     : "color: #ffaa00; font-weight: bold; font-size: 10px;";
                 const logPrefix = isSecondary ? "🛡️ Escudo:" : "🎯 Impacto:";
-                console.log(`%c[Quantum Engine] ${logPrefix} Fragmento ${segmentIndex}`, logStyle);
+                //console.log(`%c[Quantum Engine] ${logPrefix} Fragmento ${segmentIndex}`, logStyle);
             }).catch(() => preloadedSegments.delete(segmentIndex));
         };
 
@@ -781,7 +781,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // de Wavesurfer/HLS.js. Cuando esté en 'true', interceptaremos
                 // el clic del usuario y si está a +/- 1 segmento del targetSegment,
                 // forzaremos el inicio en el targetSegment para asegurar 0ms latencia.
-                console.log(`%c[Quantum Engine] 🧲 FuzzyHoming Activo para Fragmento ${targetSegment}`, "color: #ff00ff; font-size: 9px;");
+                //console.log(`%c[Quantum Engine] 🧲 FuzzyHoming Activo para Fragmento ${targetSegment}`, "color: #ff00ff; font-size: 9px;");
             }
         };
 
