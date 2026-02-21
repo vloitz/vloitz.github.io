@@ -923,12 +923,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 console.log(`[Phantom Preloader] 📑 Track: "${track.title}" -> Segmento: ${segmentIndex}`);
 
-                // --- ESPACIO PARA FASE 4: Descarga y Cache API ---
-                // await downloadToCache(segmentUrl);
-                // -------------------------------------------------
+                // --- EJECUCIÓN FASE 4: Inyección según Hardware ---
+                const limit = getConcurrencyLimit();
+
+                if (limit === 1) {
+                    // Modo Móvil/Baja: Descarga secuencial para proteger el procesador
+                    await downloadToCache(segmentUrl);
+                } else {
+                    // Modo PC/Alta: Descarga en paralelo (Ráfaga asíncrona)
+                    downloadToCache(segmentUrl);
+                }
+                // --------------------------------------------------
             }
 
             console.log("%c[Phantom Preloader] ✅ Traducción de cola completada.", "color: #00FF00; font-weight: bold;");
+        };
+
+        // INYECTOR TÁCTICO: Descarga el fragmento de 2s y lo guarda en la Cache API
+        const downloadToCache = async (url) => {
+            try {
+                const cache = await caches.open(PRELOAD_CACHE_NAME);
+                const cachedResponse = await cache.match(url);
+
+                if (cachedResponse) return; // Ya está en la bóveda, abortamos para ahorrar datos
+
+                const response = await fetch(url, {
+                    signal: abortController.signal,
+                    priority: 'low' // No interfiere con la música que suena ahora
+                });
+
+                if (response.ok) {
+                    await cache.put(url, response);
+                    console.log(`%c[Phantom Preloader] 📦 Inyección exitosa: ${url.split('/').pop()}`, "color: #39FF14; font-size: 9px; opacity: 0.8;");
+                }
+            } catch (e) {
+                if (e.name !== 'AbortError') console.warn("[Phantom Preloader] Error en inyección:", e);
+            }
         };
 
         return { start };
