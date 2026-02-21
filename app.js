@@ -729,7 +729,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- FEATURE FLAGS (Quantum Upgrades) ---
         const AreaofEffect = true;  // Disparo de escopeta (precarga 5 fragmentos)
-        const FuzzyHoming = false;  // Snap Magnético (corrección de precisión vs latencia)
+        const FuzzyHoming = true;  // Snap Magnético (corrección de precisión vs latencia)
 
         // MÓDULO AISLADO: Descargador Táctico de Fragmentos (Evita anidamiento)
         const fetchSegmentData = (segmentIndex, isSecondary = false) => {
@@ -776,7 +776,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // 3. Snap Magnético (Fuzzy Homing - Lógica Preparada)
-            if (FuzzyHoming) {
+            if (FuzzyHoming && currentLoadedSet.server === "CF") { // CANDADO HF: Solo en CF
                 // NOTA ARQUITECTO: Esta lógica se conecta con el evento 'seek'
                 // de Wavesurfer/HLS.js. Cuando esté en 'true', interceptaremos
                 // el clic del usuario y si está a +/- 1 segmento del targetSegment,
@@ -784,6 +784,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log(`%c[Quantum Engine] 🧲 FuzzyHoming Activo para Fragmento ${targetSegment}`, "color: #ff00ff; font-size: 9px;");
             }
         };
+
+        // --- INICIO MÓDULO SNAP MAGNÉTICO (Aislado) ---
+        const getFuzzyTime = (clickedTime) => {
+            if (!FuzzyHoming || !currentLoadedSet || currentLoadedSet.server !== "CF") return clickedTime;
+
+            const actualHlsTime = 2;
+            const targetSegment = Math.floor(clickedTime / actualHlsTime);
+
+            if (preloadedSegments.has(targetSegment)) return clickedTime;
+
+            // Busca escudos adyacentes
+            if (preloadedSegments.has(targetSegment - 1)) {
+                if (DEBUG_MODE) console.log(`%c[Quantum Engine] 🧲 Snap Magnético: Ajustando al fragmento ${targetSegment - 1}`, "color: #ff00ff; font-weight: bold; font-size: 10px;");
+                return (targetSegment - 1) * actualHlsTime;
+            }
+            if (preloadedSegments.has(targetSegment + 1)) {
+                if (DEBUG_MODE) console.log(`%c[Quantum Engine] 🧲 Snap Magnético: Ajustando al fragmento ${targetSegment + 1}`, "color: #ff00ff; font-weight: bold; font-size: 10px;");
+                return (targetSegment + 1) * actualHlsTime;
+            }
+            if (preloadedSegments.has(targetSegment - 2)) return (targetSegment - 2) * actualHlsTime;
+            if (preloadedSegments.has(targetSegment + 2)) return (targetSegment + 2) * actualHlsTime;
+
+            return clickedTime;
+        };
+        // --- FIN MÓDULO SNAP MAGNÉTICO ---
 
         const handleInteraction = (clientX, rect) => {
             const now = performance.now();
@@ -839,6 +864,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         return {
             handleInteraction,
+            getFuzzyTime, // <-- EXPUESTO PARA USO EXTERNO
             cancel: () => { samples = []; hasFired = false; }
         };
     })();
@@ -1318,7 +1344,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const wsWrapper = wavesurfer.getWrapper();
         const wsRect = wsWrapper.getBoundingClientRect();
         const x = Math.max(0, clientX - wsRect.left);
-        const progress = Math.max(0, Math.min(1, x / wsRect.width));
+        let progress = Math.max(0, Math.min(1, x / wsRect.width));
+
+        // --- INYECCIÓN SNAP MAGNÉTICO (Solo actúa si está activo) ---
+        if (wavesurfer.getDuration() > 0 && typeof PrecacheController !== 'undefined' && PrecacheController.getFuzzyTime) {
+            const rawTime = progress * wavesurfer.getDuration();
+            const correctedTime = PrecacheController.getFuzzyTime(rawTime);
+            progress = correctedTime / wavesurfer.getDuration();
+        }
         // --------------------------------------------------------------
 
         try {
