@@ -757,7 +757,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     ? "color: #ffaa00; font-size: 9px; opacity: 0.7;"
                     : "color: #ffaa00; font-weight: bold; font-size: 10px;";
                 const logPrefix = isSecondary ? "🛡️ Escudo:" : "🎯 Impacto:";
-                //console.log(`%c[Quantum Engine] ${logPrefix} Fragmento ${segmentIndex}`, logStyle);
+                if (DEBUG_MODE) console.log(`%c[Quantum Engine] ${logPrefix} Fragmento ${segmentIndex}`, logStyle);
             }).catch(() => preloadedSegments.delete(segmentIndex));
         };
 
@@ -1461,7 +1461,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const clickTime = progress * wavesurfer.getDuration();
-            //console.log(`%c[CLICK REAL] 🎯 Posición de impacto: ${clickTime.toFixed(3)}s (progress: ${progress.toFixed(4)})`, "background: #FFD700; color: #000; font-weight: bold; padding: 2px 4px; border-radius: 3px;");
+            if (DEBUG_MODE) console.log(`%c[CLICK REAL] 🎯 Posición de impacto: ${clickTime.toFixed(3)}s (progress: ${progress.toFixed(4)})`, "background: #FFD700; color: #000; font-weight: bold; padding: 2px 4px; border-radius: 3px;");
 
             return true;
             // } else {
@@ -1647,7 +1647,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Si encontramos un track y es diferente al último mostrado, actualizamos
             if (foundTrackName && foundTrackName !== currentTrackNameForNotification) {
-                //console.log(`[MediaSession TimeUpdate] Cambio de track detectado: "${foundTrackName}"`); // LOG
+                if (DEBUG_MODE) console.log(`[MediaSession TimeUpdate] Cambio de track detectado: "${foundTrackName}"`); // LOG
                 currentTrackNameForNotification = foundTrackName; // Guardar el nuevo nombre
                 updateMediaSessionMetadata(currentLoadedSet, currentTrackNameForNotification); // Actualizar notificación
 
