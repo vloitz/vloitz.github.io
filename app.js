@@ -907,37 +907,26 @@ document.addEventListener('DOMContentLoaded', () => {
             processQueue(set.tracklist);
         };
 
-            const processQueue = async (tracklist) => {
+        const processQueue = async (tracklist) => {
             if (!tracklist || !currentLoadedSet) return;
 
-            console.log(`%c[Phantom Preloader] 🚀 Iniciando traducción de ${tracklist.length} tracks.`, "color: #bb86fc; font-size: 10px;");
+            // LIMITACIÓN SENIOR: Solo precargamos los primeros 10 para no ahogar el Service Worker
+            const topTracks = tracklist.slice(0, 10);
+            console.log(`%c[Phantom Preloader] 🚀 Precarga controlada: 10/${tracklist.length} tracks.`, "color: #bb86fc; font-size: 10px;");
 
-            for (const track of tracklist) {
-                // Verificar si el usuario abortó la operación (cambió de set)
+            for (const track of topTracks) {
                 if (abortController.signal.aborted) break;
 
                 const segmentIndex = timeToSegmentIndex(track.time);
                 if (segmentIndex === null) continue;
 
-                // Construcción de la URL (Ruta absoluta de Cloudflare R2)
                 const segmentUrl = `${CLOUDFLARE_R2_URL}/${currentLoadedSet.id}/seg-${segmentIndex}.m4s`;
 
-                console.log(`[Phantom Preloader] 📑 Track: "${track.title}" -> Segmento: ${segmentIndex}`);
-
-                // --- EJECUCIÓN FASE 4: Inyección según Hardware ---
-                const limit = getConcurrencyLimit();
-
-                if (limit === 1) {
-                    // Modo Móvil/Baja: Descarga secuencial para proteger el procesador
-                    await downloadToCache(segmentUrl);
-                } else {
-                    // Modo PC/Alta: Descarga en paralelo (Ráfaga asíncrona)
-                    downloadToCache(segmentUrl);
-                }
-                // --------------------------------------------------
+                // USAMOS AWAIT SIEMPRE: Esto es lo que evita que se congele la web
+                await downloadToCache(segmentUrl);
             }
 
-            console.log("%c[Phantom Preloader] ✅ Traducción de cola completada.", "color: #00FF00; font-weight: bold;");
+            console.log("%c[Phantom Preloader] ✅ Cola de alta prioridad inyectada.", "color: #00FF00; font-weight: bold;");
         };
 
         // INYECTOR TÁCTICO: Descarga el fragmento de 2s y lo guarda en la Cache API
