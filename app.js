@@ -86,6 +86,9 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log("[Fav PorSet] Datos maestros de favoritos cargados:", allFavorites); // LOG
 
     let currentLoadedSet = null; // Para saber qué set está cargado
+
+    let globalPerformanceTier = 'ALTA/PC'; // Valor por defecto para el Preloader
+
     let wavesurfer = null; // Declarar wavesurfer aquí
 
     let wsRegions = null; // Referencia al plugin de regiones
@@ -870,6 +873,41 @@ document.addEventListener('DOMContentLoaded', () => {
     })();
     // --- FIN: Módulo PrecacheController ---
 
+    // --- FASE 1 INICIO: Módulo TracklistPreloader (Phantom Motor) ---
+    const TracklistPreloader = (() => {
+        let abortController = null;
+        const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache';
+
+        // Mapeo de Concurrencia Senior: BAJA/MEDIA = 1 en 1 | ALTA = 4 en 4
+        const getConcurrencyLimit = () => (globalPerformanceTier === 'ALTA/PC') ? 4 : 1;
+
+        const start = (set) => {
+            // Regla de Oro: Solo en Cloudflare
+            if (!set || set.server !== "CF") return;
+
+            console.log(`%c[Phantom Preloader] 👻 Modo Fantasma activado. Tier: ${globalPerformanceTier} (Límite: ${getConcurrencyLimit()})`, "color: #bb86fc; font-weight: bold;");
+
+            // Cancelar cualquier descarga previa si el usuario cambió de set
+            if (abortController) {
+                abortController.abort();
+                console.log("%c[Phantom Preloader] 🛑 Descargas anteriores canceladas.", "color: #ff5555; font-size: 9px;");
+            }
+            abortController = new AbortController();
+
+            // Aquí se ejecutará la lógica de la Fase 3 (Traductor y Descarga)
+            processQueue(set.tracklist);
+        };
+
+        const processQueue = async (tracklist) => {
+            if (!tracklist) return;
+            console.log(`[Phantom Preloader] Preparando cola de ${tracklist.length} fragmentos.`);
+            // Espacio reservado para la lógica de iteración secuencial de la Fase 3...
+        };
+
+        return { start };
+    })();
+    // --- FIN: Módulo TracklistPreloader ---
+
     // --- FUNCIÓN DE PINTADO (Fase 7) ---
     function paintWaveformRegions() {
         if (!wsRegions || !currentLoadedSet || !currentLoadedSet.tracklist) return;
@@ -1473,6 +1511,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- FASE 8: Inicializar Espectro según preferencia ---
         toggleSpectrumState(); // Esto llamará a paintWaveformRegions si es true
+
+        // --- DISPARADOR PHANTOM PRELOADER ---
+        // Esperamos 3 segundos de reposo tras el 'ready' para no saturar el inicio
+        setTimeout(() => {
+            if (typeof TracklistPreloader !== 'undefined' && currentLoadedSet) {
+                TracklistPreloader.start(currentLoadedSet);
+            }
+        }, 3000);
 
         // --- INICIO: Lógica Deep Linking Time Seek (Fase 3.2) ---
         // Verificamos si hay un tiempo pendiente en la URL Y si es la primera carga (para no saltar en loops)
@@ -2549,7 +2595,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 let performanceTier = "ALTA/PC";
                 if (ram < 4) performanceTier = "BAJA";
                 else if (ram >= 4 && ram < 8) performanceTier = "MEDIA";
-
+                globalPerformanceTier = performanceTier; // Sincronización para el Preloader
                 console.log(`%c[Hardware] Perfil Detectado: ${performanceTier} | RAM: ${ram}GB | Cores: ${cores} | Tipo: ${isTouch ? 'Móvil/Tablet' : 'Desktop'}`, 'color: #00F3FF;');
 
                 // Función única para enviar la configuración al SW
