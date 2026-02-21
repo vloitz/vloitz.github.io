@@ -214,20 +214,23 @@ self.addEventListener('fetch', (e) => {
 
 // --- INICIO: INTERCEPTOR DE BÓVEDA TÁCTICA (Cloudflare 2s) ---
   // Si es un fragmento de Cloudflare R2, miramos primero en la caché de precarga de 2s
-  if (e.request.url.includes('.m4s') && e.request.url.includes('pub-1bd5ca00f737488cae44be74016d8499.r2.dev')) {
-    e.respondWith(
-      caches.open(PRELOAD_CACHE_NAME).then((cache) => {
-        return cache.match(e.request).then((response) => {
-          if (response) {
-            console.log(`%c[Service Worker] 🧲 Hit de Bóveda Táctica (0ms): ${e.request.url.split('/').pop()}`, "color: #ff00ff; font-weight: bold;");
-            return response;
-          }
-          return fetch(e.request); // Si no está en precarga, va normal por red
-        });
-      })
-    );
-    return;
-  }
+// --- MEJORA DE SEGURIDAD EN sw.js ---
+if (e.request.url.includes('.m4s') && e.request.url.includes('pub-1bd5ca...')) {
+  e.respondWith(
+    caches.open(PRELOAD_CACHE_NAME).then((cache) => {
+      return cache.match(e.request).then((response) => {
+        // CAMBIO QUIRÚRGICO: Solo devolver si el archivo NO está vacío
+        if (response && response.ok && response.headers.get('content-length') !== '0') {
+          return response;
+        }
+        // Si el archivo está corrupto o vacío, lo borramos y vamos a internet
+        if (response) cache.delete(e.request);
+        return fetch(e.request);
+      });
+    })
+  );
+  return;
+}
   // --- FIN: INTERCEPTOR DE BÓVEDA TÁCTICA ---
 
   // --- INICIO: INTERCEPTOR DE BÓVEDA HF (Fragmentos .m4s) ---
