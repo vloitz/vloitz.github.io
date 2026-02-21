@@ -597,14 +597,17 @@ body, html {
 @media (min-width: 769px) {
 
     .profile-info {
-        padding-left: 20px; /* Mismo padding izquierdo que el reproductor */
+        max-width: 1200px; /* 1. Bloquea el crecimiento al mismo ancho que el reproductor */
+        margin: -75px auto 0 auto; /* 2. Lo centra automáticamente en pantallas gigantes */
+        padding: 0 35px; /* 3. Matemática exacta: 15px del contenedor + 20px del reproductor */
         gap: 20px; /* Mismo espacio entre foto y texto que el reproductor */
     }
 
     .profile-pic {
         width: 200px; /* Tamaño exacto de la carátula del set */
         height: 200px; /* Tamaño exacto de la carátula del set */
-        margin-top: 0px; /* Ajuste para compensar el crecimiento */
+        margin-top: 0px;
+        /* Ya no necesitamos margin-left porque el padding de 35px de arriba hace el anclaje perfecto */
     }
 
     .player-controls {
