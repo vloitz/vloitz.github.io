@@ -1461,7 +1461,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const clickTime = progress * wavesurfer.getDuration();
-            if (DEBUG_MODE) console.log(`%c[CLICK REAL] 🎯 Posición de impacto: ${clickTime.toFixed(3)}s (progress: ${progress.toFixed(4)})`, "background: #FFD700; color: #000; font-weight: bold; padding: 2px 4px; border-radius: 3px;");
+            console.log(`%c[CLICK REAL] 🎯 Posición de impacto: ${clickTime.toFixed(3)}s (progress: ${progress.toFixed(4)})`, "background: #FFD700; color: #000; font-weight: bold; padding: 2px 4px; border-radius: 3px;");
 
             return true;
             // } else {
