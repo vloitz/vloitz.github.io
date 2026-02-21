@@ -908,26 +908,36 @@ document.addEventListener('DOMContentLoaded', () => {
             processQueue(set.tracklist);
         };
 
+        // --- EL MOTOR FANTASMA FINAL (Paralelismo Controlado) ---
         const processQueue = async (tracklist) => {
             if (!tracklist || !currentLoadedSet) return;
 
-            // LIMITACIÓN SENIOR: Solo precargamos los primeros 10 para no ahogar el Service Worker
-            const topTracks = tracklist.slice(0, 10);
-            console.log(`%c[Phantom Preloader] 🚀 Precarga controlada: 10/${tracklist.length} tracks.`, "color: #bb86fc; font-size: 10px;");
+            console.log(`%c[Phantom Preloader] 🚀 Iniciando traducción de ${tracklist.length} tracks en bloques.`, "color: #bb86fc; font-size: 10px;");
 
-            for (const track of topTracks) {
+            // En PC será 4, en móvil será 1.
+            const limit = getConcurrencyLimit();
+
+            // Bucle que avanza en bloques (ej: de 4 en 4)
+            for (let i = 0; i < tracklist.length; i += limit) {
                 if (abortController.signal.aborted) break;
 
-                const segmentIndex = timeToSegmentIndex(track.time);
-                if (segmentIndex === null) continue;
+                // Tomamos el bloque actual (ej: tracks del 0 al 3)
+                const chunk = tracklist.slice(i, i + limit);
 
-                const segmentUrl = `${CLOUDFLARE_R2_URL}/${currentLoadedSet.id}/seg-${segmentIndex}.m4s`;
+                // Preparamos las promesas de descarga para este bloque
+                const downloadPromises = chunk.map(track => {
+                    const segmentIndex = timeToSegmentIndex(track.time);
+                    if (segmentIndex === null) return Promise.resolve();
 
-                // USAMOS AWAIT SIEMPRE: Esto es lo que evita que se congele la web
-                await downloadToCache(segmentUrl);
+                    const segmentUrl = `${CLOUDFLARE_R2_URL}/${currentLoadedSet.id}/seg-${segmentIndex}.m4s`;
+                    return downloadToCache(segmentUrl); // Sin 'await' aquí adentro para que se lancen juntas
+                });
+
+                // AWAIT MAESTRO: Esperamos a que terminen estos 4 antes de lanzar los siguientes 4
+                await Promise.all(downloadPromises);
             }
 
-            console.log("%c[Phantom Preloader] ✅ Cola de alta prioridad inyectada.", "color: #00FF00; font-weight: bold;");
+            console.log("%c[Phantom Preloader] ✅ Traducción de TODA la cola completada.", "color: #00FF00; font-weight: bold;");
         };
 
         // INYECTOR TÁCTICO: Descarga el fragmento de 2s y lo guarda en la Cache API
