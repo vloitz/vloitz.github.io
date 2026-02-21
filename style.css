@@ -597,7 +597,7 @@ body, html {
 @media (min-width: 769px) {
 
     .profile-pic {
-        transform: translateX(80px); /* Desliza la foto a la derecha sin empujar el texto */
+        transform: translateX(120px); /* Desliza la foto a la derecha sin empujar el texto */
     }
 
     .player-controls {
