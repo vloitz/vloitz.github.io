@@ -728,7 +728,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let lastRestingTimeAudio = 0;
 
         // --- FEATURE FLAGS (Quantum Upgrades) ---
-        const AreaofEffect = false;  // Disparo de escopeta (precarga 5 fragmentos)
+        const AreaofEffect = true;  // Disparo de escopeta (precarga 5 fragmentos)
         const FuzzyHoming = true;  // Snap Magnético (corrección de precisión vs latencia)
 
         // MÓDULO AISLADO: Descargador Táctico de Fragmentos (Evita anidamiento)
