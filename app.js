@@ -1753,18 +1753,25 @@ document.addEventListener('DOMContentLoaded', () => {
         let rawTime = progress * wavesurfer.getDuration();
 
         // =================================================================
-        // 🧲 MOBILE SMART SNAP (v5.6 - Dictadura Absoluta)
+        // 🧲 MOBILE SMART SNAP (v6.0 - La Bóveda Inquebrantable)
         // =================================================================
         const MOBILE_SMART_SNAP = true;
+
+        // 🛑 ANULACIÓN DE ARRASTRE (FIX REBOTE FINAL):
+        // Si el dedo se desliza al soltar (touchmove), peleaba contra el salto automático. Lo matamos.
+        if (MOBILE_SMART_SNAP && eventType === 'touchmove') {
+            return false;
+        }
+
         const isMobileAction = eventType.includes('touch') || (eventType === 'click' && globalPerformanceTier !== 'ALTA/PC');
         let didSmartSnap = false; // Control para evitar conflicto con FuzzyHoming
 
         if (MOBILE_SMART_SNAP && isMobileAction && typeof TrackNavigator !== 'undefined' && TrackNavigator.isReady()) {
 
-           // 0. ESCUDO ANTI-REBOTE TEMPORAL (Destruye el clic fantasma del móvil al soltar el dedo)
+           // 0. ESCUDO ANTI-REBOTE TEMPORAL (Destruye el clic fantasma del móvil)
             const now = performance.now();
             if (now - lastInteractionTimestamp < 400) {
-                console.log(`%c[Smart Snap] 🛡️ Rebote ignorado por milisegundos.`, "color: #777; font-size: 9px;");
+                console.log(`%c[Smart Snap] 🛡️ Clic fantasma ignorado.`, "color: #777; font-size: 9px;");
                 return false;
             }
 
@@ -1784,32 +1791,37 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // 2. REGLA ORO (Escudo Definitivo Anti-Dedo Gordo):
-            // Prohibido caer en la zona actual o en las últimas 3 zonas visitadas.
-            // Si el dedo cae ahí, forzamos SIEMPRE avanzar a la siguiente pista.
+            // Prohibido caer en la zona actual o en CUALQUIERA de las casas que visitamos recientemente.
             if (finalSnapTime === currentlyPlayingStart || recentSnapMemory.includes(finalSnapTime)) {
                 const forceNext = TrackNavigator.findNextTimestamp(currentlyPlayingStart, false);
                 if (forceNext !== null) {
                     finalSnapTime = forceNext;
-                    console.log(`%c[Smart Snap] 🚫 Regreso/Reinicio evitado -> Avanzando: ${formatTime(finalSnapTime)}`, "background: #FF4B2B; color: #fff; font-weight: bold; padding: 2px;");
+                    console.log(`%c[Smart Snap] 🚫 Regreso evitado -> Avanzando a: ${formatTime(finalSnapTime)}`, "background: #FF4B2B; color: #fff; font-weight: bold; padding: 2px;");
                 }
             }
 
-            // 3. Guardamos la memoria y actualizamos el escudo temporal
+            // 3. Guardamos la memoria (La casa de Juan y María)
             if (finalSnapTime !== null) {
-                if (recentSnapMemory.length === 0 || recentSnapMemory[recentSnapMemory.length - 1] !== finalSnapTime) {
-                    recentSnapMemory.push(finalSnapTime);
-                    if (recentSnapMemory.length > 3) {
-                        recentSnapMemory.shift(); // Mantiene historial máximo de 3
-                    }
+                // A. Guardamos la casa que estamos abandonando (Juan)
+                if (currentlyPlayingStart !== null && !recentSnapMemory.includes(currentlyPlayingStart)) {
+                    recentSnapMemory.push(currentlyPlayingStart);
                 }
-                lastInteractionTimestamp = now; // Armamos el escudo de 400ms para cuando suelte el dedo
+                // B. Guardamos la nueva casa a la que llegamos (María)
+                if (!recentSnapMemory.includes(finalSnapTime)) {
+                    recentSnapMemory.push(finalSnapTime);
+                }
+                // Mantenemos historial de 4 posiciones para no bloquear permanentemente todo el set
+                while (recentSnapMemory.length > 4) {
+                    recentSnapMemory.shift();
+                }
+                lastInteractionTimestamp = now;
             }
 
             if (finalSnapTime !== null) {
                 rawTime = finalSnapTime;
                 progress = rawTime / wavesurfer.getDuration();
                 didSmartSnap = true;
-                console.log(`%c[Smart Snap] 🎯 Éxito (${eventType}): ${formatTime(rawTime)}`, "background: #1DB954; color: #000; font-weight: bold;");
+                console.log(`%c[Smart Snap] 🎯 Éxito (${eventType}): ${formatTime(rawTime)} | Memoria: [${recentSnapMemory.map(t=>formatTime(t)).join(', ')}]`, "background: #1DB954; color: #000; font-weight: bold;");
             }
         }
 
