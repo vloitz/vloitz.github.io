@@ -1803,40 +1803,43 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-          // 2. REGLA ORO ESTRICTA (Cero Reinicios Absolutos):
+       // 2. REGLA ORO ESTRICTA (Cero Reinicios Absolutos - Solución Final):
             const trueCurrentHouse = recentSnapMemory.length > 0 ? recentSnapMemory[recentSnapMemory.length - 1] : currentlyPlayingStart;
 
-// CASO A: Toca la baldosa en la que YA ESTÁ (Mismo lugar).
+            // FIX 1: Tolerancia de Decimales (0.5s) para que la igualdad matemática nunca falle por microsegundos
+            const isSameHouse = (t1, t2) => Math.abs(t1 - t2) < 0.5;
+            const isHistorial = recentSnapMemory.some(t => isSameHouse(t, finalSnapTime));
+
+            // CASO A: Toca la baldosa en la que YA ESTÁ (Mismo lugar).
             // NUNCA quiere reiniciar. Forzamos siempre el salto a la SIGUIENTE.
-            if (finalSnapTime === trueCurrentHouse) {
+            if (isSameHouse(finalSnapTime, trueCurrentHouse)) {
                 const forceNext = TrackNavigator.findNextTimestamp(trueCurrentHouse, false);
                 if (forceNext !== null) {
                     finalSnapTime = forceNext;
                     console.log(`%c[Smart Snap] 🚀 Avance Forzado -> Evitando reinicio, saltando a: ${formatTime(finalSnapTime)}`, "background: #FF4B2B; color: #fff; font-weight: bold; padding: 2px;");
                 } else {
-                    // FIX SUPREMO: Si es la última bolita del set y no hay siguiente, destruimos el clic.
+                    lastInteractionTimestamp = now; // FIX 2 CRÍTICO: Renovar el escudo al bloquear.
                     console.log("%c[Smart Snap] 🛑 Última pista alcanzada. Reinicio bloqueado.", "color: #FFA500; font-size: 10px;");
                     return false;
                 }
             }
             // CASO B: Toca una baldosa DEL PASADO (Historial).
-            else if (recentSnapMemory.includes(finalSnapTime)) {
+            else if (isHistorial) {
                 if (STRICT_FORWARD_INTENT && isRapidSequence) {
-                    // SACRIFICIO DE CONTROL POR ESTABILIDAD:
-                    // El dedo gordo resbaló a una baldosa anterior. En lugar de recalcular y arriesgar un reinicio,
-                    // DESTRUIMOS EL EVENTO. La música simplemente sigue sonando estable y no se interrumpe.
+                    lastInteractionTimestamp = now; // FIX 2 CRÍTICO: Si hace 50 clics, el escudo jamás caerá.
                     console.log(`%c[Smart Snap] 🛡️ Toque en historial bloqueado. Manteniendo pista actual.`, "color: #FFA500; font-weight: bold; font-size: 10px;");
                     return false; // Abortamos el clic por completo
                 }
             }
 
-// CASO C DE PROTECCIÓN EXTRA: Si por lag del motor nativo, la matemática nos intenta mandar a lo que ya suena
-            if (finalSnapTime === currentlyPlayingStart) {
+            // CASO C DE PROTECCIÓN EXTRA: Si por lag del motor nativo, la matemática nos intenta mandar a lo que ya suena
+            if (isSameHouse(finalSnapTime, currentlyPlayingStart)) {
                 const safetyNext = TrackNavigator.findNextTimestamp(currentlyPlayingStart, false);
                 if (safetyNext !== null) {
                     finalSnapTime = safetyNext;
                 } else {
-                    return false; // FIX: Destruimos el clic si estamos en la última pista.
+                    lastInteractionTimestamp = now; // FIX 2 CRÍTICO
+                    return false;
                 }
             }
 
