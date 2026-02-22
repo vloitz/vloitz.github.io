@@ -1737,7 +1737,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-// Memoria histórica de posiciones (Metáfora de Juan y María)
+    // Memoria histórica de posiciones (Metáfora de Juan y María)
     let recentSnapMemory = [];
     let lastInteractionTimestamp = 0; // Para bloquear rebotes de milisegundos (v5.5)
 
@@ -1757,10 +1757,14 @@ document.addEventListener('DOMContentLoaded', () => {
         // =================================================================
         const MOBILE_SMART_SNAP = true;
 
-        // 🛑 ANULACIÓN DE ARRASTRE (FIX REBOTE FINAL):
-        // Si el dedo se desliza al soltar (touchmove), peleaba contra el salto automático. Lo matamos.
-        if (MOBILE_SMART_SNAP && eventType === 'touchmove') {
-            return false;
+        // 🛑 ANULACIÓN DE EVENTOS FANTASMAS (FIX REBOTE FINAL):
+        // 1. Matamos touchmove para evitar rebotes al deslizar.
+        // 2. Matamos el 'click' sintético en móviles para evitar el "adelantar de más".
+        if (MOBILE_SMART_SNAP && globalPerformanceTier !== 'ALTA/PC') {
+            if (eventType === 'touchmove' || eventType === 'click') {
+                console.log(`%c[Smart Snap] 🛡️ Evento ${eventType} destruido. Previniendo rebote.`, "color: #FF00FF; font-size: 9px;");
+                return false;
+            }
         }
 
         const isMobileAction = eventType.includes('touch') || (eventType === 'click' && globalPerformanceTier !== 'ALTA/PC');
@@ -1768,12 +1772,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (MOBILE_SMART_SNAP && isMobileAction && typeof TrackNavigator !== 'undefined' && TrackNavigator.isReady()) {
 
-          // 0. CANDADO DE TITANIO (1.2s sugerido por el Arquitecto)
-            // Wavesurfer tarda en actualizar su estado interno tras un salto.
-            // Si permitimos clics antes de 1.2s, lee el tiempo antiguo y la lógica colapsa.
+            // 0. CANDADO DE TITANIO (1.2s - Desincronización de Estado Asíncrono)
+            // Le da tiempo al motor de WaveSurfer de asimilar el nuevo tiempo.
             const now = performance.now();
             if (now - lastInteractionTimestamp < 1200) {
-                console.log(`%c[Smart Snap] 🛡️ Candado Activo (Ignorando rebotes o toques frenéticos).`, "color: #777; font-size: 9px;");
+                console.log(`%c[Smart Snap] 🛡️ Candado Activo (1.2s). Ignorando toques frenéticos.`, "color: #777; font-size: 9px;");
                 return false;
             }
 
@@ -1783,7 +1786,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let finalSnapTime = clickedTrackStart;
 
-            // 1. Gravedad centrada PRIMERO
+            // 1. Gravedad centrada PRIMERO (Atracción al más cercano)
             if (clickedTrackStart !== null && nextTrackStart !== null) {
                 const distToCurrent = Math.abs(rawTime - clickedTrackStart);
                 const distToNext = Math.abs(rawTime - nextTrackStart);
@@ -1792,46 +1795,40 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // 2. REGLA ORO (Prohibición Absoluta de Reinicio y Regreso)
-            // isCurrentlyPlaying: Evita reiniciar la casa en la que estás.
-            // isJustAbandoned: Evita que el dedo gordo te devuelva a la casa de Juan que acabas de dejar.
-            const isCurrentlyPlaying = (finalSnapTime === currentlyPlayingStart);
-            const isJustAbandoned = (recentSnapMemory.length > 0 && finalSnapTime === recentSnapMemory[recentSnapMemory.length - 1]);
-
-            if (isCurrentlyPlaying || isJustAbandoned) {
+            // 2. REGLA ORO (Escudo Definitivo Anti-Dedo Gordo):
+            // Prohibido caer en la zona actual o en CUALQUIERA de las casas que visitamos recientemente.
+            if (finalSnapTime === currentlyPlayingStart || recentSnapMemory.includes(finalSnapTime)) {
                 const forceNext = TrackNavigator.findNextTimestamp(currentlyPlayingStart, false);
                 if (forceNext !== null) {
                     finalSnapTime = forceNext;
-                    console.log(`%c[Smart Snap] 🚫 Retorno a Juan/Reinicio evitado -> Avanzando a: ${formatTime(finalSnapTime)}`, "background: #FF4B2B; color: #fff; font-weight: bold; padding: 2px;");
+                    console.log(`%c[Smart Snap] 🚫 Regreso evitado -> Avanzando a: ${formatTime(finalSnapTime)}`, "background: #FF4B2B; color: #fff; font-weight: bold; padding: 2px;");
                 }
             }
 
-            // 3. Guardar en memoria y Cerrar el Candado
+            // 3. Guardamos la memoria (La casa de Juan y María)
             if (finalSnapTime !== null) {
-                // Guardar la casa de donde venimos (Juan)
+                // A. Guardamos la casa que estamos abandonando (Juan)
                 if (currentlyPlayingStart !== null && !recentSnapMemory.includes(currentlyPlayingStart)) {
                     recentSnapMemory.push(currentlyPlayingStart);
                 }
-                // Guardar la casa a la que vamos (María)
+                // B. Guardamos la nueva casa a la que llegamos (María)
                 if (!recentSnapMemory.includes(finalSnapTime)) {
                     recentSnapMemory.push(finalSnapTime);
                 }
-                // Limpiar memoria vieja (máximo 4)
+                // Mantenemos historial de 4 posiciones para no bloquear permanentemente todo el set
                 while (recentSnapMemory.length > 4) {
                     recentSnapMemory.shift();
                 }
-
-                // CERRAMOS EL CANDADO DE 1.2 SEGUNDOS
                 lastInteractionTimestamp = now;
             }
 
-            // 4. Aplicar el Snap al progreso
             if (finalSnapTime !== null) {
                 rawTime = finalSnapTime;
                 progress = rawTime / wavesurfer.getDuration();
                 didSmartSnap = true;
-                console.log(`%c[Smart Snap] 🎯 Éxito (${eventType}): ${formatTime(rawTime)}`, "background: #1DB954; color: #000; font-weight: bold;");
+                console.log(`%c[Smart Snap] 🎯 Éxito (${eventType}): ${formatTime(rawTime)} | Memoria: [${recentSnapMemory.map(t=>formatTime(t)).join(', ')}]`, "background: #1DB954; color: #000; font-weight: bold;");
             }
+        }
 
         // --- INYECCIÓN SNAP MAGNÉTICO (Solo actúa si NO hubo Smart Snap) ---
         if (!didSmartSnap && wavesurfer.getDuration() > 0 && typeof PrecacheController !== 'undefined' && PrecacheController.getFuzzyTime) {
