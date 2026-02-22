@@ -1737,12 +1737,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    // =================================================================
-    // 🛡️ SMART SNAP V9 DEFINITIVA: PLAN B (VECTOR ABSOLUTO + TIEMPO)
+// =================================================================
+    // 🛡️ SMART SNAP V10 DEFINITIVA: PLAN B + ASESINATO DE EVENTOS
     // =================================================================
 
     // 🧪 CONTROL DE VERSIÓN INMEDIATO (Fuera de la función para no bloquear el flujo)
-    alert("Vloitz v11.0 - PLAN B (Vector Absoluto) Cargado Correctamente");
+    alert("Vloitz v10.0 - PLAN B (Vector Absoluto + Asesinato) Cargado Correctamente");
 
     let recentSnapMemory = [];
     let recentRawClicks = []; // 🎯 PLAN B: Vector de clics exactos (Huellas del francotirador)
@@ -1750,7 +1750,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Función SeekWaveform (Requerida por Drag Logic) ---
     const seekWaveform = (clientX, rect, eventType) => {
-        console.log(`[Drag v9 Nivel Dios] seekWaveform llamado desde: ${eventType}`);
+        console.log(`[Drag v10 Nivel Dios] seekWaveform llamado desde: ${eventType}`);
         if (!wavesurfer) return false;
 
         const MOBILE_SMART_SNAP = true;
@@ -1796,11 +1796,22 @@ document.addEventListener('DOMContentLoaded', () => {
             const currentTime = wavesurfer.getCurrentTime();
             const isRapidSequence = (now - lastLandingTime < 2500); // 2.5s de ventana de frustración
 
+            let clickedHouse = TrackNavigator.getCurrentTrackStartTime(rawTime, false);
+
+            // Sincronización de Realidad vs Memoria
+            let trueCurrentHouse = TrackNavigator.getCurrentTrackStartTime(currentTime, false);
+            if (isRapidSequence && recentSnapMemory.length > 0) {
+                trueCurrentHouse = recentSnapMemory[recentSnapMemory.length - 1];
+            }
+
+            // Función de Tolerancia
+            const isSameHouse = (t1, t2) => Math.abs(t1 - t2) < 1.0;
+
             // 🎯 PLAN B (LA DEFENSA ABSOLUTA DE HUELLAS):
             const isHardwareSpam = isRapidSequence && recentRawClicks.some(pastClick => Math.abs(pastClick - rawTime) < 4.0);
+
             if (isHardwareSpam || isSameHouse(clickedHouse, trueCurrentHouse)) {
-                // Si el usuario toca el mismo lugar o el spam de hardware actúa,
-                // matamos el evento antes de que WaveSurfer pueda siquiera enterarse.
+                // ASESINATO: Matamos el evento antes de que WaveSurfer pueda enterarse.
                 if (window.event) {
                     window.event.preventDefault();
                     window.event.stopPropagation();
@@ -1810,22 +1821,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (isSameHouse(clickedHouse, trueCurrentHouse)) {
                     const forceNext = TrackNavigator.findNextTimestamp(trueCurrentHouse, false);
                     if (forceNext !== null) {
-                        finalSnapTime = forceNext; // Permitimos que el flujo siga para adelantar
+                        clickedHouse = forceNext; // Permitimos que el flujo siga para adelantar
+                        console.log(`%c[Smart Snap] 🚀 Pie Gordo detectado -> Avance estricto a 1 baldosa: ${formatTime(clickedHouse)}`, "background: #FF4B2B; color: #fff; font-weight: bold; padding: 2px;");
                     } else {
+                        lastLandingTime = now;
+                        console.log("%c[Smart Snap] 🛑 Última baldosa. Reinicio bloqueado.", "color: #FFA500; font-size: 10px;");
                         return true;
                     }
                 } else {
+                    lastLandingTime = now;
+                    console.log("%c[Smart Snap] 🛑 Plan B: Clic repetido en la misma huella aniquilado.", "color: #FFA500; font-size: 10px; font-weight: bold;");
                     return true; // Bloqueo total del spam
                 }
             }
 
-            // Sincronización de Realidad vs Memoria
-            let trueCurrentHouse = TrackNavigator.getCurrentTrackStartTime(currentTime, false);
-            if (isRapidSequence && recentSnapMemory.length > 0) {
-                trueCurrentHouse = recentSnapMemory[recentSnapMemory.length - 1];
-            }
-
-            let clickedHouse = TrackNavigator.getCurrentTrackStartTime(rawTime, false);
             const nextHouseFromClick = TrackNavigator.findNextTimestamp(rawTime, false);
 
             // A. Gravedad de la Baldosa
@@ -1836,27 +1845,16 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // -----------------------------------------------------------------
-            // 🦶 3. REGLAS DIOS DE DIRECCIÓN (CERO REINICIOS)
+            // 🦶 3. REGLAS DIOS DE DIRECCIÓN (CERO REINICIOS RESTANTES)
             // -----------------------------------------------------------------
-            const isSameHouse = (t1, t2) => Math.abs(t1 - t2) < 1.0; // Tolerancia ampliada a 1 segundo completo
             const isHistorial = recentSnapMemory.some(t => isSameHouse(t, clickedHouse));
 
-            // REGLA ABSOLUTA: Si el pie aplasta la baldosa donde YA estamos...
-            if (isSameHouse(clickedHouse, trueCurrentHouse)) {
-                // NUNCA REINICIAMOS. Empujamos a la siguiente.
-                const forceNext = TrackNavigator.findNextTimestamp(trueCurrentHouse, false);
-
-                if (forceNext !== null) {
-                    clickedHouse = forceNext;
-                    console.log(`%c[Smart Snap] 🚀 Pie Gordo detectado -> Avance estricto a 1 baldosa: ${formatTime(clickedHouse)}`, "background: #FF4B2B; color: #fff; font-weight: bold; padding: 2px;");
-                } else {
-                    lastLandingTime = now;
-                    console.log("%c[Smart Snap] 🛑 Última baldosa. Reinicio bloqueado.", "color: #FFA500; font-size: 10px;");
-                    return true;
-                }
-            }
             // REGLA DE PROTECCIÓN AL HISTORIAL
-            else if (isHistorial && isRapidSequence) {
+            if (isHistorial && isRapidSequence) {
+                if (window.event) {
+                    window.event.preventDefault();
+                    window.event.stopPropagation();
+                }
                 lastLandingTime = now;
                 console.log(`%c[Smart Snap] 🛡️ Resbalón al historial bloqueado. Manteniendo posición.`, "color: #FFA500; font-weight: bold; font-size: 10px;");
                 return true;
@@ -1904,10 +1902,11 @@ document.addEventListener('DOMContentLoaded', () => {
             return true; // Éxito total. 'true' anula a WaveSurfer.
             // --- FIN CORRECCIÓN ---
         } catch (error) {
-            console.error(`[Drag v9] Error en seekTo:`, error);
+            console.error(`[Drag v10] Error en seekTo:`, error);
             return false;
         }
     };
+
 
     // --- Handlers Globales para Arrastre Táctil (Definidos Fuera) ---
     const handleWaveformTouchMove = (moveEvent) => {
