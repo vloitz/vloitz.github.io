@@ -1772,9 +1772,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (MOBILE_SMART_SNAP && isMobileAction && typeof TrackNavigator !== 'undefined' && TrackNavigator.isReady()) {
 
-           // 0. ASISTENTE DE EMPUJE (2 segundos):
-            // Ya no bloqueamos al usuario. Usamos los 2s para saber si está en una "secuencia rápida".
-            // Si el gordo intenta saltar rápido, esto nos ayudará a empujarlo hacia adelante.
+          // 0. VARIABLE DE TIEMPO (La clave del Arquitecto):
+            // Evaluamos si el usuario está en una secuencia rápida de toques (< 2 segundos)
             const now = performance.now();
             const isRapidSequence = (now - lastInteractionTimestamp < 2000);
 
@@ -1793,42 +1792,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // 2. REGLA ORO (Escudo Definitivo por Historial y Tiempo):
-            // La "Verdadera" casa actual es la última de nuestra memoria.
+            // 2. REGLA ORO (La Ecuación del Gordo en Baldosas Enanas):
             const trueCurrentHouse = recentSnapMemory.length > 0 ? recentSnapMemory[recentSnapMemory.length - 1] : currentlyPlayingStart;
 
-            // LÓGICA DE EMPUJE (Metáfora de las Baldosas):
-            const isHistorial = recentSnapMemory.includes(finalSnapTime); // Intentó volver a una casa visitada
-            const isMismoLugar = (finalSnapTime === trueCurrentHouse);    // Intentó saltar en su mismo lugar
-            const isGordoFails = (isRapidSequence && finalSnapTime <= trueCurrentHouse); // Tocó rápido pero su pie cayó atrás o en el mismo lugar
+            const isMismoLugar = (finalSnapTime === trueCurrentHouse);
+            const isHistorial = recentSnapMemory.includes(finalSnapTime);
 
-            if (isHistorial || isMismoLugar || isGordoFails) {
-                // EMPUJAMOS al gordo a la siguiente baldosa basada en su VERDADERA posición
+            // LA MAGIA:
+            // - Si toca el mismo lugar -> Empujamos (Es imposible querer reiniciar).
+            // - Si toca el historial RÁPIDO -> Empujamos (Es el dedo gordo fallando al intentar avanzar).
+            // - Si toca el historial LENTO -> NO empujamos (El usuario quiere retroceder conscientemente).
+            if (isMismoLugar || (isHistorial && isRapidSequence)) {
                 const forceNext = TrackNavigator.findNextTimestamp(trueCurrentHouse, false);
                 if (forceNext !== null) {
                     finalSnapTime = forceNext;
-                    console.log(`%c[Smart Snap] 🚀 Empuje Asistido (Gordo/Rápido) evito reinicio -> Avanzando a: ${formatTime(finalSnapTime)}`, "background: #FF4B2B; color: #fff; font-weight: bold; padding: 2px;");
+                    console.log(`%c[Smart Snap] 🚀 Asistencia Activa (Gordo/Rápido) -> Empujando a baldosa: ${formatTime(finalSnapTime)}`, "background: #FF4B2B; color: #fff; font-weight: bold; padding: 2px;");
                 }
             }
 
-            // 3. Guardamos la memoria (Últimas 3 casas reales en el vector)
+            // 3. Guardamos la memoria (Ampliamos el historial a 4 para proteger el charco de baldosas)
             if (finalSnapTime !== null) {
-                // Si la memoria está vacía, registramos la casa de donde venimos
                 if (recentSnapMemory.length === 0 && currentlyPlayingStart !== null && currentlyPlayingStart !== finalSnapTime) {
                     recentSnapMemory.push(currentlyPlayingStart);
                 }
 
-                // Agregamos la nueva casa a la que llegamos, solo si es diferente a la última
                 if (recentSnapMemory.length === 0 || recentSnapMemory[recentSnapMemory.length - 1] !== finalSnapTime) {
                     recentSnapMemory.push(finalSnapTime);
                 }
 
-                // Mantenemos historial estricto de 3 posiciones
-                while (recentSnapMemory.length > 3) {
+                while (recentSnapMemory.length > 4) {
                     recentSnapMemory.shift();
                 }
 
-                // Actualizamos el tiempo para mantener activo el Asistente de Empuje
+                // Actualizamos el reloj de la secuencia rápida
                 lastInteractionTimestamp = now;
             }
         }
