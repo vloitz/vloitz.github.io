@@ -1738,45 +1738,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // =================================================================
-    // 🛡️ SMART SNAP V10 DEFINITIVA: PLAN B + ASESINATO DE EVENTOS
+    // 🛡️ SMART SNAP V11 DEFINITIVA: PLAN B + EL CONTRAGOLPE
     // =================================================================
 
-    // 🧪 CONTROL DE VERSIÓN INMEDIATO (Fuera de la función para no bloquear el flujo)
-    alert("Vloitz 13.0 - PLAN B (Vector Absoluto + Asesinato) Cargado Correctamente");
+    // 🧪 CONTROL DE VERSIÓN (Sin bloqueos)
+    alert("Vloitz 42.0 - PLAN B (Contragolpe Suave) Cargado");
 
     let recentSnapMemory = [];
-    let recentRawClicks = []; // 🎯 PLAN B: Vector de clics exactos (Huellas del francotirador)
-    let lastLandingTime = 0; // Cronómetro para medir la rapidez de los pisotones
+    let recentRawClicks = []; // 🎯 PLAN B: Vector de huellas del francotirador
+    let lastLandingTime = 0;
 
     // --- Función SeekWaveform (Requerida por Drag Logic) ---
     const seekWaveform = (clientX, rect, eventType) => {
-        console.log(`[Drag v10 Nivel Dios] seekWaveform llamado desde: ${eventType}`);
         if (!wavesurfer) return false;
 
         const MOBILE_SMART_SNAP = true;
         const isMobile = globalPerformanceTier !== 'ALTA/PC';
         const now = performance.now();
 
+        // Función auxiliar: El Contragolpe (Ancla el reproductor a su posición actual)
+        const forceStay = () => {
+            const currentProgress = wavesurfer.getCurrentTime() / wavesurfer.getDuration();
+            wavesurfer.seekTo(currentProgress);
+        };
+
         // -----------------------------------------------------------------
-        // 🛑 1. ELIMINACIÓN TOTAL Y ASESINATO DE EVENTOS (V10)
+        // 🥋 1. FILTRADO SUAVE (Sin matar el navegador)
         // -----------------------------------------------------------------
         if (MOBILE_SMART_SNAP && isMobile) {
-            // Si no es el aterrizaje puro, matamos el evento para que WaveSurfer no lo vea
             if (eventType !== 'touchstart') {
-                if (window.event) {
-                    window.event.preventDefault();
-                    window.event.stopPropagation();
-                }
-                return true;
+                // Si es un despegue (touchend) muy rápido, lanzamos el ancla para que el nativo no nos reinicie
+                if (now - lastLandingTime < 350) forceStay();
+                return false;
             }
-
-            // Escudo anti-metralleta: Si aterriza muy rápido, matamos el evento
             if (now - lastLandingTime < 350) {
-                if (window.event) {
-                    window.event.preventDefault();
-                    window.event.stopPropagation();
-                }
-                return true;
+                // Spam de ametralladora detectado. Lanzamos el ancla.
+                forceStay();
+                return false;
             }
         }
 
@@ -1794,7 +1792,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (MOBILE_SMART_SNAP && isMobile && typeof TrackNavigator !== 'undefined' && TrackNavigator.isReady()) {
 
             const currentTime = wavesurfer.getCurrentTime();
-            const isRapidSequence = (now - lastLandingTime < 2500); // 2.5s de ventana de frustración
+            const isRapidSequence = (now - lastLandingTime < 2500);
 
             let clickedHouse = TrackNavigator.getCurrentTrackStartTime(rawTime, false);
 
@@ -1804,40 +1802,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 trueCurrentHouse = recentSnapMemory[recentSnapMemory.length - 1];
             }
 
-            // Función de Tolerancia
             const isSameHouse = (t1, t2) => Math.abs(t1 - t2) < 1.0;
 
             // 🎯 PLAN B (LA DEFENSA ABSOLUTA DE HUELLAS):
             const isHardwareSpam = isRapidSequence && recentRawClicks.some(pastClick => Math.abs(pastClick - rawTime) < 4.0);
 
-            if (isHardwareSpam || isSameHouse(clickedHouse, trueCurrentHouse)) {
-                // ASESINATO: Matamos el evento antes de que WaveSurfer pueda enterarse.
-                if (window.event) {
-                    window.event.preventDefault();
-                    window.event.stopPropagation();
-                }
-
-                // Si es el mismo lugar, empujamos; si es spam, bloqueamos.
-                if (isSameHouse(clickedHouse, trueCurrentHouse)) {
-                    const forceNext = TrackNavigator.findNextTimestamp(trueCurrentHouse, false);
-                    if (forceNext !== null) {
-                        clickedHouse = forceNext; // Permitimos que el flujo siga para adelantar
-                        console.log(`%c[Smart Snap] 🚀 Pie Gordo detectado -> Avance estricto a 1 baldosa: ${formatTime(clickedHouse)}`, "background: #FF4B2B; color: #fff; font-weight: bold; padding: 2px;");
-                    } else {
-                        lastLandingTime = now;
-                        console.log("%c[Smart Snap] 🛑 Última baldosa. Reinicio bloqueado.", "color: #FFA500; font-size: 10px;");
-                        return true;
-                    }
-                } else {
-                    lastLandingTime = now;
-                    console.log("%c[Smart Snap] 🛑 Plan B: Clic repetido en la misma huella aniquilado.", "color: #FFA500; font-size: 10px; font-weight: bold;");
-                    return true; // Bloqueo total del spam
-                }
+            if (isHardwareSpam) {
+                // 🥋 CONTRAGOLPE: Es spam en la misma huella. Lo anclamos.
+                console.log("%c[Smart Snap] 🛑 Spam del Plan B. Lanzando Ancla.", "color: #FFA500; font-size: 10px; font-weight: bold;");
+                lastLandingTime = now;
+                forceStay();
+                return false;
             }
 
-            const nextHouseFromClick = TrackNavigator.findNextTimestamp(rawTime, false);
-
             // A. Gravedad de la Baldosa
+            const nextHouseFromClick = TrackNavigator.findNextTimestamp(rawTime, false);
             if (clickedHouse !== null && nextHouseFromClick !== null) {
                 if (Math.abs(rawTime - nextHouseFromClick) < Math.abs(rawTime - clickedHouse)) {
                     clickedHouse = nextHouseFromClick;
@@ -1845,26 +1824,36 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // -----------------------------------------------------------------
-            // 🦶 3. REGLAS DIOS DE DIRECCIÓN (CERO REINICIOS RESTANTES)
+            // 🦶 3. REGLAS DIOS DE DIRECCIÓN (CERO REINICIOS)
             // -----------------------------------------------------------------
-            const isHistorial = recentSnapMemory.some(t => isSameHouse(t, clickedHouse));
-
-            // REGLA DE PROTECCIÓN AL HISTORIAL
-            if (isHistorial && isRapidSequence) {
-                if (window.event) {
-                    window.event.preventDefault();
-                    window.event.stopPropagation();
+            if (isSameHouse(clickedHouse, trueCurrentHouse)) {
+                // Si toca la misma casa, lo empujamos a la siguiente.
+                const forceNext = TrackNavigator.findNextTimestamp(trueCurrentHouse, false);
+                if (forceNext !== null) {
+                    clickedHouse = forceNext;
+                    console.log(`%c[Smart Snap] 🚀 Pie Gordo -> Avance estricto a: ${formatTime(clickedHouse)}`, "background: #FF4B2B; color: #fff; font-weight: bold; padding: 2px;");
+                } else {
+                    // 🥋 CONTRAGOLPE: Última baldosa. Lo anclamos.
+                    lastLandingTime = now;
+                    console.log("%c[Smart Snap] 🛑 Última baldosa. Lanzando Ancla.", "color: #FFA500; font-size: 10px;");
+                    forceStay();
+                    return false;
                 }
+            }
+
+            const isHistorial = recentSnapMemory.some(t => isSameHouse(t, clickedHouse));
+            if (isHistorial && isRapidSequence) {
+                // 🥋 CONTRAGOLPE: Resbalón al pasado. Lo anclamos.
                 lastLandingTime = now;
-                console.log(`%c[Smart Snap] 🛡️ Resbalón al historial bloqueado. Manteniendo posición.`, "color: #FFA500; font-weight: bold; font-size: 10px;");
-                return true;
+                console.log(`%c[Smart Snap] 🛡️ Resbalón al historial. Lanzando Ancla.`, "color: #FFA500; font-weight: bold; font-size: 10px;");
+                forceStay();
+                return false;
             }
 
             // -----------------------------------------------------------------
             // 💾 4. ACTUALIZAR VECTORES Y EJECUTAR
             // -----------------------------------------------------------------
             if (clickedHouse !== null) {
-                // Actualizamos Vector de Casas
                 if (recentSnapMemory.length === 0 && trueCurrentHouse !== null) {
                     recentSnapMemory.push(trueCurrentHouse);
                 }
@@ -1873,16 +1862,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 while (recentSnapMemory.length > 4) recentSnapMemory.shift();
 
-                // 🎯 Actualizamos Vector del Plan B (Huellas del Francotirador)
+                // 🎯 Actualizamos Vector del Plan B (Huellas)
                 recentRawClicks.push(rawTime);
                 while (recentRawClicks.length > 5) recentRawClicks.shift();
 
-                lastLandingTime = now; // Reiniciamos el reloj
-
+                lastLandingTime = now;
                 rawTime = clickedHouse;
                 progress = rawTime / wavesurfer.getDuration();
                 didSmartSnap = true;
-                console.log(`%c[Smart Snap] 🎯 Aterrizaje Confirmado: ${formatTime(rawTime)} | Casas: [${recentSnapMemory.map(t=>formatTime(t)).join(', ')}]`, "background: #1DB954; color: #000; font-weight: bold; padding: 2px;");
+                console.log(`%c[Smart Snap] 🎯 Aterrizaje Confirmado: ${formatTime(rawTime)}`, "background: #1DB954; color: #000; font-weight: bold; padding: 2px;");
             }
         }
 
@@ -1893,20 +1881,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            // --- INICIO CORRECCIÓN ---
             wavesurfer.seekTo(progress);
             const duration = wavesurfer.getDuration();
             if (duration > 0 && currentTimeEl) {
                 currentTimeEl.textContent = formatTime(progress * duration);
             }
-            return true; // Éxito total. 'true' anula a WaveSurfer.
-            // --- FIN CORRECCIÓN ---
+            return true;
         } catch (error) {
-            console.error(`[Drag v10] Error en seekTo:`, error);
+            console.error(`[Drag v11] Error en seekTo:`, error);
             return false;
         }
     };
-
 
     // --- Handlers Globales para Arrastre Táctil (Definidos Fuera) ---
     const handleWaveformTouchMove = (moveEvent) => {
