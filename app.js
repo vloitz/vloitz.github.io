@@ -1737,103 +1737,125 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-// =================================================================
-    // 🧠 SMART SNAP V7: ARQUITECTURA "ATERRIZAJE Y BALDOSAS" (DESDE CERO)
-    // =================================================================
-    let lastLandingTime = 0;     // Cronómetro de frustración del usuario
+// Memoria histórica de posiciones (Metáfora de Juan y María)
+    let recentSnapMemory = [];
+    let lastInteractionTimestamp = 0; // Para bloquear rebotes y clics frenéticos
 
     // --- Función SeekWaveform (Requerida por Drag Logic) ---
     const seekWaveform = (clientX, rect, eventType) => {
+        console.log(`[Drag v8 Nivel Dios] seekWaveform llamado desde: ${eventType}`);
         if (!wavesurfer) return false;
 
+        const MOBILE_SMART_SNAP = true;
         const isMobile = globalPerformanceTier !== 'ALTA/PC';
 
-        // -----------------------------------------------------------
-        // 🛑 1. ELIMINACIÓN DEL DESPEGUE Y REBOTE FÍSICO
-        // En dispositivos táctiles, el único evento puro y real es cuando el dedo ATERRIZA.
-        // Todo lo demás (levantar el dedo, el clic del sistema) causa el rebote fantasma. Lo aniquilamos.
-        if (isMobile) {
+        // -----------------------------------------------------------------
+        // 🛑 ANULACIÓN DE EVENTOS FANTASMAS (LA ÚLTIMA CARTA)
+        // Solo aceptamos el 'touchstart' (Aterrizaje puro).
+        // Matamos el despegue, el resbalón y el clic fantasma devolviendo 'true'
+        // para que WaveSurfer NO tome el control y reinicie la pista por su cuenta.
+        // -----------------------------------------------------------------
+        if (MOBILE_SMART_SNAP && isMobile) {
             if (eventType !== 'touchstart') {
-                console.log(`[Smart Snap v7] 🛡️ Despegue/Rebote aniquilado: ${eventType}`);
-                return true; // 'true' detiene al reproductor de hacer reinicios nativos
+                console.log(`%c[Smart Snap] 🛡️ Evento ${eventType} destruido. Previniendo rebote de despegue.`, "color: #FF00FF; font-size: 9px;");
+                return true;
             }
-        } else {
-            // En PC, matamos eventos de arrastre sueltos si no es un click o mousedown
-            if (eventType === 'mousemove' || eventType === 'mouseup') return true;
         }
 
-        // -----------------------------------------------------------
-        // 📐 2. LECTURA DE LA BALDOSA FÍSICA
         const wsWrapper = wavesurfer.getWrapper();
         const wsRect = wsWrapper.getBoundingClientRect();
         const x = Math.max(0, clientX - wsRect.left);
         let progress = Math.max(0, Math.min(1, x / wsRect.width));
         let rawTime = progress * wavesurfer.getDuration();
 
-        // Fallback si el sistema de pistas no está listo
-        if (typeof TrackNavigator === 'undefined' || !TrackNavigator.isReady()) {
-            wavesurfer.seekTo(progress);
-            return true;
-        }
+        let didSmartSnap = false;
 
-        // -----------------------------------------------------------
-        // 🧠 3. LÓGICA DE LA METÁFORA DEL GORDO
-        const now = performance.now();
-        const currentTile = TrackNavigator.getCurrentTrackStartTime(wavesurfer.getCurrentTime(), false);
-        let targetTile = TrackNavigator.getCurrentTrackStartTime(rawTime, false);
-        const nextTileFromClick = TrackNavigator.findNextTimestamp(rawTime, false);
+        if (MOBILE_SMART_SNAP && isMobile && typeof TrackNavigator !== 'undefined' && TrackNavigator.isReady()) {
 
-        // A. Gravedad Magnética: Si el dedo cae entre dos baldosas, lo imantamos a la más cercana
-        if (targetTile !== null && nextTileFromClick !== null) {
-            if (Math.abs(rawTime - nextTileFromClick) < Math.abs(rawTime - targetTile)) {
-                targetTile = nextTileFromClick;
-            }
-        }
+            // 0. CONFIGURACIÓN NIVEL DIOS
+            const RAPID_SEQUENCE_MS = 2500; // 2.5 segundos para considerar que es un clic repetido/frenético
+            const now = performance.now();
+            const isRapidSequence = (now - lastInteractionTimestamp < RAPID_SEQUENCE_MS);
 
-        // B. EL ESCUDO ESTRICTO (Cero Reinicios)
-        // isRapidTap: ¿El usuario está presionando rápido por desesperación/error? (< 2.5s)
-        const isRapidTap = (now - lastLandingTime < 2500);
+            let finalSnapTime = TrackNavigator.getCurrentTrackStartTime(rawTime, false);
+            const currentlyPlayingStart = TrackNavigator.getCurrentTrackStartTime(wavesurfer.getCurrentTime(), false);
+            const nextTrackStart = TrackNavigator.findNextTimestamp(rawTime, false);
 
-        // Si el usuario presiona la baldosa que YA ESTÁ SONANDO...
-        // O si está en secuencia rápida y su dedo resbaló hacia una baldosa ANTERIOR...
-        if (targetTile === currentTile || (targetTile <= currentTile && isRapidTap)) {
-            const forceNext = TrackNavigator.findNextTimestamp(currentTile, false);
-
-            if (forceNext !== null) {
-                targetTile = forceNext;
-                console.log(`[Smart Snap v7] 🚀 Empuje Activo -> Saltando a siguiente baldosa: ${formatTime(targetTile)}`);
-            } else {
-                console.log("[Smart Snap v7] 🛑 Última baldosa. Reinicio bloqueado absoluto.");
-                lastLandingTime = now; // Renovamos el bloqueo
-                return true; // Abortamos la acción
-            }
-        }
-
-        // -----------------------------------------------------------
-        // 💾 4. GUARDAR MEMORIA Y EJECUTAR
-        lastLandingTime = now;
-
-        // Si falló el Smart Snap, entra el FuzzyTime (Inyección antigua)
-        if (targetTile === null && wavesurfer.getDuration() > 0 && typeof PrecacheController !== 'undefined' && PrecacheController.getFuzzyTime) {
-            targetTile = PrecacheController.getFuzzyTime(rawTime);
-        }
-
-        if (targetTile !== null) {
-            const finalProgress = targetTile / wavesurfer.getDuration();
-            try {
-                wavesurfer.seekTo(finalProgress);
-                if (currentTimeEl && wavesurfer.getDuration() > 0) {
-                    currentTimeEl.textContent = formatTime(targetTile);
+            // 1. Gravedad centrada PRIMERO
+            if (finalSnapTime !== null && nextTrackStart !== null) {
+                if (Math.abs(rawTime - nextTrackStart) < Math.abs(rawTime - finalSnapTime)) {
+                    finalSnapTime = nextTrackStart;
                 }
-                console.log(`[Smart Snap v7] 🎯 Aterrizaje Exitoso: ${formatTime(targetTile)}`);
-                return true;
-            } catch (error) {
-                console.error(`[Smart Snap v7] Error fatal en seekTo:`, error);
-                return false;
+            }
+
+            // 2. REGLA ORO ESTRICTA: LA VERDAD ABSOLUTA
+            // Usamos tu arreglo recentSnapMemory porque WaveSurfer tiene lag y miente.
+            const trueCurrentHouse = recentSnapMemory.length > 0 ? recentSnapMemory[recentSnapMemory.length - 1] : currentlyPlayingStart;
+
+            // FIX: Tolerancia de microsegundos para evitar que un decimal cause un falso reinicio
+            const isSameHouse = (t1, t2) => Math.abs(t1 - t2) < 0.5;
+            const isHistorial = recentSnapMemory.some(t => isSameHouse(t, finalSnapTime));
+
+            // 🚀 CONDICIÓN NIVEL DIOS:
+            // Si toca EXACTAMENTE EL MISMO LUGAR, o si toca el historial muy rápido...
+            if (isSameHouse(finalSnapTime, trueCurrentHouse) || (isHistorial && isRapidSequence)) {
+
+                // NUNCA SE REINICIA. Empujamos hacia adelante usando la VERDADERA casa.
+                const forceNext = TrackNavigator.findNextTimestamp(trueCurrentHouse, false);
+
+                if (forceNext !== null) {
+                    finalSnapTime = forceNext;
+                    console.log(`%c[Smart Snap] 🚀 Avance Forzado -> Reinicio prohibido, saltando a: ${formatTime(finalSnapTime)}`, "background: #FF4B2B; color: #fff; font-weight: bold; padding: 2px;");
+                } else {
+                    // Si no hay más canciones adelante, DESTRUIMOS el clic devolviendo 'true'.
+                    lastInteractionTimestamp = now;
+                    console.log("%c[Smart Snap] 🛑 Última pista. Reinicio bloqueado nivel Dios.", "color: #FFA500; font-size: 10px;");
+                    return true;
+                }
+            }
+
+            // 3. Guardamos la memoria
+            if (finalSnapTime !== null) {
+                if (recentSnapMemory.length === 0 && currentlyPlayingStart !== null) {
+                    recentSnapMemory.push(currentlyPlayingStart);
+                }
+                if (recentSnapMemory.length === 0 || !isSameHouse(recentSnapMemory[recentSnapMemory.length - 1], finalSnapTime)) {
+                    recentSnapMemory.push(finalSnapTime);
+                }
+                while (recentSnapMemory.length > 4) {
+                    recentSnapMemory.shift();
+                }
+                lastInteractionTimestamp = now; // Renovamos tu variable de tiempo de reproducción
+            }
+
+            // 4. APLICAMOS EL SNAP
+            if (finalSnapTime !== null) {
+                rawTime = finalSnapTime;
+                progress = rawTime / wavesurfer.getDuration();
+                didSmartSnap = true;
+                console.log(`%c[Smart Snap] 🎯 Éxito: ${formatTime(rawTime)} | Memoria: [${recentSnapMemory.map(t=>formatTime(t)).join(', ')}]`, "background: #1DB954; color: #000; font-weight: bold; padding: 2px;");
             }
         }
 
-        return false;
+        // --- INYECCIÓN SNAP MAGNÉTICO (Solo actúa si NO hubo Smart Snap) ---
+        if (!didSmartSnap && wavesurfer.getDuration() > 0 && typeof PrecacheController !== 'undefined' && PrecacheController.getFuzzyTime) {
+            const correctedTime = PrecacheController.getFuzzyTime(rawTime);
+            progress = Math.max(0, Math.min(1, correctedTime / wavesurfer.getDuration()));
+        }
+
+        try {
+            // --- INICIO CORRECCIÓN ---
+            wavesurfer.seekTo(progress);
+            const duration = wavesurfer.getDuration();
+            if (duration > 0 && currentTimeEl) {
+                currentTimeEl.textContent = formatTime(progress * duration);
+            }
+            return true;
+            // --- FIN CORRECCIÓN ---
+        } catch (error) {
+            console.error(`[Drag] Error en seekTo:`, error);
+            return false;
+        }
     };
 
     // --- Handlers Globales para Arrastre Táctil (Definidos Fuera) ---
