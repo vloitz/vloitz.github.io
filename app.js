@@ -1737,9 +1737,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    // Memoria de interacción para evitar clics repetidos en la misma zona (v5.2)
-    let lastSnapTargetTime = -1;
-    let lastInteractionTimestamp = 0; // Para bloquear rebotes de milisegundos (v5.5)
+// Memoria histórica de zonas recientes (v5.8 - Propuesta de 2 posiciones)
+    let recentSnapMemory = [];
+    let lastInteractionTimestamp = 0; // Para bloquear rebotes de milisegundos
 
     // --- Función SeekWaveform (Requerida por Drag Logic) ---
     const seekWaveform = (clientX, rect, eventType) => {
@@ -1752,12 +1752,20 @@ document.addEventListener('DOMContentLoaded', () => {
         let progress = Math.max(0, Math.min(1, x / wsRect.width));
         let rawTime = progress * wavesurfer.getDuration();
 
+        // --- BLOQUEO DE REBOTE SINTÉTICO Y FANTASMA (v5.8) ---
+        const nowInteraction = performance.now();
+        if (nowInteraction - lastInteractionTimestamp < 350) {
+            console.log("%c[Smart Snap UX] 🛡️ Rebote bloqueado por latencia del móvil", "color: #777; font-size: 8px;");
+            return false;
+        }
+        lastInteractionTimestamp = nowInteraction;
+
         // =================================================================
-        // 🧲 MOBILE SMART SNAP (v5.6 - Dictadura Absoluta)
+        // 🧲 MOBILE SMART SNAP (v5.8 - Dictadura Absoluta + Memoria Histórica)
         // =================================================================
         const MOBILE_SMART_SNAP = true;
         const isMobileAction = eventType.includes('touch') || (eventType === 'click' && globalPerformanceTier !== 'ALTA/PC');
-        let didSmartSnap = false; // Control para evitar conflicto con FuzzyHoming
+        let didSmartSnap = false;
 
         if (MOBILE_SMART_SNAP && isMobileAction && typeof TrackNavigator !== 'undefined' && TrackNavigator.isReady()) {
             const clickedTrackStart = TrackNavigator.getCurrentTrackStartTime(rawTime, false);
@@ -1775,26 +1783,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // 2. REGLA ORO (Escudo Absoluto): Prohibido caer en la zona actual o la última zona clickeada
-            if (finalSnapTime === currentlyPlayingStart || finalSnapTime === lastSnapTargetTime) {
-                // Buscamos la pista que le sigue a la que está sonando AHORA mismo
+            // 2. REGLA ORO (Escudo de Memoria Histórica v5.8)
+            // Prohibido caer en la zona actual O en las últimas 2 zonas registradas
+            if (finalSnapTime === currentlyPlayingStart || recentSnapMemory.includes(finalSnapTime)) {
                 const forceNext = TrackNavigator.findNextTimestamp(currentlyPlayingStart, false);
                 if (forceNext !== null) {
                     finalSnapTime = forceNext;
-                    console.log(`%c[Smart Snap] 🚫 Reinicio Evitado -> Gravedad corregida al siguiente track: ${formatTime(finalSnapTime)}`, "background: #FF4B2B; color: #fff; font-weight: bold; padding: 2px;");
+                    console.log(`%c[Smart Snap UX] 🚫 Zona Restringida -> Empuje al siguiente track: ${formatTime(finalSnapTime)}`, "background: #FF4B2B; color: #fff; font-weight: bold; padding: 2px;");
                 }
             }
 
-            // 3. Guardamos la memoria para el próximo clic (Seguridad Antianidamiento)
-            if (typeof lastSnapTargetTime !== 'undefined') {
-                lastSnapTargetTime = finalSnapTime;
+            // 3. Guardar en la memoria histórica (Máximo 2 posiciones)
+            if (finalSnapTime !== null && !recentSnapMemory.includes(finalSnapTime)) {
+                recentSnapMemory.push(finalSnapTime);
+                if (recentSnapMemory.length > 2) {
+                    recentSnapMemory.shift(); // Mantiene solo los últimos 2
+                }
             }
 
+            // 4. Aplicar el Snap al progreso
             if (finalSnapTime !== null) {
                 rawTime = finalSnapTime;
                 progress = rawTime / wavesurfer.getDuration();
                 didSmartSnap = true;
-                console.log(`%c[Smart Snap] 🎯 Éxito (${eventType}): ${formatTime(rawTime)}`, "background: #1DB954; color: #000; font-weight: bold;");
+                console.log(`%c[Smart Snap UX] 🎯 Éxito (${eventType}): ${formatTime(rawTime)} | Memoria: [${recentSnapMemory.map(t=>formatTime(t)).join(', ')}]`, "background: #1DB954; color: #000; font-weight: bold; padding: 2px;");
             }
         }
 
