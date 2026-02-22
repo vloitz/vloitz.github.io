@@ -1802,7 +1802,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (finalSnapTime !== null) {
                 rawTime = finalSnapTime;
                 progress = rawTime / wavesurfer.getDuration();
-                console.log(`%c[Smart Snap UX] 🎯 Snap Final: ${formatTime(rawTime)}`, "background: #1DB954; color: #000; font-weight: bold; padding: 2px;");
+                console.log(`%c[Smart Snap UX] 🎯 Snap Final (${eventType}): ${formatTime(rawTime)}`, "background: #1DB954; color: #000; font-weight: bold; padding: 2px;");
             }
 
         }
