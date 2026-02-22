@@ -1752,10 +1752,18 @@ document.addEventListener('DOMContentLoaded', () => {
         let progress = Math.max(0, Math.min(1, x / wsRect.width));
         let rawTime = progress * wavesurfer.getDuration();
 
-        // --- BLOQUEO DE REBOTE SINTÉTICO Y FANTASMA (v5.8) ---
+// --- BLOQUEO DEFINITIVO DE CLIC SINTÉTICO Y REBOTE (v5.9) ---
+        // Tu deducción fue correcta: Evitamos el "adelantar de más" aniquilando el clic falso del navegador al soltar el dedo.
+        // El móvil SOLO debe obedecer a "touchstart" y "touchmove".
+        if (eventType === 'click' && globalPerformanceTier !== 'ALTA/PC') {
+            console.log("%c[Smart Snap UX] 🛡️ Clic sintético móvil destruido. Previniendo rebote y doble salto.", "color: #FF00FF; font-weight: bold; font-size: 9px;");
+            return false;
+        }
+
         const nowInteraction = performance.now();
+        // Mantenemos 350ms SOLO para evitar que el usuario haga doble-tap (touchstart) accidental muy rápido
         if (nowInteraction - lastInteractionTimestamp < 350) {
-            console.log("%c[Smart Snap UX] 🛡️ Rebote bloqueado por latencia del móvil", "color: #777; font-size: 8px;");
+            console.log("%c[Smart Snap UX] 🛡️ Doble toque rápido bloqueado.", "color: #777; font-size: 8px;");
             return false;
         }
         lastInteractionTimestamp = nowInteraction;
