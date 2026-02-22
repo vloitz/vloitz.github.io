@@ -1795,28 +1795,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // 2. REGLA ORO (Escudo Definitivo Anti-Dedo Gordo):
-            // Prohibido caer en la zona actual o en CUALQUIERA de las casas que visitamos recientemente.
-            if (finalSnapTime === currentlyPlayingStart || recentSnapMemory.includes(finalSnapTime)) {
-                const forceNext = TrackNavigator.findNextTimestamp(currentlyPlayingStart, false);
+           // 2. REGLA ORO (Escudo Definitivo por Historial):
+            // La "Verdadera" casa actual es la última de nuestra memoria. (Ignoramos el motor porque miente por el retraso)
+            const trueCurrentHouse = recentSnapMemory.length > 0 ? recentSnapMemory[recentSnapMemory.length - 1] : currentlyPlayingStart;
+
+            // Si intenta volver a la casa de Kevin (historial) o repetir la de Juan (actual)
+            if (finalSnapTime === trueCurrentHouse || recentSnapMemory.includes(finalSnapTime)) {
+                // Avanzamos basándonos en la VERDADERA casa actual, no en la del motor
+                const forceNext = TrackNavigator.findNextTimestamp(trueCurrentHouse, false);
                 if (forceNext !== null) {
                     finalSnapTime = forceNext;
-                    console.log(`%c[Smart Snap] 🚫 Regreso evitado -> Avanzando a: ${formatTime(finalSnapTime)}`, "background: #FF4B2B; color: #fff; font-weight: bold; padding: 2px;");
+                    console.log(`%c[Smart Snap] 🚫 Retorno a casa antigua evitado -> Avanzando a: ${formatTime(finalSnapTime)}`, "background: #FF4B2B; color: #fff; font-weight: bold; padding: 2px;");
                 }
             }
 
-            // 3. Guardamos la memoria (La casa de Juan y María)
+            // 3. Guardamos la memoria (Últimas 3 casas, como solicitaste)
             if (finalSnapTime !== null) {
-                // A. Guardamos la casa que estamos abandonando (Juan)
-                if (currentlyPlayingStart !== null && !recentSnapMemory.includes(currentlyPlayingStart)) {
+                // Si la memoria está vacía, registramos la casa de donde venimos
+                if (recentSnapMemory.length === 0 && currentlyPlayingStart !== null && currentlyPlayingStart !== finalSnapTime) {
                     recentSnapMemory.push(currentlyPlayingStart);
                 }
-                // B. Guardamos la nueva casa a la que llegamos (María)
-                if (!recentSnapMemory.includes(finalSnapTime)) {
+
+                // Agregamos la nueva casa a la que llegamos, solo si es diferente a la última
+                if (recentSnapMemory.length === 0 || recentSnapMemory[recentSnapMemory.length - 1] !== finalSnapTime) {
                     recentSnapMemory.push(finalSnapTime);
                 }
-                // Mantenemos historial de 4 posiciones para no bloquear permanentemente todo el set
-                while (recentSnapMemory.length > 4) {
+
+                // Mantenemos historial estricto de 3 posiciones
+                while (recentSnapMemory.length > 3) {
                     recentSnapMemory.shift();
                 }
                 lastInteractionTimestamp = now;
