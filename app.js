@@ -1772,10 +1772,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (MOBILE_SMART_SNAP && isMobileAction && typeof TrackNavigator !== 'undefined' && TrackNavigator.isReady()) {
 
-          // 0. VARIABLE DE TIEMPO (La clave del Arquitecto):
-            // Evaluamos si el usuario está en una secuencia rápida de toques (< 2 segundos)
+         // 0. CONFIGURACIÓN AJUSTABLE (El Factor de Intención):
+            const STRICT_FORWARD_INTENT = true; // Forzar siempre hacia adelante en caso de duda (Sin Piedad)
+            const RAPID_SEQUENCE_MS = 2000;     // Milisegundos para detectar la desesperación del "dedo gordo"
+
+            // Evaluamos si el usuario está en una secuencia rápida de toques
             const now = performance.now();
-            const isRapidSequence = (now - lastInteractionTimestamp < 2000);
+            const isRapidSequence = (now - lastInteractionTimestamp < RAPID_SEQUENCE_MS);
 
             const clickedTrackStart = TrackNavigator.getCurrentTrackStartTime(rawTime, false);
             const currentlyPlayingStart = TrackNavigator.getCurrentTrackStartTime(wavesurfer.getCurrentTime(), false);
@@ -1792,21 +1795,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // 2. REGLA ORO (La Ecuación del Gordo en Baldosas Enanas):
+            // 2. REGLA ORO (La Ecuación del Gordo con Factor Ajustable):
             const trueCurrentHouse = recentSnapMemory.length > 0 ? recentSnapMemory[recentSnapMemory.length - 1] : currentlyPlayingStart;
 
             const isMismoLugar = (finalSnapTime === trueCurrentHouse);
             const isHistorial = recentSnapMemory.includes(finalSnapTime);
 
-            // LA MAGIA:
-            // - Si toca el mismo lugar -> Empujamos (Es imposible querer reiniciar).
-            // - Si toca el historial RÁPIDO -> Empujamos (Es el dedo gordo fallando al intentar avanzar).
-            // - Si toca el historial LENTO -> NO empujamos (El usuario quiere retroceder conscientemente).
-            if (isMismoLugar || (isHistorial && isRapidSequence)) {
-                const forceNext = TrackNavigator.findNextTimestamp(trueCurrentHouse, false);
-                if (forceNext !== null) {
-                    finalSnapTime = forceNext;
-                    console.log(`%c[Smart Snap] 🚀 Asistencia Activa (Gordo/Rápido) -> Empujando a baldosa: ${formatTime(finalSnapTime)}`, "background: #FF4B2B; color: #fff; font-weight: bold; padding: 2px;");
+            // LA MAGIA: Aplicamos la orden "Sin Piedad" si la variable está activa
+            if (STRICT_FORWARD_INTENT) {
+                // - Si toca el mismo lugar -> Empujamos (Es imposible querer reiniciar).
+                // - Si toca el historial dentro del margen (RAPID_SEQUENCE_MS) -> Empujamos.
+                if (isMismoLugar || (isHistorial && isRapidSequence)) {
+                    const forceNext = TrackNavigator.findNextTimestamp(trueCurrentHouse, false);
+                    if (forceNext !== null) {
+                        finalSnapTime = forceNext;
+                        console.log(`%c[Smart Snap] 🚀 Asistencia Estricta Activa -> Forzando avance a: ${formatTime(finalSnapTime)}`, "background: #FF4B2B; color: #fff; font-weight: bold; padding: 2px;");
+                    }
                 }
             }
 
@@ -1827,8 +1831,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Actualizamos el reloj de la secuencia rápida
                 lastInteractionTimestamp = now;
             }
-        }
 
+            // 4. APLICAMOS EL SNAP (Este es el paso vital que se te había borrado)
+            if (finalSnapTime !== null) {
+                rawTime = finalSnapTime;
+                progress = rawTime / wavesurfer.getDuration();
+                didSmartSnap = true;
+                console.log(`%c[Smart Snap] 🎯 Éxito (${eventType}): ${formatTime(rawTime)} | Memoria: [${recentSnapMemory.map(t=>formatTime(t)).join(', ')}]`, "background: #1DB954; color: #000; font-weight: bold; padding: 2px;");
+            }
+        }
         // --- INYECCIÓN SNAP MAGNÉTICO (Solo actúa si NO hubo Smart Snap) ---
         if (!didSmartSnap && wavesurfer.getDuration() > 0 && typeof PrecacheController !== 'undefined' && PrecacheController.getFuzzyTime) {
             const correctedTime = PrecacheController.getFuzzyTime(rawTime);
