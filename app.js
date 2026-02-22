@@ -1036,16 +1036,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (DEBUG_MODE) console.log(`%c[Quantum Engine] 🧠 REPOSO DETECTADO (Tiempo: ${predictedTime.toFixed(2)}s)`, "background: #00F3FF; color: #000; font-weight: bold; padding: 2px 4px; border-radius: 3px;");
                     preloadSegment(predictedTime);
 
-                    // --- SEGURIDAD VLOITZ: Watchdog de Reposo Activo ---
-                    // Si el usuario sigue quieto, lanzamos un segundo pulso de alta prioridad a los 80ms
-                    // solo para el fragmento central, asegurando que gane la carrera a la red de Lima.
+                    // --- SEGURIDAD VLOITZ: Pulso Elástico Adaptativo ---
+                    // Calculamos el retraso óptimo según la salud de la red actual
+                    const networkLatency = (typeof NetworkSense !== 'undefined') ? NetworkSense.getLatency() : 80;
+                    const adaptiveDelay = (globalPerformanceTier === 'ALTA/PC') ? 80 : Math.max(30, networkLatency * 0.5);
+
                     setTimeout(() => {
                         const actualHlsTime = (currentLoadedSet.server === "HF") ? 60 : 2;
                         const currentTarget = Math.floor(predictedTime / actualHlsTime);
+
+                        // Solo disparamos el pulso de alta prioridad si el fragmento no ha llegado
                         if (isAbsoluteRest && !confirmedSegments.has(currentTarget)) {
                             fetchSegmentData(currentTarget, false, true);
                         }
-                    }, 80);
+                    }, adaptiveDelay);
 
                 }
             }
@@ -1107,6 +1111,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         return {
             measureNetwork,
+            getLatency: () => currentLatency, // <-- EXPOMEMOS LA LATENCIA
             getConcurrency: () => optimalConcurrency
         };
     })();
