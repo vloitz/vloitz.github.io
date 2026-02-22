@@ -1806,7 +1806,7 @@ document.addEventListener('DOMContentLoaded', () => {
           // 2. REGLA ORO ESTRICTA (Cero Reinicios Absolutos):
             const trueCurrentHouse = recentSnapMemory.length > 0 ? recentSnapMemory[recentSnapMemory.length - 1] : currentlyPlayingStart;
 
-           // CASO A: Toca la baldosa en la que YA ESTÁ (Mismo lugar).
+// CASO A: Toca la baldosa en la que YA ESTÁ (Mismo lugar).
             // NUNCA quiere reiniciar. Forzamos siempre el salto a la SIGUIENTE.
             if (finalSnapTime === trueCurrentHouse) {
                 const forceNext = TrackNavigator.findNextTimestamp(trueCurrentHouse, false);
@@ -1830,10 +1830,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // CASO C DE PROTECCIÓN EXTRA: Si por lag del motor nativo, la matemática nos intenta mandar a lo que ya suena
+// CASO C DE PROTECCIÓN EXTRA: Si por lag del motor nativo, la matemática nos intenta mandar a lo que ya suena
             if (finalSnapTime === currentlyPlayingStart) {
                 const safetyNext = TrackNavigator.findNextTimestamp(currentlyPlayingStart, false);
-                if (safetyNext !== null) finalSnapTime = safetyNext;
+                if (safetyNext !== null) {
+                    finalSnapTime = safetyNext;
+                } else {
+                    return false; // FIX: Destruimos el clic si estamos en la última pista.
+                }
             }
 
             // 3. Guardamos la memoria (Ampliamos el historial a 4 para proteger el charco de baldosas)
