@@ -1763,33 +1763,38 @@ document.addEventListener('DOMContentLoaded', () => {
         // Solo actúa si está activo, si es un toque (móvil) y el navegador de tracks está listo
         if (MOBILE_SMART_SNAP && eventType.includes('touch') && typeof TrackNavigator !== 'undefined' && TrackNavigator.isReady()) {
 
-            // --- LÓGICA DE PROXIMIDAD Y MEMORIA DE INTENCIÓN (v5.2) ---
+            // --- LÓGICA DE INTENCIÓN TOTAL (v5.3 - Evasión de Zona Activa) ---
             const currentStart = TrackNavigator.getCurrentTrackStartTime(rawTime, false);
             const nextStart = TrackNavigator.findNextTimestamp(rawTime, false);
 
+            // Detectamos qué canción está sonando REALMENTE en el motor ahora mismo
+            const currentlyPlayingStart = TrackNavigator.getCurrentTrackStartTime(wavesurfer.getCurrentTime(), false);
+
             let finalSnapTime = currentStart;
 
-            // 1. Gravedad Centrada (Proximidad física)
+            // 1. Gravedad Centrada (Atracción física al más cercano)
             if (currentStart !== null && nextStart !== null) {
                 const distToCurrent = Math.abs(rawTime - currentStart);
                 const distToNext = Math.abs(rawTime - nextStart);
                 if (distToNext < distToCurrent) {
                     finalSnapTime = nextStart;
-                    console.log(`%c[Smart Snap UX] 🧲 Atracción física al SIGUIENTE track.`, "color: #00F3FF; font-size: 9px;");
                 }
             }
 
-            // 2. Sequential Intent Tracking (Protección contra clics repetidos)
-            // Si el nuevo snap es igual al anterior, asumimos que el usuario quiere AVANZAR
-            const ALLOW_REPEATED_ZONE_CLICKS = false; // Switch de control Senior
-            if (!ALLOW_REPEATED_ZONE_CLICKS && finalSnapTime === lastSnapTargetTime) {
-                if (nextStart !== null) {
-                    finalSnapTime = nextStart;
-                    console.log(`%c[Smart Snap UX] ⏭️ Intención detectada: Saltando repetición hacia el siguiente track.`, "color: #FFA500; font-weight: bold;");
+            // 2. Filtro de Intención (REGLA ORO: Prohibido repetir lo que ya suena)
+            const SMART_INTENT_JUMP = true; // Activa la evasión de zona activa
+
+            if (SMART_INTENT_JUMP) {
+                // Si el snap resultante es IGUAL a la canción que ya suena O al último clic...
+                if (finalSnapTime === currentlyPlayingStart || finalSnapTime === lastSnapTargetTime) {
+                    if (nextStart !== null) {
+                        finalSnapTime = nextStart; // "Empujamos" al usuario al siguiente track
+                        console.log(`%c[Smart Snap UX] ⏭️ Evasión Activa: Saltando track actual (${formatTime(currentlyPlayingStart)}) hacia el siguiente.`, "color: #FFA500; font-weight: bold;");
+                    }
                 }
             }
 
-            // Actualizamos la memoria para la próxima interacción
+            // Guardamos memoria del último objetivo exitoso
             lastSnapTargetTime = finalSnapTime;
 
             if (finalSnapTime !== null) {
