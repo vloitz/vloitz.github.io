@@ -1766,19 +1766,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let finalSnapTime = clickedTrackStart;
 
-            // REGLA ORO: Si toca la zona actual, salta forzosamente a la siguiente
-            if (clickedTrackStart === currentlyPlayingStart) {
-                if (nextTrackStart !== null) {
+            // 1. Gravedad centrada PRIMERO (Atracción al más cercano)
+            if (clickedTrackStart !== null && nextTrackStart !== null) {
+                const distToCurrent = Math.abs(rawTime - clickedTrackStart);
+                const distToNext = Math.abs(rawTime - nextTrackStart);
+                if (distToNext < distToCurrent) {
                     finalSnapTime = nextTrackStart;
-                    console.log(`%c[Smart Snap] 🚫 Reinicio Evitado -> Forzando salto: ${formatTime(finalSnapTime)}`, "background: #FF4B2B; color: #fff; font-weight: bold;");
                 }
-            } else {
-                // Gravedad centrada para saltos a otras zonas
-                if (clickedTrackStart !== null && nextTrackStart !== null) {
-                    const distToCurrent = Math.abs(rawTime - clickedTrackStart);
-                    const distToNext = Math.abs(rawTime - nextTrackStart);
-                    if (distToNext < distToCurrent) finalSnapTime = nextTrackStart;
+            }
+
+            // 2. REGLA ORO (Escudo Absoluto): Prohibido caer en la zona actual o la última zona clickeada
+            if (finalSnapTime === currentlyPlayingStart || finalSnapTime === lastSnapTargetTime) {
+                // Buscamos la pista que le sigue a la que está sonando AHORA mismo
+                const forceNext = TrackNavigator.findNextTimestamp(currentlyPlayingStart, false);
+                if (forceNext !== null) {
+                    finalSnapTime = forceNext;
+                    console.log(`%c[Smart Snap] 🚫 Reinicio Evitado -> Gravedad corregida al siguiente track: ${formatTime(finalSnapTime)}`, "background: #FF4B2B; color: #fff; font-weight: bold; padding: 2px;");
                 }
+            }
+
+            // 3. Guardamos la memoria para el próximo clic (Seguridad Antianidamiento)
+            if (typeof lastSnapTargetTime !== 'undefined') {
+                lastSnapTargetTime = finalSnapTime;
             }
 
             if (finalSnapTime !== null) {
