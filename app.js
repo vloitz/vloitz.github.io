@@ -1736,6 +1736,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     }
 
+    // Memoria de interacción para evitar clics repetidos en la misma zona (v5.2)
+    let lastSnapTargetTime = -1;
+
     // --- Función SeekWaveform (Requerida por Drag Logic) ---
     const seekWaveform = (clientX, rect, eventType) => {
         console.log(`[Drag v6 Final Corrected] seekWaveform llamado desde: ${eventType}`); // LOG (Prefijo actualizado)
@@ -1760,28 +1763,39 @@ document.addEventListener('DOMContentLoaded', () => {
         // Solo actúa si está activo, si es un toque (móvil) y el navegador de tracks está listo
         if (MOBILE_SMART_SNAP && eventType.includes('touch') && typeof TrackNavigator !== 'undefined' && TrackNavigator.isReady()) {
 
-            // --- LÓGICA DE PROXIMIDAD SENIOR: Comparar Actual vs Siguiente ---
+            // --- LÓGICA DE PROXIMIDAD Y MEMORIA DE INTENCIÓN (v5.2) ---
             const currentStart = TrackNavigator.getCurrentTrackStartTime(rawTime, false);
             const nextStart = TrackNavigator.findNextTimestamp(rawTime, false);
 
             let finalSnapTime = currentStart;
 
+            // 1. Gravedad Centrada (Proximidad física)
             if (currentStart !== null && nextStart !== null) {
-                // Calculamos distancias en segundos
                 const distToCurrent = Math.abs(rawTime - currentStart);
                 const distToNext = Math.abs(rawTime - nextStart);
-
-                // Si estamos más cerca del siguiente track, saltamos a él (Gravedad Centrada)
                 if (distToNext < distToCurrent) {
                     finalSnapTime = nextStart;
-                    console.log(`%c[Smart Snap UX] 🧲 Atracción hacia el SIGUIENTE track detectada.`, "color: #00F3FF; font-size: 9px;");
+                    console.log(`%c[Smart Snap UX] 🧲 Atracción física al SIGUIENTE track.`, "color: #00F3FF; font-size: 9px;");
                 }
             }
+
+            // 2. Sequential Intent Tracking (Protección contra clics repetidos)
+            // Si el nuevo snap es igual al anterior, asumimos que el usuario quiere AVANZAR
+            const ALLOW_REPEATED_ZONE_CLICKS = false; // Switch de control Senior
+            if (!ALLOW_REPEATED_ZONE_CLICKS && finalSnapTime === lastSnapTargetTime) {
+                if (nextStart !== null) {
+                    finalSnapTime = nextStart;
+                    console.log(`%c[Smart Snap UX] ⏭️ Intención detectada: Saltando repetición hacia el siguiente track.`, "color: #FFA500; font-weight: bold;");
+                }
+            }
+
+            // Actualizamos la memoria para la próxima interacción
+            lastSnapTargetTime = finalSnapTime;
 
             if (finalSnapTime !== null) {
                 rawTime = finalSnapTime;
                 progress = rawTime / wavesurfer.getDuration();
-                console.log(`%c[Smart Snap UX] 🎯 Snap a: ${formatTime(rawTime)} (Delta: ${(rawTime - (progress * wavesurfer.getDuration())).toFixed(2)}s)`, "background: #1DB954; color: #000; font-weight: bold; padding: 2px;");
+                console.log(`%c[Smart Snap UX] 🎯 Snap Final: ${formatTime(rawTime)}`, "background: #1DB954; color: #000; font-weight: bold; padding: 2px;");
             }
 
         }
