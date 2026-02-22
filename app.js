@@ -1165,15 +1165,18 @@ document.addEventListener('DOMContentLoaded', () => {
         let abortController = null;
         const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache';
 
-// Mapeo de Concurrencia Senior: Conectado a NetworkSense
-const getConcurrencyLimit = () => NetworkSense.getConcurrency();
+        // Mapeo de Concurrencia Senior: Conectado a NetworkSense
+        const getConcurrencyLimit = () => NetworkSense.getConcurrency();
 
-        // TRADUCTOR TÁCTICO: Convierte "04:30" -> Segmento 135
+        // TRADUCTOR TÁCTICO: Convierte "04:30" -> { index: 135, remainder: 0 }
         const timeToSegmentIndex = (timeStr) => {
             const parts = timeStr.split(':');
             if (parts.length !== 2) return null;
             const totalSeconds = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
-            return Math.floor(totalSeconds / 2); // 2s es el estándar Cloudflare (CF)
+            return {
+                index: Math.floor(totalSeconds / 2), // 2s es el estándar Cloudflare (CF)
+                remainder: totalSeconds % 2 // Extraemos el residuo para el Gatillo
+            };
         };
 
         const start = (set) => {
@@ -1216,11 +1219,24 @@ const getConcurrencyLimit = () => NetworkSense.getConcurrency();
 
                 // Preparamos las promesas de descarga para este bloque
                 const downloadPromises = chunk.map(track => {
-                    const segmentIndex = timeToSegmentIndex(track.time);
-                    if (segmentIndex === null) return Promise.resolve();
+                    const segData = timeToSegmentIndex(track.time);
+                    if (!segData) return Promise.resolve();
 
-                    const segmentUrl = `${CLOUDFLARE_R2_URL}/${currentLoadedSet.id}/seg-${segmentIndex}.m4s`;
-                    return downloadToCache(segmentUrl); // Sin 'await' aquí adentro para que se lancen juntas
+                    const segmentUrl = `${CLOUDFLARE_R2_URL}/${currentLoadedSet.id}/seg-${segData.index}.m4s`;
+                    const p1 = downloadToCache(segmentUrl); // Descarga del ladrillo principal
+
+                    // --- INICIO: GATILLO INTELIGENTE (Contextual Dual-Segment) ---
+                    // Si el track empieza en la segunda mitad del ladrillo (residuo >= 1s),
+                    // el riesgo de corte es alto. Forzamos la descarga del siguiente ladrillo.
+                    if (segData.remainder >= 1) {
+                        console.log(`%c[Phantom Preloader] 🎯 Gatillo Inteligente: Track en ${track.time} requiere 2 ladrillos (seg-${segData.index} y seg-${segData.index + 1})`, "color: #ffaa00; font-size: 9px;");
+                        const nextSegmentUrl = `${CLOUDFLARE_R2_URL}/${currentLoadedSet.id}/seg-${segData.index + 1}.m4s`;
+                        const p2 = downloadToCache(nextSegmentUrl);
+                        return Promise.all([p1, p2]); // El motor espera a que AMBOS ladrillos bajen
+                    }
+                    // --- FIN: GATILLO INTELIGENTE ---
+
+                    return p1; // Si no hay riesgo, solo gasta datos en 1 ladrillo
                 });
 
                 // AWAIT MAESTRO: Esperamos a que terminen estos 4 antes de lanzar los siguientes 4
