@@ -1742,7 +1742,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // =================================================================
 
     // 🧪 CONTROL DE VERSIÓN INMEDIATO (Fuera de la función para no bloquear el flujo)
-    alert("Vloitz v10.0 - PLAN B (Vector Absoluto + Asesinato) Cargado Correctamente");
+    alert("Vloitz 13.0 - PLAN B (Vector Absoluto + Asesinato) Cargado Correctamente");
 
     let recentSnapMemory = [];
     let recentRawClicks = []; // 🎯 PLAN B: Vector de clics exactos (Huellas del francotirador)
