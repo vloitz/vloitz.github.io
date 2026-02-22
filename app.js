@@ -1743,14 +1743,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Función SeekWaveform (Requerida por Drag Logic) ---
     const seekWaveform = (clientX, rect, eventType) => {
+        console.log(`[Drag v6 Final Corrected] seekWaveform llamado desde: ${eventType}`);
+        if (!wavesurfer) return false;
 
-        console.log(`[Drag v6 Final Corrected] seekWaveform llamado desde: ${eventType}`); // LOG (Prefijo actualizado)
-        if (!wavesurfer) {
-            console.warn("[Drag v6 Final Corrected] Seek ignorado: WS no inicializado.");
-            return false;
-        }
-
-        // --- AJUSTE DE PRECISIÓN: Sincronización con Quantum Engine ---
         const wsWrapper = wavesurfer.getWrapper();
         const wsRect = wsWrapper.getBoundingClientRect();
         const x = Math.max(0, clientX - wsRect.left);
@@ -1758,64 +1753,47 @@ document.addEventListener('DOMContentLoaded', () => {
         let rawTime = progress * wavesurfer.getDuration();
 
         // =================================================================
-        // 🧲 NUEVO: MOBILE SMART SNAP (UX Táctil)
-        // Convierte los colores de la onda en "botones gigantes" en móvil
+        // 🧲 MOBILE SMART SNAP (v5.6 - Dictadura Absoluta)
         // =================================================================
-        const MOBILE_SMART_SNAP = true; // <-- Variable para Activar/Desactivar
-
-        // --- BLOQUEO DE REBOTE SINTÉTICO (v5.5) ---
-        const nowInteraction = performance.now();
-        if (nowInteraction - lastInteractionTimestamp < 150) {
-            console.log("%c[Smart Snap UX] 🛡️ Rebote bloqueado (Evento duplicado ignorado)", "color: #777; font-size: 8px;");
-            return false;
-        }
-        lastInteractionTimestamp = nowInteraction;
-
-        // Condición de activación: Toques móviles o Clics en dispositivos no-PC (v5.4)
+        const MOBILE_SMART_SNAP = true;
         const isMobileAction = eventType.includes('touch') || (eventType === 'click' && globalPerformanceTier !== 'ALTA/PC');
+        let didSmartSnap = false; // Control para evitar conflicto con FuzzyHoming
 
         if (MOBILE_SMART_SNAP && isMobileAction && typeof TrackNavigator !== 'undefined' && TrackNavigator.isReady()) {
-
-            // 1. Identificar la zona del clic y la zona actual
             const clickedTrackStart = TrackNavigator.getCurrentTrackStartTime(rawTime, false);
             const currentlyPlayingStart = TrackNavigator.getCurrentTrackStartTime(wavesurfer.getCurrentTime(), false);
             const nextTrackStart = TrackNavigator.findNextTimestamp(rawTime, false);
 
             let finalSnapTime = clickedTrackStart;
 
-            // 2. APLICAR PROHIBICIÓN DE REINICIO (Zero-Restart Policy)
-            // Si el clic cae en el mismo track que suena, forzamos salto al siguiente
+            // REGLA ORO: Si toca la zona actual, salta forzosamente a la siguiente
             if (clickedTrackStart === currentlyPlayingStart) {
                 if (nextTrackStart !== null) {
                     finalSnapTime = nextTrackStart;
-                    console.log(`%c[Smart Snap UX] 🚫 Reinicio Prohibido -> Forzando salto al siguiente track: ${formatTime(finalSnapTime)}`, "background: #FF4B2B; color: #fff; font-weight: bold; padding: 2px;");
+                    console.log(`%c[Smart Snap] 🚫 Reinicio Evitado -> Forzando salto: ${formatTime(finalSnapTime)}`, "background: #FF4B2B; color: #fff; font-weight: bold;");
                 }
             } else {
-                // Si el clic es en otra zona (anterior o muy lejana), usamos gravedad de proximidad
+                // Gravedad centrada para saltos a otras zonas
                 if (clickedTrackStart !== null && nextTrackStart !== null) {
                     const distToCurrent = Math.abs(rawTime - clickedTrackStart);
                     const distToNext = Math.abs(rawTime - nextTrackStart);
-                    if (distToNext < distToCurrent) {
-                        finalSnapTime = nextTrackStart;
-                    }
+                    if (distToNext < distToCurrent) finalSnapTime = nextTrackStart;
                 }
             }
 
-            // 3. Aplicar el Snap al tiempo y progreso
             if (finalSnapTime !== null) {
                 rawTime = finalSnapTime;
                 progress = rawTime / wavesurfer.getDuration();
-                console.log(`%c[Smart Snap UX] 🎯 Snap Final (${eventType}): ${formatTime(rawTime)}`, "background: #1DB954; color: #000; font-weight: bold; padding: 2px;");
+                didSmartSnap = true;
+                console.log(`%c[Smart Snap] 🎯 Éxito (${eventType}): ${formatTime(rawTime)}`, "background: #1DB954; color: #000; font-weight: bold;");
             }
         }
-        // =================================================================
 
-        // --- INYECCIÓN SNAP MAGNÉTICO DEL MOTOR (Corrección de Latencia Cache) ---
-        if (wavesurfer.getDuration() > 0 && typeof PrecacheController !== 'undefined' && PrecacheController.getFuzzyTime) {
+        // --- INYECCIÓN SNAP MAGNÉTICO (Solo actúa si NO hubo Smart Snap) ---
+        if (!didSmartSnap && wavesurfer.getDuration() > 0 && typeof PrecacheController !== 'undefined' && PrecacheController.getFuzzyTime) {
             const correctedTime = PrecacheController.getFuzzyTime(rawTime);
             progress = Math.max(0, Math.min(1, correctedTime / wavesurfer.getDuration()));
         }
-        // --------------------------------------------------------------
 
         try {
             // --- INICIO CORRECCIÓN ---
@@ -2213,6 +2191,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (waveformInteractionElement && wavesurfer) {
         console.log("[Drag v6 Final Merged] Añadiendo listeners TÁCTILES v6."); // LOG
+
+        // =================================================================
+        // 🛡️ ESCUDO NATIVO MÓVIL (v5.6)
+        // Bloqueamos el motor nativo de WaveSurfer para evitar el "duelo" de clics
+        // =================================================================
+        if (globalPerformanceTier !== 'ALTA/PC') {
+            const stopNative = (e) => e.stopPropagation();
+            waveformInteractionElement.addEventListener('touchstart', stopNative, true);
+            waveformInteractionElement.addEventListener('click', stopNative, true);
+        }
 
         // Variables ya definidas arriba
 
