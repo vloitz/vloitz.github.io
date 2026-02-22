@@ -1803,23 +1803,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // 2. REGLA ORO (La Ecuación del Gordo con Salto Relativo):
+          // 2. REGLA ORO ESTRICTA (Cero Reinicios Absolutos):
             const trueCurrentHouse = recentSnapMemory.length > 0 ? recentSnapMemory[recentSnapMemory.length - 1] : currentlyPlayingStart;
 
-            const isMismoLugar = (finalSnapTime === trueCurrentHouse);
-            const isHistorial = recentSnapMemory.includes(finalSnapTime);
-
-            // LA MAGIA DE LA ESTABILIDAD:
-            if (STRICT_FORWARD_INTENT) {
-                if (isMismoLugar || (isHistorial && isRapidSequence)) {
-                    // FIX SUPREMO: Calculamos el salto basándonos en la baldosa que APLASTÓ EL DEDO (clickedTrackStart).
-                    // Si el gordo aplasta la baldosa 1 diez veces, siempre lo mandará a la baldosa 2. ¡Nunca a la 3 o 4!
-                    const forceNext = TrackNavigator.findNextTimestamp(clickedTrackStart, false);
-                    if (forceNext !== null) {
-                        finalSnapTime = forceNext;
-                        console.log(`%c[Smart Snap] 🚀 Estabilidad Activa -> Manteniendo avance en: ${formatTime(finalSnapTime)}`, "background: #FF4B2B; color: #fff; font-weight: bold; padding: 2px;");
-                    }
+            // CASO A: Toca la baldosa en la que YA ESTÁ (Mismo lugar).
+            // NUNCA quiere reiniciar. Forzamos siempre el salto a la SIGUIENTE.
+            if (finalSnapTime === trueCurrentHouse) {
+                const forceNext = TrackNavigator.findNextTimestamp(trueCurrentHouse, false);
+                if (forceNext !== null) {
+                    finalSnapTime = forceNext;
+                    console.log(`%c[Smart Snap] 🚀 Avance Forzado -> Evitando reinicio, saltando a: ${formatTime(finalSnapTime)}`, "background: #FF4B2B; color: #fff; font-weight: bold; padding: 2px;");
                 }
+            }
+            // CASO B: Toca una baldosa DEL PASADO (Historial).
+            else if (recentSnapMemory.includes(finalSnapTime)) {
+                if (STRICT_FORWARD_INTENT && isRapidSequence) {
+                    // SACRIFICIO DE CONTROL POR ESTABILIDAD:
+                    // El dedo gordo resbaló a una baldosa anterior. En lugar de recalcular y arriesgar un reinicio,
+                    // DESTRUIMOS EL EVENTO. La música simplemente sigue sonando estable y no se interrumpe.
+                    console.log(`%c[Smart Snap] 🛡️ Toque en historial bloqueado. Manteniendo pista actual.`, "color: #FFA500; font-weight: bold; font-size: 10px;");
+                    return false; // Abortamos el clic por completo
+                }
+            }
+
+            // CASO C DE PROTECCIÓN EXTRA: Si por lag del motor nativo, la matemática nos intenta mandar a lo que ya suena
+            if (finalSnapTime === currentlyPlayingStart) {
+                const safetyNext = TrackNavigator.findNextTimestamp(currentlyPlayingStart, false);
+                if (safetyNext !== null) finalSnapTime = safetyNext;
             }
 
             // 3. Guardamos la memoria (Ampliamos el historial a 4 para proteger el charco de baldosas)
