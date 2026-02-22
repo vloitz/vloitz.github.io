@@ -1742,7 +1742,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // =================================================================
 
     // 🧪 CONTROL DE VERSIÓN (Sin bloqueos)
-    alert("Vloitz 42.0 - PLAN B (Contragolpe Suave) Cargado");
+    alert("Vloitz 123.0 - PLAN B (Contragolpe Suave) Cargado");
 
     let recentSnapMemory = [];
     let recentRawClicks = []; // 🎯 PLAN B: Vector de huellas del francotirador
