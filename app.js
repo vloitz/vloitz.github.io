@@ -1737,15 +1737,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-// =================================================================
-    // 🦶 SMART SNAP V8: LA METÁFORA DEL PIE Y LA AGUJA (DESDE CERO)
+   // =================================================================
+    // 🛡️ SMART SNAP V9 DEFINITIVA: PLAN B (VECTOR ABSOLUTO + TIEMPO)
     // =================================================================
     let recentSnapMemory = [];
+    let recentRawClicks = []; // 🎯 PLAN B: Vector de clics exactos (Huellas del francotirador)
     let lastLandingTime = 0; // Cronómetro para medir la rapidez de los pisotones
 
     // --- Función SeekWaveform (Requerida por Drag Logic) ---
     const seekWaveform = (clientX, rect, eventType) => {
-        console.log(`[Drag v8 Pie Gordo] seekWaveform llamado desde: ${eventType}`);
+        console.log(`[Drag v9 Nivel Dios] seekWaveform llamado desde: ${eventType}`);
         if (!wavesurfer) return false;
 
         const MOBILE_SMART_SNAP = true;
@@ -1754,8 +1755,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // -----------------------------------------------------------------
         // 🛑 1. ELIMINACIÓN DEL DESPEGUE (El problema del Hardware)
-        // En móviles, cuando levantas el pie, Android/iOS sacude la tierra y envía un clic.
-        // Solo aceptamos el 'touchstart' (Aterrizaje puro). Si es despegue, lo matamos con 'true'.
         // -----------------------------------------------------------------
         if (MOBILE_SMART_SNAP && isMobile) {
             if (eventType !== 'touchstart') {
@@ -1763,12 +1762,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 return true; // 'true' engaña a WaveSurfer para que NO ejecute su clic nativo.
             }
 
-            // Escudo anti-metralleta: Si aterriza dos veces en menos de 300ms, es un rebote de hardware.
-            if (now - lastLandingTime < 300) return true;
+            // Escudo anti-metralleta: Si aterriza dos veces en menos de 350ms, es un rebote de hardware puro.
+            if (now - lastLandingTime < 350) return true;
         }
 
         // -----------------------------------------------------------------
-        // 📐 2. CÁLCULO DE LA BALDOSA FÍSICA (¿Dónde cayó el pie?)
+        // 📐 2. CÁLCULO DE LA BALDOSA FÍSICA Y VECTOR DE FRANCOTIRADOR
         // -----------------------------------------------------------------
         const wsWrapper = wavesurfer.getWrapper();
         const wsRect = wsWrapper.getBoundingClientRect();
@@ -1778,14 +1777,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let didSmartSnap = false;
 
-       if (MOBILE_SMART_SNAP && isMobile && typeof TrackNavigator !== 'undefined' && TrackNavigator.isReady()) {
+        if (MOBILE_SMART_SNAP && isMobile && typeof TrackNavigator !== 'undefined' && TrackNavigator.isReady()) {
 
             const currentTime = wavesurfer.getCurrentTime();
             const isRapidSequence = (now - lastLandingTime < 2500); // 2.5s de ventana de frustración
 
-            // 🕵️ FIX QUIRÚRGICO: Sincronización de Realidad vs Memoria Estancada
-            // Si la música avanzó naturalmente (no tocaste en 2.5s), la memoria se estanca. Confiamos en la realidad del motor.
-            // Si estás tocando rápido y el motor tiene lag, confiamos en la memoria.
+            // 🎯 PLAN B (LA DEFENSA ABSOLUTA DE HUELLAS):
+            // Si el usuario (o el hardware) hace clic en un radio de 3 segundos de audio
+            // de una huella que acaba de pisar rápidamente, es basura. Destruimos la acción.
+            const isHardwareSpam = isRapidSequence && recentRawClicks.some(pastClick => Math.abs(pastClick - rawTime) < 3.0);
+            if (isHardwareSpam) {
+                console.log("%c[Smart Snap] 🛑 Plan B: Clic repetido en la misma huella aniquilado.", "color: #FFA500; font-size: 10px; font-weight: bold;");
+                lastLandingTime = now; // Renovamos el escudo
+                return true; // Bloqueo total
+            }
+
+            // Sincronización de Realidad vs Memoria
             let trueCurrentHouse = TrackNavigator.getCurrentTrackStartTime(currentTime, false);
             if (isRapidSequence && recentSnapMemory.length > 0) {
                 trueCurrentHouse = recentSnapMemory[recentSnapMemory.length - 1];
@@ -1794,7 +1801,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let clickedHouse = TrackNavigator.getCurrentTrackStartTime(rawTime, false);
             const nextHouseFromClick = TrackNavigator.findNextTimestamp(rawTime, false);
 
-            // A. Gravedad de la Baldosa (Atracción al inicio más cercano)
+            // A. Gravedad de la Baldosa
             if (clickedHouse !== null && nextHouseFromClick !== null) {
                 if (Math.abs(rawTime - nextHouseFromClick) < Math.abs(rawTime - clickedHouse)) {
                     clickedHouse = nextHouseFromClick;
@@ -1802,59 +1809,59 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // -----------------------------------------------------------------
-            // 🦶 3. LÓGICA DEL PIE GORDO (Certeza y Dirección)
+            // 🦶 3. REGLAS DIOS DE DIRECCIÓN (CERO REINICIOS)
             // -----------------------------------------------------------------
-            const isSameHouse = (t1, t2) => Math.abs(t1 - t2) < 0.5; // Tolerancia a decimales
+            const isSameHouse = (t1, t2) => Math.abs(t1 - t2) < 1.0; // Tolerancia ampliada a 1 segundo completo
             const isHistorial = recentSnapMemory.some(t => isSameHouse(t, clickedHouse));
 
             // REGLA ABSOLUTA: Si el pie aplasta la baldosa donde YA estamos...
             if (isSameHouse(clickedHouse, trueCurrentHouse)) {
-
-                // NUNCA REINICIAMOS. La certeza direccional es SIEMPRE avanzar 1 baldosa.
+                // NUNCA REINICIAMOS. Empujamos a la siguiente.
                 const forceNext = TrackNavigator.findNextTimestamp(trueCurrentHouse, false);
 
                 if (forceNext !== null) {
                     clickedHouse = forceNext;
                     console.log(`%c[Smart Snap] 🚀 Pie Gordo detectado -> Avance estricto a 1 baldosa: ${formatTime(clickedHouse)}`, "background: #FF4B2B; color: #fff; font-weight: bold; padding: 2px;");
                 } else {
-                    // Si estamos en la última baldosa y pisa ahí, simplemente no hacemos nada.
                     lastLandingTime = now;
                     console.log("%c[Smart Snap] 🛑 Última baldosa. Reinicio bloqueado.", "color: #FFA500; font-size: 10px;");
                     return true;
                 }
             }
-            // REGLA DE PROTECCIÓN: Si el pie resbala hacia una baldosa ANTERIOR muy rápido...
+            // REGLA DE PROTECCIÓN AL HISTORIAL
             else if (isHistorial && isRapidSequence) {
-                // El usuario está intentando avanzar pero su pie es muy grande. Abortamos para no retroceder.
                 lastLandingTime = now;
                 console.log(`%c[Smart Snap] 🛡️ Resbalón al historial bloqueado. Manteniendo posición.`, "color: #FFA500; font-weight: bold; font-size: 10px;");
                 return true;
             }
 
-            // Si pasa todas las pruebas, significa que o avanzó limpiamente, o actuó como una "Aguja" a otra zona.
-
             // -----------------------------------------------------------------
-            // 💾 4. ACTUALIZAR VECTOR (Memoria) Y EJECUTAR
+            // 💾 4. ACTUALIZAR VECTORES Y EJECUTAR
             // -----------------------------------------------------------------
             if (clickedHouse !== null) {
+                // Actualizamos Vector de Casas
                 if (recentSnapMemory.length === 0 && trueCurrentHouse !== null) {
                     recentSnapMemory.push(trueCurrentHouse);
                 }
                 if (recentSnapMemory.length === 0 || !isSameHouse(recentSnapMemory[recentSnapMemory.length - 1], clickedHouse)) {
                     recentSnapMemory.push(clickedHouse);
                 }
-                while (recentSnapMemory.length > 4) recentSnapMemory.shift(); // Mantenemos historial limpio
+                while (recentSnapMemory.length > 4) recentSnapMemory.shift();
 
-                lastLandingTime = now; // Reiniciamos el reloj de aterrizaje
+                // 🎯 Actualizamos Vector del Plan B (Huellas del Francotirador)
+                recentRawClicks.push(rawTime);
+                while (recentRawClicks.length > 5) recentRawClicks.shift();
+
+                lastLandingTime = now; // Reiniciamos el reloj
 
                 rawTime = clickedHouse;
                 progress = rawTime / wavesurfer.getDuration();
                 didSmartSnap = true;
-                console.log(`%c[Smart Snap] 🎯 Aterrizaje Confirmado: ${formatTime(rawTime)} | Memoria: [${recentSnapMemory.map(t=>formatTime(t)).join(', ')}]`, "background: #1DB954; color: #000; font-weight: bold; padding: 2px;");
+                console.log(`%c[Smart Snap] 🎯 Aterrizaje Confirmado: ${formatTime(rawTime)} | Casas: [${recentSnapMemory.map(t=>formatTime(t)).join(', ')}]`, "background: #1DB954; color: #000; font-weight: bold; padding: 2px;");
             }
         }
 
-        // --- INYECCIÓN SNAP MAGNÉTICO (Para PC o si el móvil falla) ---
+        // --- INYECCIÓN SNAP MAGNÉTICO ---
         if (!didSmartSnap && wavesurfer.getDuration() > 0 && typeof PrecacheController !== 'undefined' && PrecacheController.getFuzzyTime) {
             const correctedTime = PrecacheController.getFuzzyTime(rawTime);
             progress = Math.max(0, Math.min(1, correctedTime / wavesurfer.getDuration()));
@@ -1870,7 +1877,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return true; // Éxito total. 'true' anula a WaveSurfer.
             // --- FIN CORRECCIÓN ---
         } catch (error) {
-            console.error(`[Drag v8] Error en seekTo:`, error);
+            console.error(`[Drag v9] Error en seekTo:`, error);
             return false;
         }
     };
