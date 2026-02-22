@@ -1742,7 +1742,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // =================================================================
 
 // 🧪 CONTROL DE VERSIÓN INMEDIATO (Fuera de la función para no bloquear el flujo)
-    alert("Vloitz v9.0 - PLAN B (Vector Absoluto) Cargado Correctamente");
+    alert("Vloitz v10.0 - PLAN B (Vector Absoluto) Cargado Correctamente");
 
     let recentSnapMemory = [];
     let recentRawClicks = []; // 🎯 PLAN B: Vector de clics exactos (Huellas del francotirador)
@@ -1757,17 +1757,27 @@ document.addEventListener('DOMContentLoaded', () => {
         const isMobile = globalPerformanceTier !== 'ALTA/PC';
         const now = performance.now();
 
-        // -----------------------------------------------------------------
-        // 🛑 1. ELIMINACIÓN DEL DESPEGUE (El problema del Hardware)
+// -----------------------------------------------------------------
+        // 🛑 1. ELIMINACIÓN TOTAL Y ASESINATO DE EVENTOS (V10)
         // -----------------------------------------------------------------
         if (MOBILE_SMART_SNAP && isMobile) {
+            // Si no es el aterrizaje puro, matamos el evento para que WaveSurfer no lo vea
             if (eventType !== 'touchstart') {
-                console.log(`%c[Smart Snap] 🛡️ Despegue aniquilado (${eventType}). Evitando retroceso nativo.`, "color: #FF00FF; font-size: 9px;");
-                return true; // 'true' engaña a WaveSurfer para que NO ejecute su clic nativo.
+                if (window.event) {
+                    window.event.preventDefault();
+                    window.event.stopPropagation();
+                }
+                return true;
             }
 
-            // Escudo anti-metralleta: Si aterriza dos veces en menos de 350ms, es un rebote de hardware puro.
-            if (now - lastLandingTime < 350) return true;
+            // Escudo anti-metralleta: Si aterriza muy rápido, matamos el evento
+            if (now - lastLandingTime < 350) {
+                if (window.event) {
+                    window.event.preventDefault();
+                    window.event.stopPropagation();
+                }
+                return true;
+            }
         }
 
         // -----------------------------------------------------------------
