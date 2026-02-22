@@ -1760,6 +1760,14 @@ document.addEventListener('DOMContentLoaded', () => {
         let didSmartSnap = false; // Control para evitar conflicto con FuzzyHoming
 
         if (MOBILE_SMART_SNAP && isMobileAction && typeof TrackNavigator !== 'undefined' && TrackNavigator.isReady()) {
+
+           // 0. ESCUDO ANTI-REBOTE TEMPORAL (Destruye el clic fantasma del móvil al soltar el dedo)
+            const now = performance.now();
+            if (now - lastInteractionTimestamp < 400) {
+                console.log(`%c[Smart Snap] 🛡️ Rebote ignorado por milisegundos.`, "color: #777; font-size: 9px;");
+                return false;
+            }
+
             const clickedTrackStart = TrackNavigator.getCurrentTrackStartTime(rawTime, false);
             const currentlyPlayingStart = TrackNavigator.getCurrentTrackStartTime(wavesurfer.getCurrentTime(), false);
             const nextTrackStart = TrackNavigator.findNextTimestamp(rawTime, false);
@@ -1775,33 +1783,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-          // 2. REGLA ORO (Escudo Histórico): Prohibido caer en la zona actual o en el historial reciente
+            // 2. REGLA ORO (Escudo Definitivo Anti-Dedo Gordo):
+            // Prohibido caer en la zona actual o en las últimas 3 zonas visitadas.
+            // Si el dedo cae ahí, forzamos SIEMPRE avanzar a la siguiente pista.
             if (finalSnapTime === currentlyPlayingStart || recentSnapMemory.includes(finalSnapTime)) {
-
-                // FIX REBOTE (La casa de María): Si el rebote intenta cargar EXACTAMENTE la misma posición
-                // que acabamos de aceptar, lo ignoramos por completo para no "adelantar de más".
-                if (recentSnapMemory.length > 0 && finalSnapTime === recentSnapMemory[recentSnapMemory.length - 1]) {
-                    console.log(`%c[Smart Snap] 🛡️ Rebote al soltar ignorado. Te mantienes en la casa de María.`, "color: #777; font-size: 9px;");
-                    return false; // Abortamos el falso clic
-                }
-
-                // FIX CASA DE JUAN: Si intenta volver a una posición antigua (Juan) o repetir la actual, forzamos avanzar
                 const forceNext = TrackNavigator.findNextTimestamp(currentlyPlayingStart, false);
                 if (forceNext !== null) {
                     finalSnapTime = forceNext;
-                    console.log(`%c[Smart Snap] 🚫 Regreso a zona anterior evitado -> Avanzando: ${formatTime(finalSnapTime)}`, "background: #FF4B2B; color: #fff; font-weight: bold; padding: 2px;");
+                    console.log(`%c[Smart Snap] 🚫 Regreso/Reinicio evitado -> Avanzando: ${formatTime(finalSnapTime)}`, "background: #FF4B2B; color: #fff; font-weight: bold; padding: 2px;");
                 }
             }
 
-            // 3. Guardamos la memoria (Últimas 3 posiciones)
+            // 3. Guardamos la memoria y actualizamos el escudo temporal
             if (finalSnapTime !== null) {
-                // Solo lo añadimos si es una posición nueva (no es exactamente igual a la última)
                 if (recentSnapMemory.length === 0 || recentSnapMemory[recentSnapMemory.length - 1] !== finalSnapTime) {
                     recentSnapMemory.push(finalSnapTime);
                     if (recentSnapMemory.length > 3) {
-                        recentSnapMemory.shift(); // Borra la memoria más antigua para no saturar
+                        recentSnapMemory.shift(); // Mantiene historial máximo de 3
                     }
                 }
+                lastInteractionTimestamp = now; // Armamos el escudo de 400ms para cuando suelte el dedo
             }
 
             if (finalSnapTime !== null) {
