@@ -1772,13 +1772,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (MOBILE_SMART_SNAP && isMobileAction && typeof TrackNavigator !== 'undefined' && TrackNavigator.isReady()) {
 
-            // 0. CANDADO DE TITANIO (1.2s - Desincronización de Estado Asíncrono)
-            // Le da tiempo al motor de WaveSurfer de asimilar el nuevo tiempo.
+           // 0. ASISTENTE DE EMPUJE (2 segundos):
+            // Ya no bloqueamos al usuario. Usamos los 2s para saber si está en una "secuencia rápida".
+            // Si el gordo intenta saltar rápido, esto nos ayudará a empujarlo hacia adelante.
             const now = performance.now();
-            if (now - lastInteractionTimestamp < 2000) {
-                console.log(`%c[Smart Snap] 🛡️ Candado Activo (1.2s). Ignorando toques frenéticos.`, "color: #777; font-size: 9px;");
-                return false;
-            }
+            const isRapidSequence = (now - lastInteractionTimestamp < 2000);
 
             const clickedTrackStart = TrackNavigator.getCurrentTrackStartTime(rawTime, false);
             const currentlyPlayingStart = TrackNavigator.getCurrentTrackStartTime(wavesurfer.getCurrentTime(), false);
@@ -1795,21 +1793,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-           // 2. REGLA ORO (Escudo Definitivo por Historial):
-            // La "Verdadera" casa actual es la última de nuestra memoria. (Ignoramos el motor porque miente por el retraso)
+            // 2. REGLA ORO (Escudo Definitivo por Historial y Tiempo):
+            // La "Verdadera" casa actual es la última de nuestra memoria.
             const trueCurrentHouse = recentSnapMemory.length > 0 ? recentSnapMemory[recentSnapMemory.length - 1] : currentlyPlayingStart;
 
-            // Si intenta volver a la casa de Kevin (historial) o repetir la de Juan (actual)
-            if (finalSnapTime === trueCurrentHouse || recentSnapMemory.includes(finalSnapTime)) {
-                // Avanzamos basándonos en la VERDADERA casa actual, no en la del motor
+            // LÓGICA DE EMPUJE (Metáfora de las Baldosas):
+            const isHistorial = recentSnapMemory.includes(finalSnapTime); // Intentó volver a una casa visitada
+            const isMismoLugar = (finalSnapTime === trueCurrentHouse);    // Intentó saltar en su mismo lugar
+            const isGordoFails = (isRapidSequence && finalSnapTime <= trueCurrentHouse); // Tocó rápido pero su pie cayó atrás o en el mismo lugar
+
+            if (isHistorial || isMismoLugar || isGordoFails) {
+                // EMPUJAMOS al gordo a la siguiente baldosa basada en su VERDADERA posición
                 const forceNext = TrackNavigator.findNextTimestamp(trueCurrentHouse, false);
                 if (forceNext !== null) {
                     finalSnapTime = forceNext;
-                    console.log(`%c[Smart Snap] 🚫 Retorno a casa antigua evitado -> Avanzando a: ${formatTime(finalSnapTime)}`, "background: #FF4B2B; color: #fff; font-weight: bold; padding: 2px;");
+                    console.log(`%c[Smart Snap] 🚀 Empuje Asistido (Gordo/Rápido) evito reinicio -> Avanzando a: ${formatTime(finalSnapTime)}`, "background: #FF4B2B; color: #fff; font-weight: bold; padding: 2px;");
                 }
             }
 
-            // 3. Guardamos la memoria (Últimas 3 casas, como solicitaste)
+            // 3. Guardamos la memoria (Últimas 3 casas reales en el vector)
             if (finalSnapTime !== null) {
                 // Si la memoria está vacía, registramos la casa de donde venimos
                 if (recentSnapMemory.length === 0 && currentlyPlayingStart !== null && currentlyPlayingStart !== finalSnapTime) {
@@ -1825,14 +1827,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 while (recentSnapMemory.length > 3) {
                     recentSnapMemory.shift();
                 }
-                lastInteractionTimestamp = now;
-            }
 
-            if (finalSnapTime !== null) {
-                rawTime = finalSnapTime;
-                progress = rawTime / wavesurfer.getDuration();
-                didSmartSnap = true;
-                console.log(`%c[Smart Snap] 🎯 Éxito (${eventType}): ${formatTime(rawTime)} | Memoria: [${recentSnapMemory.map(t=>formatTime(t)).join(', ')}]`, "background: #1DB954; color: #000; font-weight: bold;");
+                // Actualizamos el tiempo para mantener activo el Asistente de Empuje
+                lastInteractionTimestamp = now;
             }
         }
 
