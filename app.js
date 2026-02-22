@@ -1752,7 +1752,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const seekWaveform = (clientX, rect, eventType) => {
         if (!wavesurfer) return false;
 
-        const MOBILE_SMART_SNAP = true;
+        const MOBILE_SMART_SNAP = false;
         const isMobile = globalPerformanceTier !== 'ALTA/PC';
         const now = performance.now();
 
