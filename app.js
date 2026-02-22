@@ -1759,14 +1759,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Solo actúa si está activo, si es un toque (móvil) y el navegador de tracks está listo
         if (MOBILE_SMART_SNAP && eventType.includes('touch') && typeof TrackNavigator !== 'undefined' && TrackNavigator.isReady()) {
-            // Busca a qué canción pertenece el punto donde cayó el dedo
-            const trackStartTime = TrackNavigator.getCurrentTrackStartTime(rawTime, false);
 
-            if (trackStartTime !== null) {
-                rawTime = trackStartTime; // Ajustamos el tiempo crudo al inicio de la canción
-                progress = rawTime / wavesurfer.getDuration(); // Recalculamos el progreso
-                console.log(`%c[Smart Snap UX] 📱 Toque en onda -> Redirigido al inicio del Track: ${formatTime(rawTime)}`, "background: #1DB954; color: #000; font-weight: bold; padding: 2px;");
+            // --- LÓGICA DE PROXIMIDAD SENIOR: Comparar Actual vs Siguiente ---
+            const currentStart = TrackNavigator.getCurrentTrackStartTime(rawTime, false);
+            const nextStart = TrackNavigator.findNextTimestamp(rawTime, false);
+
+            let finalSnapTime = currentStart;
+
+            if (currentStart !== null && nextStart !== null) {
+                // Calculamos distancias en segundos
+                const distToCurrent = Math.abs(rawTime - currentStart);
+                const distToNext = Math.abs(rawTime - nextStart);
+
+                // Si estamos más cerca del siguiente track, saltamos a él (Gravedad Centrada)
+                if (distToNext < distToCurrent) {
+                    finalSnapTime = nextStart;
+                    console.log(`%c[Smart Snap UX] 🧲 Atracción hacia el SIGUIENTE track detectada.`, "color: #00F3FF; font-size: 9px;");
+                }
             }
+
+            if (finalSnapTime !== null) {
+                rawTime = finalSnapTime;
+                progress = rawTime / wavesurfer.getDuration();
+                console.log(`%c[Smart Snap UX] 🎯 Snap a: ${formatTime(rawTime)} (Delta: ${(rawTime - (progress * wavesurfer.getDuration())).toFixed(2)}s)`, "background: #1DB954; color: #000; font-weight: bold; padding: 2px;");
+            }
+
         }
         // =================================================================
 
