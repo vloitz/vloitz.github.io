@@ -1772,12 +1772,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (MOBILE_SMART_SNAP && isMobileAction && typeof TrackNavigator !== 'undefined' && TrackNavigator.isReady()) {
 
-         // 0. CONFIGURACIÓN AJUSTABLE (El Factor de Intención):
-            const STRICT_FORWARD_INTENT = true; // Forzar siempre hacia adelante en caso de duda (Sin Piedad)
-            const RAPID_SEQUENCE_MS = 2000;     // Milisegundos para detectar la desesperación del "dedo gordo"
+         // 0. CONFIGURACIÓN AJUSTABLE (El Factor de Intención y Escudos):
+            const STRICT_FORWARD_INTENT = true; // Forzar siempre hacia adelante en caso de duda
+            const RAPID_SEQUENCE_MS = 2000;     // Tolerancia para detectar la desesperación del "dedo gordo"
+            const PHANTOM_BLOCK_MS = 300;       // Escudo de titanio contra el rebote al "soltar el dedo"
+
+            const now = performance.now();
+
+            // 🛡️ ESCUDO ABSOLUTO ANTI-REBOTE (Mata el touchend/click fantasma instantáneamente)
+            if (now - lastInteractionTimestamp < PHANTOM_BLOCK_MS) {
+                console.log("%c[Smart Snap] 🛡️ Rebote al soltar bloqueado.", "color: #777; font-size: 9px;");
+                return false;
+            }
 
             // Evaluamos si el usuario está en una secuencia rápida de toques
-            const now = performance.now();
             const isRapidSequence = (now - lastInteractionTimestamp < RAPID_SEQUENCE_MS);
 
             const clickedTrackStart = TrackNavigator.getCurrentTrackStartTime(rawTime, false);
@@ -1795,21 +1803,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // 2. REGLA ORO (La Ecuación del Gordo con Factor Ajustable):
+            // 2. REGLA ORO (La Ecuación del Gordo con Salto Relativo):
             const trueCurrentHouse = recentSnapMemory.length > 0 ? recentSnapMemory[recentSnapMemory.length - 1] : currentlyPlayingStart;
 
             const isMismoLugar = (finalSnapTime === trueCurrentHouse);
             const isHistorial = recentSnapMemory.includes(finalSnapTime);
 
-            // LA MAGIA: Aplicamos la orden "Sin Piedad" si la variable está activa
+            // LA MAGIA DE LA ESTABILIDAD:
             if (STRICT_FORWARD_INTENT) {
-                // - Si toca el mismo lugar -> Empujamos (Es imposible querer reiniciar).
-                // - Si toca el historial dentro del margen (RAPID_SEQUENCE_MS) -> Empujamos.
                 if (isMismoLugar || (isHistorial && isRapidSequence)) {
-                    const forceNext = TrackNavigator.findNextTimestamp(trueCurrentHouse, false);
+                    // FIX SUPREMO: Calculamos el salto basándonos en la baldosa que APLASTÓ EL DEDO (clickedTrackStart).
+                    // Si el gordo aplasta la baldosa 1 diez veces, siempre lo mandará a la baldosa 2. ¡Nunca a la 3 o 4!
+                    const forceNext = TrackNavigator.findNextTimestamp(clickedTrackStart, false);
                     if (forceNext !== null) {
                         finalSnapTime = forceNext;
-                        console.log(`%c[Smart Snap] 🚀 Asistencia Estricta Activa -> Forzando avance a: ${formatTime(finalSnapTime)}`, "background: #FF4B2B; color: #fff; font-weight: bold; padding: 2px;");
+                        console.log(`%c[Smart Snap] 🚀 Estabilidad Activa -> Manteniendo avance en: ${formatTime(finalSnapTime)}`, "background: #FF4B2B; color: #fff; font-weight: bold; padding: 2px;");
                     }
                 }
             }
@@ -1828,11 +1836,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     recentSnapMemory.shift();
                 }
 
-                // Actualizamos el reloj de la secuencia rápida
+                // Actualizamos el reloj
                 lastInteractionTimestamp = now;
             }
 
-            // 4. APLICAMOS EL SNAP (Este es el paso vital que se te había borrado)
+            // 4. APLICAMOS EL SNAP
             if (finalSnapTime !== null) {
                 rawTime = finalSnapTime;
                 progress = rawTime / wavesurfer.getDuration();
