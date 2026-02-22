@@ -1737,12 +1737,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-   // =================================================================
+    // =================================================================
     // 🛡️ SMART SNAP V9 DEFINITIVA: PLAN B (VECTOR ABSOLUTO + TIEMPO)
     // =================================================================
 
-// 🧪 CONTROL DE VERSIÓN INMEDIATO (Fuera de la función para no bloquear el flujo)
-    alert("Vloitz v10.0 - PLAN B (Vector Absoluto) Cargado Correctamente");
+    // 🧪 CONTROL DE VERSIÓN INMEDIATO (Fuera de la función para no bloquear el flujo)
+    alert("Vloitz v11.0 - PLAN B (Vector Absoluto) Cargado Correctamente");
 
     let recentSnapMemory = [];
     let recentRawClicks = []; // 🎯 PLAN B: Vector de clics exactos (Huellas del francotirador)
@@ -1757,7 +1757,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const isMobile = globalPerformanceTier !== 'ALTA/PC';
         const now = performance.now();
 
-// -----------------------------------------------------------------
+        // -----------------------------------------------------------------
         // 🛑 1. ELIMINACIÓN TOTAL Y ASESINATO DE EVENTOS (V10)
         // -----------------------------------------------------------------
         if (MOBILE_SMART_SNAP && isMobile) {
@@ -1797,13 +1797,26 @@ document.addEventListener('DOMContentLoaded', () => {
             const isRapidSequence = (now - lastLandingTime < 2500); // 2.5s de ventana de frustración
 
             // 🎯 PLAN B (LA DEFENSA ABSOLUTA DE HUELLAS):
-            // Si el usuario (o el hardware) hace clic en un radio de 3 segundos de audio
-            // de una huella que acaba de pisar rápidamente, es basura. Destruimos la acción.
-            const isHardwareSpam = isRapidSequence && recentRawClicks.some(pastClick => Math.abs(pastClick - rawTime) < 3.0);
-            if (isHardwareSpam) {
-                console.log("%c[Smart Snap] 🛑 Plan B: Clic repetido en la misma huella aniquilado.", "color: #FFA500; font-size: 10px; font-weight: bold;");
-                lastLandingTime = now; // Renovamos el escudo
-                return true; // Bloqueo total
+            const isHardwareSpam = isRapidSequence && recentRawClicks.some(pastClick => Math.abs(pastClick - rawTime) < 4.0);
+            if (isHardwareSpam || isSameHouse(clickedHouse, trueCurrentHouse)) {
+                // Si el usuario toca el mismo lugar o el spam de hardware actúa,
+                // matamos el evento antes de que WaveSurfer pueda siquiera enterarse.
+                if (window.event) {
+                    window.event.preventDefault();
+                    window.event.stopPropagation();
+                }
+
+                // Si es el mismo lugar, empujamos; si es spam, bloqueamos.
+                if (isSameHouse(clickedHouse, trueCurrentHouse)) {
+                    const forceNext = TrackNavigator.findNextTimestamp(trueCurrentHouse, false);
+                    if (forceNext !== null) {
+                        finalSnapTime = forceNext; // Permitimos que el flujo siga para adelantar
+                    } else {
+                        return true;
+                    }
+                } else {
+                    return true; // Bloqueo total del spam
+                }
             }
 
             // Sincronización de Realidad vs Memoria
