@@ -1740,21 +1740,18 @@ document.addEventListener('DOMContentLoaded', () => {
    // =================================================================
     // 🛡️ SMART SNAP V9 DEFINITIVA: PLAN B (VECTOR ABSOLUTO + TIEMPO)
     // =================================================================
+
+// 🧪 CONTROL DE VERSIÓN INMEDIATO (Fuera de la función para no bloquear el flujo)
+    alert("Vloitz v9.0 - PLAN B (Vector Absoluto) Cargado Correctamente");
+
     let recentSnapMemory = [];
     let recentRawClicks = []; // 🎯 PLAN B: Vector de clics exactos (Huellas del francotirador)
     let lastLandingTime = 0; // Cronómetro para medir la rapidez de los pisotones
-    let v9AlertShown = false; // Flag para control de caché
 
     // --- Función SeekWaveform (Requerida por Drag Logic) ---
     const seekWaveform = (clientX, rect, eventType) => {
         console.log(`[Drag v9 Nivel Dios] seekWaveform llamado desde: ${eventType}`);
         if (!wavesurfer) return false;
-
-        // 🧪 CONTROL DE VERSIÓN (Anti-Caché): Se ejecuta solo al primer toque
-        if (!v9AlertShown) {
-            alert("Vloitz Smart Snap v9.0 - PLAN B (Vector Absoluto) Cargado");
-            v9AlertShown = true;
-        }
 
         const MOBILE_SMART_SNAP = true;
         const isMobile = globalPerformanceTier !== 'ALTA/PC';
