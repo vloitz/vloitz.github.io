@@ -447,7 +447,7 @@ document.addEventListener('DOMContentLoaded', () => {
     })();*/
     // --- FIN: Módulo PrecacheController ---
 
-// --- V4.1 INICIO: Módulo PrecacheController (Vloitz Quantum-Kinetic - Exactitud de Segmento) ---
+    // --- V4.1 INICIO: Módulo PrecacheController (Vloitz Quantum-Kinetic - Exactitud de Segmento) ---
     /*const PrecacheController = (() => {
         const PRECACHE_SAVE_DB = true; // ACTIVADO: Para que use la Bóveda
 
@@ -622,102 +622,102 @@ document.addEventListener('DOMContentLoaded', () => {
     })();*/
     // --- FIN: Módulo PrecacheController ---
 
-        // --- V4.3 INICIO: Módulo PrecacheController (Vloitz Quantum-Kinetic - Nivel Dios Debug) ---
-   /* const PrecacheController = (() => {
-        const PRECACHE_SAVE_DB = true;
-        const DEBUG_MODE = false; // MODO DEBUG: Telemetría constante en consola
+    // --- V4.3 INICIO: Módulo PrecacheController (Vloitz Quantum-Kinetic - Nivel Dios Debug) ---
+    /* const PrecacheController = (() => {
+         const PRECACHE_SAVE_DB = true;
+         const DEBUG_MODE = false; // MODO DEBUG: Telemetría constante en consola
 
-        let samples = [];
-        const SAMPLE_LIMIT = 3; // Bajamos a 3 para capturar micro-ajustes milimétricos
-        let hasFired = false;
-        let preloadedSegments = new Set();
+         let samples = [];
+         const SAMPLE_LIMIT = 3; // Bajamos a 3 para capturar micro-ajustes milimétricos
+         let hasFired = false;
+         let preloadedSegments = new Set();
 
-        // --- MEMORIA DE REPOSO (God Level) ---
-        let lastRestingX = 0;
-        let lastRestingTimeAudio = 0;
+         // --- MEMORIA DE REPOSO (God Level) ---
+         let lastRestingX = 0;
+         let lastRestingTimeAudio = 0;
 
-        const preloadSegment = (time) => {
-            if (!currentLoadedSet || !currentLoadedSet.id) return;
-            const actualHlsTime = (currentLoadedSet.server === "HF") ? 60 : 2;
-            const segmentIndex = Math.floor(time / actualHlsTime);
-            if (preloadedSegments.has(segmentIndex)) return;
+         const preloadSegment = (time) => {
+             if (!currentLoadedSet || !currentLoadedSet.id) return;
+             const actualHlsTime = (currentLoadedSet.server === "HF") ? 60 : 2;
+             const segmentIndex = Math.floor(time / actualHlsTime);
+             if (preloadedSegments.has(segmentIndex)) return;
 
-            let segmentUrl = "";
-            if (currentLoadedSet.server === "HF") {
-                const tunnel = VLOITZ_CLUSTER[Math.floor(Math.random() * VLOITZ_CLUSTER.length)];
-                const direct = `https://huggingface.co/datasets/italocajaleon/vloitz-vault/resolve/main/${currentLoadedSet.id}/seg-${segmentIndex}.m4s`;
-                segmentUrl = PRECACHE_SAVE_DB ? `${tunnel}/${currentLoadedSet.id}/seg-${segmentIndex}.m4s` : direct;
-            } else {
-                segmentUrl = `${CLOUDFLARE_R2_URL}/${currentLoadedSet.id}/seg-${segmentIndex}.m4s`;
-            }
+             let segmentUrl = "";
+             if (currentLoadedSet.server === "HF") {
+                 const tunnel = VLOITZ_CLUSTER[Math.floor(Math.random() * VLOITZ_CLUSTER.length)];
+                 const direct = `https://huggingface.co/datasets/italocajaleon/vloitz-vault/resolve/main/${currentLoadedSet.id}/seg-${segmentIndex}.m4s`;
+                 segmentUrl = PRECACHE_SAVE_DB ? `${tunnel}/${currentLoadedSet.id}/seg-${segmentIndex}.m4s` : direct;
+             } else {
+                 segmentUrl = `${CLOUDFLARE_R2_URL}/${currentLoadedSet.id}/seg-${segmentIndex}.m4s`;
+             }
 
-            preloadedSegments.add(segmentIndex);
-            fetch(segmentUrl, { mode: 'no-cors' }).then(() => {
-                console.log(`%c[Quantum Engine] 🎯 Impacto: Fragmento ${segmentIndex}`, "color: #ffaa00; font-weight: bold; font-size: 10px;");
-            }).catch(() => preloadedSegments.delete(segmentIndex));
-        };
+             preloadedSegments.add(segmentIndex);
+             fetch(segmentUrl, { mode: 'no-cors' }).then(() => {
+                 console.log(`%c[Quantum Engine] 🎯 Impacto: Fragmento ${segmentIndex}`, "color: #ffaa00; font-weight: bold; font-size: 10px;");
+             }).catch(() => preloadedSegments.delete(segmentIndex));
+         };
 
-        const handleInteraction = (clientX, rect) => {
-            const now = performance.now();
-            samples.push({ x: clientX, t: now });
-            if (samples.length > SAMPLE_LIMIT) samples.shift();
-            if (samples.length < 2) return;
+         const handleInteraction = (clientX, rect) => {
+             const now = performance.now();
+             samples.push({ x: clientX, t: now });
+             if (samples.length > SAMPLE_LIMIT) samples.shift();
+             if (samples.length < 2) return;
 
-            const first = samples[0];
-            const last = samples[samples.length - 1];
-            const dt = last.t - first.t;
-            const dx = last.x - first.x;
-            const v = Math.abs(dx) / dt;
-            const v_prev = samples.length > 2 ? Math.abs(samples[samples.length-1].x - samples[samples.length-2].x) / (samples[samples.length-1].t - samples[samples.length-2].t) : v;
-            const a = (v - v_prev) / (last.t - samples[samples.length-2].t);
-            const stoppingDistance = (v * v) / (2 * Math.abs(a || 0.0001));
+             const first = samples[0];
+             const last = samples[samples.length - 1];
+             const dt = last.t - first.t;
+             const dx = last.x - first.x;
+             const v = Math.abs(dx) / dt;
+             const v_prev = samples.length > 2 ? Math.abs(samples[samples.length-1].x - samples[samples.length-2].x) / (samples[samples.length-1].t - samples[samples.length-2].t) : v;
+             const a = (v - v_prev) / (last.t - samples[samples.length-2].t);
+             const stoppingDistance = (v * v) / (2 * Math.abs(a || 0.0001));
 
-            // --- TELEMETRÍA CONSTANTE (MODO DEBUG) ---
-            if (DEBUG_MODE) {
-                const wsWrapper = wavesurfer.getWrapper();
-                const wsRect = wsWrapper.getBoundingClientRect();
-                const progress = Math.max(0, Math.min(1, (last.x - wsRect.left) / wsRect.width));
-                const currentTime = progress * wavesurfer.getDuration();
-                console.log(`%c[Física] v:${v.toFixed(5)} | a:${a.toFixed(5)} | stop_d:${stoppingDistance.toFixed(2)}px | T:${currentTime.toFixed(2)}s | Fired:${hasFired}`, "color: #777; font-size: 9px;");
-            }
+             // --- TELEMETRÍA CONSTANTE (MODO DEBUG) ---
+             if (DEBUG_MODE) {
+                 const wsWrapper = wavesurfer.getWrapper();
+                 const wsRect = wsWrapper.getBoundingClientRect();
+                 const progress = Math.max(0, Math.min(1, (last.x - wsRect.left) / wsRect.width));
+                 const currentTime = progress * wavesurfer.getDuration();
+                 console.log(`%c[Física] v:${v.toFixed(5)} | a:${a.toFixed(5)} | stop_d:${stoppingDistance.toFixed(2)}px | T:${currentTime.toFixed(2)}s | Fired:${hasFired}`, "color: #777; font-size: 9px;");
+             }
 
-            // REARMADO POR DESPLAZAMIENTO (Nivel Dios):
-            // REARMADO QUIRÚRGICO: Con solo 4px de movimiento el sistema vuelve a estar listo
-            if (Math.abs(last.x - lastRestingX) > 4) {
-                if (hasFired) {
-                    hasFired = false;
-                    if (DEBUG_MODE) console.log("%c[Quantum Engine] ⚡ Rearmado por desplazamiento espacial.", "color: #00FF00; font-size: 8px;");
-                }
-            }
+             // REARMADO POR DESPLAZAMIENTO (Nivel Dios):
+             // REARMADO QUIRÚRGICO: Con solo 4px de movimiento el sistema vuelve a estar listo
+             if (Math.abs(last.x - lastRestingX) > 4) {
+                 if (hasFired) {
+                     hasFired = false;
+                     if (DEBUG_MODE) console.log("%c[Quantum Engine] ⚡ Rearmado por desplazamiento espacial.", "color: #00FF00; font-size: 8px;");
+                 }
+             }
 
-            // Condición de Disparo: Si hay frenado activo O si la velocidad es casi nula (Reposos cortos)
-            const isAbsoluteRest = (v < 0.01);
-            if (!hasFired && (isAbsoluteRest || (v < 0.35 && a < -0.00005 && stoppingDistance < 20))) {
-                hasFired = true;
-                lastRestingX = last.x; // Guardamos donde se detuvo el auto
+             // Condición de Disparo: Si hay frenado activo O si la velocidad es casi nula (Reposos cortos)
+             const isAbsoluteRest = (v < 0.01);
+             if (!hasFired && (isAbsoluteRest || (v < 0.35 && a < -0.00005 && stoppingDistance < 20))) {
+                 hasFired = true;
+                 lastRestingX = last.x; // Guardamos donde se detuvo el auto
 
-                const wsWrapper = wavesurfer.getWrapper();
-                const wsRect = wsWrapper.getBoundingClientRect();
-                const progress = Math.max(0, Math.min(1, (last.x - wsRect.left) / wsRect.width));
-                const duration = wavesurfer.getDuration();
-                const predictedTime = progress * duration;
+                 const wsWrapper = wavesurfer.getWrapper();
+                 const wsRect = wsWrapper.getBoundingClientRect();
+                 const progress = Math.max(0, Math.min(1, (last.x - wsRect.left) / wsRect.width));
+                 const duration = wavesurfer.getDuration();
+                 const predictedTime = progress * duration;
 
-                if (duration > 0) {
-                    console.log(`%c[Quantum Engine] 🧠 REPOSO DETECTADO (Tiempo: ${predictedTime.toFixed(2)}s)`, "background: #00F3FF; color: #000; font-weight: bold; padding: 2px 4px; border-radius: 3px;");
-                    preloadSegment(predictedTime);
-                }
-            }
-        };
+                 if (duration > 0) {
+                     console.log(`%c[Quantum Engine] 🧠 REPOSO DETECTADO (Tiempo: ${predictedTime.toFixed(2)}s)`, "background: #00F3FF; color: #000; font-weight: bold; padding: 2px 4px; border-radius: 3px;");
+                     preloadSegment(predictedTime);
+                 }
+             }
+         };
 
-        return {
-            handleInteraction,
-            cancel: () => { samples = []; hasFired = false; }
-        };
-    })();*/
+         return {
+             handleInteraction,
+             cancel: () => { samples = []; hasFired = false; }
+         };
+     })();*/
     // --- FIN: Módulo PrecacheController ---
 
     // --- V4.4 INICIO: Módulo PrecacheController (Vloitz Quantum-Kinetic - Nivel Dios Debug) + AreaofEffect y FuzzyHoming ---
-     /* const PrecacheController = (() => {
+    /* const PrecacheController = (() => {
         const PRECACHE_SAVE_DB = true;
         const DEBUG_MODE = true; // MODO DEBUG: Telemetría constante en consola
 
@@ -874,8 +874,8 @@ document.addEventListener('DOMContentLoaded', () => {
     })();*/
     // --- FIN: Módulo PrecacheController ---
 
-        // --- V4.5 INICIO: Módulo PrecacheController (Vloitz Quantum-Kinetic - Nivel Dios Debug) + AreaofEffect y FuzzyHoming + 5 % ---
-      const PrecacheController = (() => {
+    // --- V4.5 INICIO: Módulo PrecacheController (Vloitz Quantum-Kinetic) + AoE, FuzzyHoming & Kinetic Pulse Stability ---
+    const PrecacheController = (() => {
         const PRECACHE_SAVE_DB = true;
         const DEBUG_MODE = true; // MODO DEBUG: Telemetría constante en consola
 
@@ -890,8 +890,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let lastRestingTimeAudio = 0;
 
         // --- FEATURE FLAGS (Quantum Upgrades) ---
-        const AreaofEffect = true;  // Disparo de escopeta (precarga 5 fragmentos)
-        const FuzzyHoming = true;  // Snap Magnético (corrección de precisión vs latencia)
+        const AreaofEffect = true; // Disparo de escopeta (precarga 5 fragmentos)
+        const FuzzyHoming = true; // Snap Magnético (corrección de precisión vs latencia)
 
         // MÓDULO AISLADO: Descargador Táctico de Fragmentos (Evita anidamiento)
         const fetchSegmentData = (segmentIndex, isSecondary = false, isEmergency = false) => {
@@ -913,7 +913,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!isEmergency) preloadedSegments.add(segmentIndex);
 
             // Si es emergencia, usamos prioridad ALTA para saltar la cola de Cloudflare
-            const fetchOptions = isEmergency ? { priority: 'high', cache: 'reload' } : (isSecondary ? { priority: 'low' } : {});
+            const fetchOptions = isEmergency ? {
+                priority: 'high',
+                cache: 'reload'
+            } : (isSecondary ? {
+                priority: 'low'
+            } : {});
 
             fetch(segmentUrl, fetchOptions).then(res => {
                 if (res.ok) {
@@ -981,7 +986,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const handleInteraction = (clientX, rect) => {
             const now = performance.now();
-            samples.push({ x: clientX, t: now });
+            samples.push({
+                x: clientX,
+                t: now
+            });
             if (samples.length > SAMPLE_LIMIT) samples.shift();
             if (samples.length < 2) return;
 
@@ -990,8 +998,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const dt = last.t - first.t;
             const dx = last.x - first.x;
             const v = Math.abs(dx) / dt;
-            const v_prev = samples.length > 2 ? Math.abs(samples[samples.length-1].x - samples[samples.length-2].x) / (samples[samples.length-1].t - samples[samples.length-2].t) : v;
-            const a = (v - v_prev) / (last.t - samples[samples.length-2].t);
+            const v_prev = samples.length > 2 ? Math.abs(samples[samples.length - 1].x - samples[samples.length - 2].x) / (samples[samples.length - 1].t - samples[samples.length - 2].t) : v;
+            const a = (v - v_prev) / (last.t - samples[samples.length - 2].t);
             const stoppingDistance = (v * v) / (2 * Math.abs(a || 0.0001));
 
             // --- TELEMETRÍA CONSTANTE (MODO DEBUG) ---
@@ -1046,19 +1054,119 @@ document.addEventListener('DOMContentLoaded', () => {
         return {
             handleInteraction,
             getFuzzyTime, // <-- EXPUESTO PARA USO EXTERNO
-            cancel: () => { samples = []; hasFired = false; }
+            cancel: () => {
+                samples = [];
+                hasFired = false;
+            }
         };
     })();
     // --- FIN: Módulo PrecacheController ---
 
     // --- FASE 1 INICIO: Módulo TracklistPreloader (Phantom Motor) ---
 
+    // --- NUEVO: Módulo NetworkSense (Velocímetro Vloitz v5.0) ---
+    const NetworkSense = (() => {
+        let isMeasured = false;
+        let currentLatency = 0;
+        let optimalConcurrency = (globalPerformanceTier === 'ALTA/PC') ? 4 : 1; // Default
+        const isMobile = globalPerformanceTier !== 'ALTA/PC';
+
+        const measureNetwork = async (testUrl) => {
+            if (isMeasured) return;
+            try {
+                const startTime = performance.now();
+                const response = await fetch(testUrl, {
+                    method: 'HEAD',
+                    cache: 'no-cache'
+                });
+                if (response.ok) {
+                    currentLatency = performance.now() - startTime;
+
+                    // --- LÓGICA DE VELOCÍMETRO PARA MÓVILES ---
+                    if (isMobile) {
+                        if (currentLatency < 200) {
+                            optimalConcurrency = 3; // Red excelente (WiFi)
+                            console.log(`%c[NetworkSense] 📡 Latencia: ${currentLatency.toFixed(0)}ms -> Red Ultra-Rápida (3 Carriles)`, "color: #00FF00; font-weight: bold;");
+                        } else if (currentLatency < 600) {
+                            optimalConcurrency = 2; // Red buena (4G)
+                            console.log(`%c[NetworkSense] 📡 Latencia: ${currentLatency.toFixed(0)}ms -> Red Estable (2 Carriles)`, "color: #ffaa00;");
+                        } else {
+                            optimalConcurrency = 1; // Red inestable (Hora Pico/3G)
+                            console.log(`%c[NetworkSense] 📡 Latencia: ${currentLatency.toFixed(0)}ms -> Red Inestable (Modo Seguro: 1 Carril)`, "color: #ff5555;");
+                        }
+                    } else {
+                        // En PC mantenemos 4 carriles por su capacidad de hardware
+                        console.log(`%c[NetworkSense] 🖥️ PC Detectada. Manteniendo 4 carriles. (Latencia: ${currentLatency.toFixed(0)}ms)`, "color: #00F3FF;");
+                    }
+                    isMeasured = true;
+                }
+            } catch (e) {
+                console.warn("[NetworkSense] Fallo al medir red. Usando default (1 carril).", e);
+            }
+        };
+
+        return {
+            measureNetwork,
+            getConcurrency: () => optimalConcurrency
+        };
+    })();
+    // --- FIN MÓDULO NetworkSense ---
+
     const TracklistPreloader = (() => {
+
+        // --- NUEVO: Módulo NetworkSense (Velocímetro Vloitz v5.0) ---
+        const NetworkSense = (() => {
+            let isMeasured = false;
+            let currentLatency = 0;
+            let optimalConcurrency = (globalPerformanceTier === 'ALTA/PC') ? 4 : 1; // Default
+            const isMobile = globalPerformanceTier !== 'ALTA/PC';
+
+            const measureNetwork = async (testUrl) => {
+                if (isMeasured) return;
+                try {
+                    const startTime = performance.now();
+                    const response = await fetch(testUrl, {
+                        method: 'HEAD',
+                        cache: 'no-cache'
+                    });
+                    if (response.ok) {
+                        currentLatency = performance.now() - startTime;
+
+                        // --- LÓGICA DE VELOCÍMETRO PARA MÓVILES ---
+                        if (isMobile) {
+                            if (currentLatency < 200) {
+                                optimalConcurrency = 3; // Red excelente (WiFi)
+                                console.log(`%c[NetworkSense] 📡 Latencia: ${currentLatency.toFixed(0)}ms -> Red Ultra-Rápida (3 Carriles)`, "color: #00FF00; font-weight: bold;");
+                            } else if (currentLatency < 600) {
+                                optimalConcurrency = 2; // Red buena (4G)
+                                console.log(`%c[NetworkSense] 📡 Latencia: ${currentLatency.toFixed(0)}ms -> Red Estable (2 Carriles)`, "color: #ffaa00;");
+                            } else {
+                                optimalConcurrency = 1; // Red inestable (Hora Pico/3G)
+                                console.log(`%c[NetworkSense] 📡 Latencia: ${currentLatency.toFixed(0)}ms -> Red Inestable (Modo Seguro: 1 Carril)`, "color: #ff5555;");
+                            }
+                        } else {
+                            // En PC mantenemos 4 carriles por su capacidad de hardware
+                            console.log(`%c[NetworkSense] 🖥️ PC Detectada. Manteniendo 4 carriles. (Latencia: ${currentLatency.toFixed(0)}ms)`, "color: #00F3FF;");
+                        }
+                        isMeasured = true;
+                    }
+                } catch (e) {
+                    console.warn("[NetworkSense] Fallo al medir red. Usando default (1 carril).", e);
+                }
+            };
+
+            return {
+                measureNetwork,
+                getConcurrency: () => optimalConcurrency
+            };
+        })();
+        // --- FIN MÓDULO NetworkSense ---
+
         let abortController = null;
         const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache';
 
-        // Mapeo de Concurrencia Senior: BAJA/MEDIA = 1 en 1 | ALTA = 4 en 4
-        const getConcurrencyLimit = () => (globalPerformanceTier === 'ALTA/PC') ? 4 : 1;
+// Mapeo de Concurrencia Senior: Conectado a NetworkSense
+const getConcurrencyLimit = () => NetworkSense.getConcurrency();
 
         // TRADUCTOR TÁCTICO: Convierte "04:30" -> Segmento 135
         const timeToSegmentIndex = (timeStr) => {
@@ -1081,8 +1189,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             abortController = new AbortController();
 
-            // Aquí se ejecutará la lógica de la Fase 3 (Traductor y Descarga)
-            processQueue(set.tracklist);
+            // Realizamos la prueba de velocidad con el primer segmento antes de arrancar
+            const testSegment = `${CLOUDFLARE_R2_URL}/${set.id}/seg-0.m4s`;
+            NetworkSense.measureNetwork(testSegment).then(() => {
+                // Aquí se ejecutará la lógica de la Fase 3 (Traductor y Descarga)
+                processQueue(set.tracklist);
+            });
+
         };
 
         // --- EL MOTOR FANTASMA FINAL (Paralelismo Controlado) ---
@@ -1139,7 +1252,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
-        return { start };
+        return {
+            start
+        };
     })();
     // --- FIN: Módulo TracklistPreloader ---
 
@@ -1481,7 +1596,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateMediaSessionMetadata(set, currentTrackName = null) { // <-- MODIFICADO: Añadir currentTrackName
         if ('mediaSession' in navigator && set) {
             const trackTitle = currentTrackName || "Loading Track..."; // <-- AÑADIDO: Título por defecto si no hay track
-           console.log(`[MediaSession] Actualizando metadatos. Set: "${set.title}", Track: "${trackTitle}"`); // LOG MODIFICADO
+            console.log(`[MediaSession] Actualizando metadatos. Set: "${set.title}", Track: "${trackTitle}"`); // LOG MODIFICADO
 
             navigator.mediaSession.metadata = new MediaMetadata({
                 title: set.title, // El título principal sigue siendo el del Set
@@ -1605,7 +1720,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     }
 
-// --- Función SeekWaveform (Requerida por Drag Logic) ---
+    // --- Función SeekWaveform (Requerida por Drag Logic) ---
     const seekWaveform = (clientX, rect, eventType) => {
         console.log(`[Drag v6 Final Corrected] seekWaveform llamado desde: ${eventType}`); // LOG (Prefijo actualizado)
         if (!wavesurfer) {
@@ -2824,7 +2939,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 
-// --- INICIO: REGISTRO PWA CON AUTOPSIA DE HARDWARE (MODO TORTUGA) ---
+    // --- INICIO: REGISTRO PWA CON AUTOPSIA DE HARDWARE (MODO TORTUGA) ---
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('./sw.js').then((registration) => {
@@ -2874,6 +2989,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
-// --- FIN: REGISTRO PWA ---
+    // --- FIN: REGISTRO PWA ---
 
 }); // Este cierra el DOMContentLoaded del inicio del archivo (Línea 27)
