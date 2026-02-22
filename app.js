@@ -1760,8 +1760,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // =================================================================
         const MOBILE_SMART_SNAP = true; // <-- Variable para Activar/Desactivar
 
-        // Solo actúa si está activo, si es un toque (móvil) y el navegador de tracks está listo
-        if (MOBILE_SMART_SNAP && eventType.includes('touch') && typeof TrackNavigator !== 'undefined' && TrackNavigator.isReady()) {
+        // Condición de activación: Toques móviles o Clics en dispositivos no-PC (v5.4)
+        const isMobileAction = eventType.includes('touch') || (eventType === 'click' && globalPerformanceTier !== 'ALTA/PC');
+
+        if (MOBILE_SMART_SNAP && isMobileAction && typeof TrackNavigator !== 'undefined' && TrackNavigator.isReady()) {
 
             // --- LÓGICA DE INTENCIÓN TOTAL (v5.3 - Evasión de Zona Activa) ---
             const currentStart = TrackNavigator.getCurrentTrackStartTime(rawTime, false);
