@@ -1757,13 +1757,13 @@ document.addEventListener('DOMContentLoaded', () => {
         // =================================================================
         const MOBILE_SMART_SNAP = true;
 
-        // 🛑 ANULACIÓN DE EVENTOS FANTASMAS (FIX REBOTE FINAL):
+// 🛑 ANULACIÓN DE EVENTOS FANTASMAS (FIX REBOTE FINAL):
         // 1. Matamos touchmove para evitar rebotes al deslizar.
         // 2. Matamos el 'click' sintético en móviles para evitar el "adelantar de más".
         if (MOBILE_SMART_SNAP && globalPerformanceTier !== 'ALTA/PC') {
             if (eventType === 'touchmove' || eventType === 'click') {
                 console.log(`%c[Smart Snap] 🛡️ Evento ${eventType} destruido. Previniendo rebote.`, "color: #FF00FF; font-size: 9px;");
-                return false;
+                return true; // FIX ARQUITECTURA: 'true' bloquea que el nativo actúe.
             }
         }
 
@@ -1779,10 +1779,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const now = performance.now();
 
-            // 🛡️ ESCUDO ABSOLUTO ANTI-REBOTE (Mata el touchend/click fantasma instantáneamente)
+// 🛡️ ESCUDO ABSOLUTO ANTI-REBOTE (Mata el touchend/click fantasma instantáneamente)
             if (now - lastInteractionTimestamp < PHANTOM_BLOCK_MS) {
                 console.log("%c[Smart Snap] 🛡️ Rebote al soltar bloqueado.", "color: #777; font-size: 9px;");
-                return false;
+                return true; // FIX ARQUITECTURA: 'true' mata el rebote del hardware al despegar.
             }
 
             // Evaluamos si el usuario está en una secuencia rápida de toques
@@ -1810,7 +1810,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const isSameHouse = (t1, t2) => Math.abs(t1 - t2) < 0.5;
             const isHistorial = recentSnapMemory.some(t => isSameHouse(t, finalSnapTime));
 
-            // CASO A: Toca la baldosa en la que YA ESTÁ (Mismo lugar).
+          // CASO A: Toca la baldosa en la que YA ESTÁ (Mismo lugar).
             // NUNCA quiere reiniciar. Forzamos siempre el salto a la SIGUIENTE.
             if (isSameHouse(finalSnapTime, trueCurrentHouse)) {
                 const forceNext = TrackNavigator.findNextTimestamp(trueCurrentHouse, false);
@@ -1818,17 +1818,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     finalSnapTime = forceNext;
                     console.log(`%c[Smart Snap] 🚀 Avance Forzado -> Evitando reinicio, saltando a: ${formatTime(finalSnapTime)}`, "background: #FF4B2B; color: #fff; font-weight: bold; padding: 2px;");
                 } else {
-                    lastInteractionTimestamp = now; // FIX 2 CRÍTICO: Renovar el escudo al bloquear.
+                    lastInteractionTimestamp = now;
                     console.log("%c[Smart Snap] 🛑 Última pista alcanzada. Reinicio bloqueado.", "color: #FFA500; font-size: 10px;");
-                    return false;
+                    return true; // FIX ARQUITECTURA: Impide reinicio nativo en la última pista.
                 }
             }
             // CASO B: Toca una baldosa DEL PASADO (Historial).
             else if (isHistorial) {
                 if (STRICT_FORWARD_INTENT && isRapidSequence) {
-                    lastInteractionTimestamp = now; // FIX 2 CRÍTICO: Si hace 50 clics, el escudo jamás caerá.
+                    lastInteractionTimestamp = now;
                     console.log(`%c[Smart Snap] 🛡️ Toque en historial bloqueado. Manteniendo pista actual.`, "color: #FFA500; font-weight: bold; font-size: 10px;");
-                    return false; // Abortamos el clic por completo
+                    return true; // FIX ARQUITECTURA: Impide que el dedo gordo reinicie la pista al resbalar.
                 }
             }
 
@@ -1838,8 +1838,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (safetyNext !== null) {
                     finalSnapTime = safetyNext;
                 } else {
-                    lastInteractionTimestamp = now; // FIX 2 CRÍTICO
-                    return false;
+                    lastInteractionTimestamp = now;
+                    return true; // FIX ARQUITECTURA
                 }
             }
 
