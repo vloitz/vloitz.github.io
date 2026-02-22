@@ -1778,12 +1778,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let didSmartSnap = false;
 
-        if (MOBILE_SMART_SNAP && isMobile && typeof TrackNavigator !== 'undefined' && TrackNavigator.isReady()) {
+       if (MOBILE_SMART_SNAP && isMobile && typeof TrackNavigator !== 'undefined' && TrackNavigator.isReady()) {
 
             const currentTime = wavesurfer.getCurrentTime();
+            const isRapidSequence = (now - lastLandingTime < 2500); // 2.5s de ventana de frustración
 
-            // Obtenemos las casas: La Verdadera (Historial) y la Tocada (Física)
-            const trueCurrentHouse = recentSnapMemory.length > 0 ? recentSnapMemory[recentSnapMemory.length - 1] : TrackNavigator.getCurrentTrackStartTime(currentTime, false);
+            // 🕵️ FIX QUIRÚRGICO: Sincronización de Realidad vs Memoria Estancada
+            // Si la música avanzó naturalmente (no tocaste en 2.5s), la memoria se estanca. Confiamos en la realidad del motor.
+            // Si estás tocando rápido y el motor tiene lag, confiamos en la memoria.
+            let trueCurrentHouse = TrackNavigator.getCurrentTrackStartTime(currentTime, false);
+            if (isRapidSequence && recentSnapMemory.length > 0) {
+                trueCurrentHouse = recentSnapMemory[recentSnapMemory.length - 1];
+            }
+
             let clickedHouse = TrackNavigator.getCurrentTrackStartTime(rawTime, false);
             const nextHouseFromClick = TrackNavigator.findNextTimestamp(rawTime, false);
 
@@ -1797,7 +1804,6 @@ document.addEventListener('DOMContentLoaded', () => {
             // -----------------------------------------------------------------
             // 🦶 3. LÓGICA DEL PIE GORDO (Certeza y Dirección)
             // -----------------------------------------------------------------
-            const isRapidSequence = (now - lastLandingTime < 2500); // 2.5s de ventana de frustración
             const isSameHouse = (t1, t2) => Math.abs(t1 - t2) < 0.5; // Tolerancia a decimales
             const isHistorial = recentSnapMemory.some(t => isSameHouse(t, clickedHouse));
 
