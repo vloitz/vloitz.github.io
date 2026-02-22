@@ -1749,12 +1749,31 @@ document.addEventListener('DOMContentLoaded', () => {
         const wsRect = wsWrapper.getBoundingClientRect();
         const x = Math.max(0, clientX - wsRect.left);
         let progress = Math.max(0, Math.min(1, x / wsRect.width));
+        let rawTime = progress * wavesurfer.getDuration();
 
-        // --- INYECCIÓN SNAP MAGNÉTICO (Solo actúa si está activo) ---
+        // =================================================================
+        // 🧲 NUEVO: MOBILE SMART SNAP (UX Táctil)
+        // Convierte los colores de la onda en "botones gigantes" en móvil
+        // =================================================================
+        const MOBILE_SMART_SNAP = true; // <-- Variable para Activar/Desactivar
+
+        // Solo actúa si está activo, si es un toque (móvil) y el navegador de tracks está listo
+        if (MOBILE_SMART_SNAP && eventType.includes('touch') && typeof TrackNavigator !== 'undefined' && TrackNavigator.isReady()) {
+            // Busca a qué canción pertenece el punto donde cayó el dedo
+            const trackStartTime = TrackNavigator.getCurrentTrackStartTime(rawTime, false);
+
+            if (trackStartTime !== null) {
+                rawTime = trackStartTime; // Ajustamos el tiempo crudo al inicio de la canción
+                progress = rawTime / wavesurfer.getDuration(); // Recalculamos el progreso
+                console.log(`%c[Smart Snap UX] 📱 Toque en onda -> Redirigido al inicio del Track: ${formatTime(rawTime)}`, "background: #1DB954; color: #000; font-weight: bold; padding: 2px;");
+            }
+        }
+        // =================================================================
+
+        // --- INYECCIÓN SNAP MAGNÉTICO DEL MOTOR (Corrección de Latencia Cache) ---
         if (wavesurfer.getDuration() > 0 && typeof PrecacheController !== 'undefined' && PrecacheController.getFuzzyTime) {
-            const rawTime = progress * wavesurfer.getDuration();
             const correctedTime = PrecacheController.getFuzzyTime(rawTime);
-            progress = correctedTime / wavesurfer.getDuration();
+            progress = Math.max(0, Math.min(1, correctedTime / wavesurfer.getDuration()));
         }
         // --------------------------------------------------------------
 
