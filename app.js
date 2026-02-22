@@ -1806,13 +1806,17 @@ document.addEventListener('DOMContentLoaded', () => {
           // 2. REGLA ORO ESTRICTA (Cero Reinicios Absolutos):
             const trueCurrentHouse = recentSnapMemory.length > 0 ? recentSnapMemory[recentSnapMemory.length - 1] : currentlyPlayingStart;
 
-            // CASO A: Toca la baldosa en la que YA ESTÁ (Mismo lugar).
+           // CASO A: Toca la baldosa en la que YA ESTÁ (Mismo lugar).
             // NUNCA quiere reiniciar. Forzamos siempre el salto a la SIGUIENTE.
             if (finalSnapTime === trueCurrentHouse) {
                 const forceNext = TrackNavigator.findNextTimestamp(trueCurrentHouse, false);
                 if (forceNext !== null) {
                     finalSnapTime = forceNext;
                     console.log(`%c[Smart Snap] 🚀 Avance Forzado -> Evitando reinicio, saltando a: ${formatTime(finalSnapTime)}`, "background: #FF4B2B; color: #fff; font-weight: bold; padding: 2px;");
+                } else {
+                    // FIX SUPREMO: Si es la última bolita del set y no hay siguiente, destruimos el clic.
+                    console.log("%c[Smart Snap] 🛑 Última pista alcanzada. Reinicio bloqueado.", "color: #FFA500; font-size: 10px;");
+                    return false;
                 }
             }
             // CASO B: Toca una baldosa DEL PASADO (Historial).
