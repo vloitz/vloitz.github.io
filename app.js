@@ -1775,7 +1775,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // 0. CANDADO DE TITANIO (1.2s - Desincronización de Estado Asíncrono)
             // Le da tiempo al motor de WaveSurfer de asimilar el nuevo tiempo.
             const now = performance.now();
-            if (now - lastInteractionTimestamp < 1200) {
+            if (now - lastInteractionTimestamp < 2000) {
                 console.log(`%c[Smart Snap] 🛡️ Candado Activo (1.2s). Ignorando toques frenéticos.`, "color: #777; font-size: 9px;");
                 return false;
             }
