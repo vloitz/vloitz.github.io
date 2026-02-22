@@ -1737,9 +1737,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-// Memoria histórica de zonas recientes (v5.8 - Propuesta de 2 posiciones)
+// Memoria histórica de posiciones (Metáfora de Juan y María)
     let recentSnapMemory = [];
-    let lastInteractionTimestamp = 0; // Para bloquear rebotes de milisegundos
+    let lastInteractionTimestamp = 0; // Para bloquear rebotes de milisegundos (v5.5)
 
     // --- Función SeekWaveform (Requerida por Drag Logic) ---
     const seekWaveform = (clientX, rect, eventType) => {
@@ -1752,28 +1752,12 @@ document.addEventListener('DOMContentLoaded', () => {
         let progress = Math.max(0, Math.min(1, x / wsRect.width));
         let rawTime = progress * wavesurfer.getDuration();
 
-// --- BLOQUEO DEFINITIVO DE CLIC SINTÉTICO Y REBOTE (v5.9) ---
-        // Tu deducción fue correcta: Evitamos el "adelantar de más" aniquilando el clic falso del navegador al soltar el dedo.
-        // El móvil SOLO debe obedecer a "touchstart" y "touchmove".
-        if (eventType === 'click' && globalPerformanceTier !== 'ALTA/PC') {
-            console.log("%c[Smart Snap UX] 🛡️ Clic sintético móvil destruido. Previniendo rebote y doble salto.", "color: #FF00FF; font-weight: bold; font-size: 9px;");
-            return false;
-        }
-
-        const nowInteraction = performance.now();
-        // Mantenemos 350ms SOLO para evitar que el usuario haga doble-tap (touchstart) accidental muy rápido
-        if (nowInteraction - lastInteractionTimestamp < 350) {
-            console.log("%c[Smart Snap UX] 🛡️ Doble toque rápido bloqueado.", "color: #777; font-size: 8px;");
-            return false;
-        }
-        lastInteractionTimestamp = nowInteraction;
-
         // =================================================================
-        // 🧲 MOBILE SMART SNAP (v5.8 - Dictadura Absoluta + Memoria Histórica)
+        // 🧲 MOBILE SMART SNAP (v5.6 - Dictadura Absoluta)
         // =================================================================
         const MOBILE_SMART_SNAP = true;
         const isMobileAction = eventType.includes('touch') || (eventType === 'click' && globalPerformanceTier !== 'ALTA/PC');
-        let didSmartSnap = false;
+        let didSmartSnap = false; // Control para evitar conflicto con FuzzyHoming
 
         if (MOBILE_SMART_SNAP && isMobileAction && typeof TrackNavigator !== 'undefined' && TrackNavigator.isReady()) {
             const clickedTrackStart = TrackNavigator.getCurrentTrackStartTime(rawTime, false);
@@ -1791,30 +1775,40 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // 2. REGLA ORO (Escudo de Memoria Histórica v5.8)
-            // Prohibido caer en la zona actual O en las últimas 2 zonas registradas
+          // 2. REGLA ORO (Escudo Histórico): Prohibido caer en la zona actual o en el historial reciente
             if (finalSnapTime === currentlyPlayingStart || recentSnapMemory.includes(finalSnapTime)) {
+
+                // FIX REBOTE (La casa de María): Si el rebote intenta cargar EXACTAMENTE la misma posición
+                // que acabamos de aceptar, lo ignoramos por completo para no "adelantar de más".
+                if (recentSnapMemory.length > 0 && finalSnapTime === recentSnapMemory[recentSnapMemory.length - 1]) {
+                    console.log(`%c[Smart Snap] 🛡️ Rebote al soltar ignorado. Te mantienes en la casa de María.`, "color: #777; font-size: 9px;");
+                    return false; // Abortamos el falso clic
+                }
+
+                // FIX CASA DE JUAN: Si intenta volver a una posición antigua (Juan) o repetir la actual, forzamos avanzar
                 const forceNext = TrackNavigator.findNextTimestamp(currentlyPlayingStart, false);
                 if (forceNext !== null) {
                     finalSnapTime = forceNext;
-                    console.log(`%c[Smart Snap UX] 🚫 Zona Restringida -> Empuje al siguiente track: ${formatTime(finalSnapTime)}`, "background: #FF4B2B; color: #fff; font-weight: bold; padding: 2px;");
+                    console.log(`%c[Smart Snap] 🚫 Regreso a zona anterior evitado -> Avanzando: ${formatTime(finalSnapTime)}`, "background: #FF4B2B; color: #fff; font-weight: bold; padding: 2px;");
                 }
             }
 
-            // 3. Guardar en la memoria histórica (Máximo 2 posiciones)
-            if (finalSnapTime !== null && !recentSnapMemory.includes(finalSnapTime)) {
-                recentSnapMemory.push(finalSnapTime);
-                if (recentSnapMemory.length > 2) {
-                    recentSnapMemory.shift(); // Mantiene solo los últimos 2
+            // 3. Guardamos la memoria (Últimas 3 posiciones)
+            if (finalSnapTime !== null) {
+                // Solo lo añadimos si es una posición nueva (no es exactamente igual a la última)
+                if (recentSnapMemory.length === 0 || recentSnapMemory[recentSnapMemory.length - 1] !== finalSnapTime) {
+                    recentSnapMemory.push(finalSnapTime);
+                    if (recentSnapMemory.length > 3) {
+                        recentSnapMemory.shift(); // Borra la memoria más antigua para no saturar
+                    }
                 }
             }
 
-            // 4. Aplicar el Snap al progreso
             if (finalSnapTime !== null) {
                 rawTime = finalSnapTime;
                 progress = rawTime / wavesurfer.getDuration();
                 didSmartSnap = true;
-                console.log(`%c[Smart Snap UX] 🎯 Éxito (${eventType}): ${formatTime(rawTime)} | Memoria: [${recentSnapMemory.map(t=>formatTime(t)).join(', ')}]`, "background: #1DB954; color: #000; font-weight: bold; padding: 2px;");
+                console.log(`%c[Smart Snap] 🎯 Éxito (${eventType}): ${formatTime(rawTime)}`, "background: #1DB954; color: #000; font-weight: bold;");
             }
         }
 
