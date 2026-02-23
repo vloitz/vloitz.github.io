@@ -37,7 +37,9 @@ function openDB() {
       const db = event.target.result;
       let store;
       if (!db.objectStoreNames.contains(STORE_NAME)) {
-        store = db.createObjectStore(STORE_NAME, { keyPath: 'url' });
+        store = db.createObjectStore(STORE_NAME, {
+          keyPath: 'url'
+        });
         console.log('[Vloitz DB] 🏗️ Almacén de fragmentos creado.');
       } else {
         store = event.target.transaction.objectStore(STORE_NAME);
@@ -142,34 +144,34 @@ async function getFragmentFromDB(url) {
 
 // El Camión de la Basura: Borra el fragmento más antiguo si superamos el límite
 async function enforceCacheLimit() {
-    try {
-        const db = await openDB();
-        const transaction = db.transaction(STORE_NAME, 'readwrite');
-        const store = transaction.objectStore(STORE_NAME);
-        const countRequest = store.count();
+  try {
+    const db = await openDB();
+    const transaction = db.transaction(STORE_NAME, 'readwrite');
+    const store = transaction.objectStore(STORE_NAME);
+    const countRequest = store.count();
 
-        countRequest.onsuccess = async () => {
-            if (countRequest.result > cacheLimit) {
-                // Si hay demasiados, abrimos un cursor para buscar el más viejo (timestamp menor)
-                // IndexedDB no ordena por defecto por timestamp, así que buscamos el primero
-                const index = store.index('by_timestamp');
-                const cursorRequest = index.openCursor(); // Ordena de menor a mayor tiempo
-                cursorRequest.onsuccess = (event) => {
-                    const cursor = event.target.result;
-                    if (cursor) {
-                        const urlToDelete = cursor.value.url;
-                        store.delete(urlToDelete);
-                        console.log(
-                            `%c[Vloitz Cache] 🗑️ Purga Automática: Límite excedido. Borrado: ${urlToDelete.split('/').pop()}`,
-                            "background: #121212; color: #FF3131; font-weight: bold; padding: 2px 4px; border: 1px solid #FF3131; border-radius: 3px;"
-                        );
-                    }
-                };
-            }
+    countRequest.onsuccess = async () => {
+      if (countRequest.result > cacheLimit) {
+        // Si hay demasiados, abrimos un cursor para buscar el más viejo (timestamp menor)
+        // IndexedDB no ordena por defecto por timestamp, así que buscamos el primero
+        const index = store.index('by_timestamp');
+        const cursorRequest = index.openCursor(); // Ordena de menor a mayor tiempo
+        cursorRequest.onsuccess = (event) => {
+          const cursor = event.target.result;
+          if (cursor) {
+            const urlToDelete = cursor.value.url;
+            store.delete(urlToDelete);
+            console.log(
+              `%c[Vloitz Cache] 🗑️ Purga Automática: Límite excedido. Borrado: ${urlToDelete.split('/').pop()}`,
+              "background: #121212; color: #FF3131; font-weight: bold; padding: 2px 4px; border: 1px solid #FF3131; border-radius: 3px;"
+            );
+          }
         };
-    } catch (error) {
-        console.error('[Vloitz Cache] Error en la purga:', error);
-    }
+      }
+    };
+  } catch (error) {
+    console.error('[Vloitz Cache] Error en la purga:', error);
+  }
 }
 
 // --- FIN: FUNCIONES DE LECTURA Y ESCRITURA ---
@@ -190,6 +192,7 @@ self.addEventListener('message', (event) => {
 
 // 1. INSTALACIÓN: Guardamos la interfaz en el caché
 self.addEventListener('install', (e) => {
+  self.skipWaiting(); // 👊 Activación inmediata sin esperas
   console.log('[Service Worker] Instalando caché de interfaz...');
   e.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -200,6 +203,7 @@ self.addEventListener('install', (e) => {
 
 // 2. ACTIVACIÓN: Limpiamos versiones viejas si actualizas la web
 self.addEventListener('activate', (e) => {
+  e.waitUntil(clients.claim()); // ⚡ Toma el mando de la página actual de inmediato
   e.waitUntil(
     caches.keys().then((keyList) => {
       return Promise.all(keyList.map((key) => {
@@ -212,36 +216,57 @@ self.addEventListener('activate', (e) => {
 // 3. INTERCEPTACIÓN: Si piden algo, miramos el caché primero
 self.addEventListener('fetch', (e) => {
 
-// --- INICIO: INTERCEPTOR DE BÓVEDA TÁCTICA (Cloudflare 2s) ---
-// --- VERSIÓN CORREGIDA (PASO 1) ---
-if (e.request.url.includes('.m4s') && e.request.url.includes('pub-1bd5ca00f737488cae44be74016d8499.r2.dev')) {
+  // 🚀 ESTRATEGIA SENIOR (Stale-While-Revalidate): Actualización silenciosa de sets
+  if (e.request.url.includes('sets.json')) {
     e.respondWith(
-        caches.open(PRELOAD_CACHE_NAME).then((cache) => {
-            return cache.match(e.request).then((cachedResponse) => {
+      caches.match(e.request).then((cachedResponse) => {
+        // 1. Disparamos la búsqueda en internet en segundo plano (Baja prioridad)
+        const fetchPromise = fetch(e.request).then((networkResponse) => {
+          if (networkResponse.ok) {
+            const copy = networkResponse.clone();
+            // Actualizamos la base de datos para la PRÓXIMA vez
+            caches.open(CACHE_NAME).then((cache) => cache.put(e.request, copy));
+          }
+          return networkResponse;
+        }).catch(() => {}); // Falla en silencio si no hay red
 
-                // Si existe en caché y la respuesta es válida...
-                if (cachedResponse && cachedResponse.ok) {
-                    // Verificamos el tamaño real del archivo (Blob)
-                    return cachedResponse.clone().blob().then(blob => {
-                        // Si el archivo es mayor a 500 bytes, es audio real.
-                        if (blob.size > 500) {
-                            console.log(`%c[Service Worker] 🧲 Hit Válido (0ms): ${e.request.url.split('/').pop()}`, "color: #39FF14; font-weight: bold;");
-                            return cachedResponse;
-                        }
-                        // Si es basura técnica (0 bytes), lo borramos y vamos a red
-                        console.warn(`[Service Worker] 🗑️ Fragmento corrupto detectado. Saltando a red.`);
-                        cache.delete(e.request);
-                        return fetch(e.request);
-                    }).catch(() => fetch(e.request));
-                }
-
-                // Si no está en caché, descarga normal de internet
-                return fetch(e.request);
-            });
-        })
+        // 2. Entregamos lo que ya tenemos para carga instantánea
+        return cachedResponse || fetchPromise;
+      })
     );
     return;
-}
+  }
+
+  // --- INICIO: INTERCEPTOR DE BÓVEDA TÁCTICA (Cloudflare 2s) ---
+  // --- VERSIÓN CORREGIDA (PASO 1) ---
+  if (e.request.url.includes('.m4s') && e.request.url.includes('pub-1bd5ca00f737488cae44be74016d8499.r2.dev')) {
+    e.respondWith(
+      caches.open(PRELOAD_CACHE_NAME).then((cache) => {
+        return cache.match(e.request).then((cachedResponse) => {
+
+          // Si existe en caché y la respuesta es válida...
+          if (cachedResponse && cachedResponse.ok) {
+            // Verificamos el tamaño real del archivo (Blob)
+            return cachedResponse.clone().blob().then(blob => {
+              // Si el archivo es mayor a 500 bytes, es audio real.
+              if (blob.size > 500) {
+                console.log(`%c[Service Worker] 🧲 Hit Válido (0ms): ${e.request.url.split('/').pop()}`, "color: #39FF14; font-weight: bold;");
+                return cachedResponse;
+              }
+              // Si es basura técnica (0 bytes), lo borramos y vamos a red
+              console.warn(`[Service Worker] 🗑️ Fragmento corrupto detectado. Saltando a red.`);
+              cache.delete(e.request);
+              return fetch(e.request);
+            }).catch(() => fetch(e.request));
+          }
+
+          // Si no está en caché, descarga normal de internet
+          return fetch(e.request);
+        });
+      })
+    );
+    return;
+  }
   // --- FIN: INTERCEPTOR DE BÓVEDA TÁCTICA ---
 
   // --- INICIO: INTERCEPTOR DE BÓVEDA HF (Fragmentos .m4s) ---
