@@ -216,21 +216,21 @@ self.addEventListener('activate', (e) => {
 // 3. INTERCEPTACIÓN: Si piden algo, miramos el caché primero
 self.addEventListener('fetch', (e) => {
 
-  // 🚀 ESTRATEGIA SENIOR (Stale-While-Revalidate): Actualización silenciosa de sets
+// 🛰️ ESTRATEGIA SENIOR: Carga inmediata del caché + Actualización silenciosa para la próxima visita
   if (e.request.url.includes('sets.json')) {
     e.respondWith(
       caches.match(e.request).then((cachedResponse) => {
-        // 1. Disparamos la búsqueda en internet en segundo plano (Baja prioridad)
+        // Disparamos la revisión en segundo plano sin bloquear al usuario
         const fetchPromise = fetch(e.request).then((networkResponse) => {
           if (networkResponse.ok) {
             const copy = networkResponse.clone();
-            // Actualizamos la base de datos para la PRÓXIMA vez
+            // Guardamos el cambio detectado para que aparezca en la PRÓXIMA recarga
             caches.open(CACHE_NAME).then((cache) => cache.put(e.request, copy));
           }
           return networkResponse;
-        }).catch(() => {}); // Falla en silencio si no hay red
+        }).catch(() => {}); // Si falla el internet, el sistema no hace nada y el fan ni se entera
 
-        // 2. Entregamos lo que ya tenemos para carga instantánea
+        // Entregamos el caché actual (viejo) para asegurar 0ms de espera
         return cachedResponse || fetchPromise;
       })
     );
