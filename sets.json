@@ -3,17 +3,110 @@
         "profile_pic_url": "./perfil/perfil.webp",
         "banner_url": "./perfil/banner.webp"
     },
-    "sets": [
-        {
+    "sets": [{
             "id": "GDL004",
             "title": "GridLock Groovy 004",
             "server": "CF",
             "date": "2026-02-23 16:21:05",
-            "tracklist": [
-                {
+            "tracklist": [{
                     "time": "0:00",
                     "emoji": "🌅",
-                    "title": "ID"
+                    "title": "Sebalance, Juve Alonso - Without Your Love (Original Mix)"
+                },
+                {
+                    "time": "3:18",
+                    "emoji": "🚗",
+                    "title": "Cristina Lazic - Watch The Time (LondonGround Remix)"
+                },
+                {
+                    "time": "5:03",
+                    "emoji": "🥁",
+                    "title": "Mustafa Ismaeel - Part Time Lover"
+                },
+                {
+                    "time": "8:03",
+                    "emoji": "🐆",
+                    "title": "Ztrong - Your Body (Original Mix)"
+                },
+                {
+                    "time": "10:00",
+                    "emoji": "🔥",
+                    "title": "Italobros - Catch Me (Extended Mix)"
+                },
+                {
+                    "time": "12:22",
+                    "emoji": "🌆",
+                    "title": "RUZE - Need Ur Lovin'"
+                },
+                {
+                    "time": "14:45",
+                    "emoji": "🚀",
+                    "title": "CASSIMM - Over You (Extended Mix)"
+                },
+                {
+                    "time": "16:58",
+                    "emoji": "🌙",
+                    "title": "Iglesias - Take Your Pants Off"
+                },
+                {
+                    "time": "18:46",
+                    "emoji": "🐺",
+                    "title": "Luca Martini - Something Special"
+                },
+                {
+                    "time": "21:44",
+                    "emoji": "🛸",
+                    "title": "Joshwa - Lost In Music (Extended Mix)"
+                },
+                {
+                    "time": "23:11",
+                    "emoji": "🔮",
+                    "title": "Chinonegro - Bombero Calling"
+                },
+                {
+                    "time": "25:12",
+                    "emoji": "🔑",
+                    "title": "Mellizos - Get Lit"
+                },
+                {
+                    "time": "27:39",
+                    "emoji": "🌋",
+                    "title": "Italobros - Mirar (Extended Mix)"
+                },
+                {
+                    "time": "29:28",
+                    "emoji": "💣",
+                    "title": "Chloé Caillet - The One (feat. Jocelyn Brown)"
+                },
+                {
+                    "time": "31:30",
+                    "emoji": "🎭",
+                    "title": "SCHEINY - Ain't Nobody"
+                },
+                {
+                    "time": "33:44",
+                    "emoji": "👑",
+                    "title": "Kerri Chandler, Dennis Quin, Philip George - You Are In My System"
+                },
+                {
+                    "time": "35:49",
+                    "emoji": "⚡",
+                    "title": "Nari - Don't Start Now"
+                },
+                {
+                    "time": "37:44",
+                    "emoji": "💎",
+                    "title": "RUZE - Innervision"
+                },
+                {
+                    "time": "39:56",
+                    "emoji": "🌀",
+                    "title": "Ralph C - When the Sound Goes Down"
+                },
+                {
+                    "time": "42:37",
+                    "emoji": "🕶️",
+                    "title": "Mellizos - Freedom (Back 2 Tha Funk)"
                 }
             ]
         },
@@ -22,8 +115,7 @@
             "title": "GridLock Groovy 003",
             "server": "CF",
             "date": "2026-02-20 19:44:48",
-            "tracklist": [
-                {
+            "tracklist": [{
                     "time": "0:00",
                     "emoji": "🌅",
                     "title": "Patrizio Exclusive, Lollomezz - Sweet Love"
@@ -175,8 +267,7 @@
             "title": "Jungle Rhythmic Grooves 004",
             "server": "CF",
             "date": "2026-02-20 19:43:18",
-            "tracklist": [
-                {
+            "tracklist": [{
                     "time": "0:00",
                     "emoji": "🌅",
                     "title": "Diego Bustamante - Madness (SEBS (US) Remix)"
