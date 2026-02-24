@@ -6,6 +6,9 @@ const ASSETS_TO_CACHE = [
   './style.css',
   './app.js',
   './sets.json',
+  './perfil/perfil.webp',
+  './perfil/banner.webp',
+  './perfil/logo_og.webp',
   './favicon/favicon.ico',
   'https://unpkg.com/wavesurfer.js@7.7.5/dist/wavesurfer.min.js',
   'https://unpkg.com/wavesurfer.js@7.7.5/dist/plugins/regions.min.js'

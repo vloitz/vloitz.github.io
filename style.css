@@ -986,3 +986,5 @@ html, body {
 /* ASEGURAR ALTURA COMPLETA (Crucial para el fix)
    ELIMINADO: html { height: 100%; } causaba que PC no hiciera scroll */
 /* body { min-height: 100%; } */
+
+/* --- FIN DEL ARCHIVO --- */

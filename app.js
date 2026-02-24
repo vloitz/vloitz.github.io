@@ -1438,10 +1438,15 @@ document.addEventListener('DOMContentLoaded', () => {
             li.className = 'track-item';
             li.dataset.index = index;
             li.innerHTML = `
-                <img src="${set.cover_art_url || `./Artwork/${set.id}.jpg`}" alt="${set.title} cover" class="track-item-cover">
+                <img src="${set.cover_art_url || `./Artwork/${set.id}.webp`}" alt="${set.title} cover" class="track-item-cover">
                 <span class="track-item-title">${set.title}</span>
                 <span class="track-item-date">${set.date}</span>
             `;
+            /*li.innerHTML = `
+                <img src="${set.cover_art_url || `./Artwork/${set.id}.jpg`}" alt="${set.title} cover" class="track-item-cover">
+                <span class="track-item-title">${set.title}</span>
+                <span class="track-item-date">${set.date}</span>
+            `;*/
             tracklistElement.appendChild(li);
         });
         console.log(`Tracklist poblado con ${sets.length} items.`); // LOG
@@ -1497,7 +1502,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const magicAudioUrl = set.audio_url || hlsManifestUrl;
 
         const magicPeaksUrl = set.peaks_url || `./peaks/${set.id}.json`;
-        const magicCoverUrl = set.cover_art_url || `./Artwork/${set.id}.jpg`;
+        //const magicCoverUrl = set.cover_art_url || `./Artwork/${set.id}.jpg`;
+        const magicCoverUrl = set.cover_art_url || `./Artwork/${set.id}.webp`;
         console.log(`[Cero Config HLS] Intentando cargar Manifest: ${magicAudioUrl}`);
         console.log(`[Cero Config] Picos: ${magicPeaksUrl}`);
         console.log(`[Cero Config] Portada: ${magicCoverUrl}`);
@@ -1624,9 +1630,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 artist: currentTrackName ? '' : 'Vloitz',
                 album: trackTitle, // <-- MODIFICADO: Usamos 'album' para el nombre del track actual
                 artwork: [{
-                        src: set.cover_art_url || `./Artwork/${set.id}.jpg`,
+                        /*src: set.cover_art_url || `./Artwork/${set.id}.jpg`,*/
+                        src: set.cover_art_url || `./Artwork/${set.id}.webp`,
                         sizes: '500x500',
-                        type: 'image/jpeg'
+                        type: 'image/webp'
+                        /*type: 'image/jpeg'*/
                     }, // Deducido automáticamente
                 ]
             });

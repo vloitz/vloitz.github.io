@@ -1,7 +1,7 @@
 {
     "profile": {
-        "profile_pic_url": "./perfil/NEON_MIN_HD.jpg",
-        "banner_url": "./perfil/recorte_1600x350_4.png"
+        "profile_pic_url": "./perfil/perfil.webp",
+        "banner_url": "./perfil/banner.webp"
     },
     "sets": [
         {
