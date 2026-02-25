@@ -251,6 +251,35 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
+// --- INICIO: DETECCIÓN DE CAMBIOS CRÍTICOS (HTML / VLOITZ_DEV_MODE) ---
+  if (e.request.mode === 'navigate' || e.request.url.includes('index.html') || e.request.url === self.registration.scope) {
+    e.respondWith(
+      caches.match(e.request).then((cachedResponse) => {
+        const fetchPromise = fetch(e.request).then(async (networkResponse) => {
+          if (networkResponse.ok) {
+            const copy = networkResponse.clone();
+
+            if (cachedResponse) {
+              const oldText = await cachedResponse.clone().text();
+              const newText = await networkResponse.clone().text();
+              if (oldText !== newText) {
+                // Si el código base o la variable dev_mode cambia, forzamos recarga total
+                const clientsList = await self.clients.matchAll();
+                clientsList.forEach(client => client.postMessage({ type: 'ACTUALIZACION_CRITICA' }));
+              }
+            }
+            caches.open(CACHE_NAME).then((cache) => cache.put(e.request, copy));
+          }
+          return networkResponse;
+        }).catch(() => {});
+
+        return cachedResponse || fetchPromise; // 0ms de latencia inicial garantizada
+      })
+    );
+    return;
+  }
+  // --- FIN: DETECCIÓN DE CAMBIOS CRÍTICOS ---
+
   // --- INICIO: INTERCEPTOR DE BÓVEDA TÁCTICA (Cloudflare 2s) ---
   // --- VERSIÓN CORREGIDA (PASO 1) ---
   if (e.request.url.includes('.m4s') && e.request.url.includes('pub-1bd5ca00f737488cae44be74016d8499.r2.dev')) {
