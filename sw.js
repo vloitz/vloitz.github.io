@@ -223,10 +223,21 @@ self.addEventListener('fetch', (e) => {
   if (e.request.url.includes('sets.json')) {
     e.respondWith(
       caches.match(e.request).then((cachedResponse) => {
-        // Disparamos la revisión en segundo plano sin bloquear al usuario
-        const fetchPromise = fetch(e.request).then((networkResponse) => {
-          if (networkResponse.ok) {
-            const copy = networkResponse.clone();
+// Se añadio 'async' para poder comparar los textos del JSON
+        const fetchPromise = fetch(e.request).then(async (networkResponse) => {
+              if (networkResponse.ok) {
+                const copy = networkResponse.clone();
+
+                // --- INICIO: DETECCIÓN DE NUEVO SET Y AVISO ---
+                if (cachedResponse) {
+                  const oldText = await cachedResponse.clone().text();
+                  const newText = await networkResponse.clone().text();
+                  if (oldText !== newText) {
+                    const clientsList = await self.clients.matchAll();
+                    clientsList.forEach(client => client.postMessage({ type: 'NUEVO_SET_DETECTADO' }));
+                  }
+                }
+                // --- FIN: DETECCIÓN DE NUEVO SET ---
             // Guardamos el cambio detectado para que aparezca en la PRÓXIMA recarga
             caches.open(CACHE_NAME).then((cache) => cache.put(e.request, copy));
           }
