@@ -862,6 +862,38 @@ body, html {
 
 .st-artist { color: #888; font-size: 14px; margin-bottom: 20px; }
 
+/* INICIO FASE 1: Estilos de Ajuste Fino */
+.st-time-adjust {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+.st-adj-btn {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    border: 1px solid #333;
+    border-radius: 5px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 800;
+    transition: background 0.2s, border-color 0.2s;
+}
+.st-adj-btn:hover {
+    background: rgba(29, 185, 84, 0.2);
+    border-color: #1DB954;
+}
+.st-adj-time {
+    font-family: 'Roboto Mono', monospace, sans-serif;
+    color: #1DB954;
+    font-size: 15px;
+    font-weight: bold;
+    min-width: 50px;
+}
+/* FIN FASE 1 */
+
 /* Controles de Configuración (Calidad/Duración) */
 .st-controls-row {
     display: flex;
