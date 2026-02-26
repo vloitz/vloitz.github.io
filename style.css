@@ -1003,25 +1003,34 @@ input:checked + .st-slider:before { transform: translateX(18px); }
 }
 .st-cancel-floating-btn:active { transform: translateX(-50%) scale(0.95); }
 
+.st-action-group {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    margin-top: 15px;
+}
+
 .st-preview-btn {
     margin-top: 15px;
     background: rgba(255, 255, 255, 0.05);
     color: #fff;
     border: 1px solid #444;
-    width: 100%;
     padding: 12px;
     border-radius: 50px;
     font-size: 13px;
     font-weight: 700;
     cursor: pointer;
-    margin-bottom: 40px; /* Aumentamos el margen para que el botón no quede pegado al borde del celular */
     transition: all 0.2s;
+    flex: 1; /* Ocupa el 50% del espacio disponible */
+    margin: 0; /* Quitamos márgenes sobrantes */
 }
 .st-preview-btn:hover { background: rgba(255, 255, 255, 0.1); border-color: #1DB954; }
 
 /* Botón Crear */
 .st-create-btn {
-    background: #1db954; color: black; border: none; width: 100%; padding: 16px;
+    background: #1db954; color: black; border: none;
+    flex: 1.5; /* El botón de crear es ligeramente más ancho que el de previa */
+    padding: 16px;
     border-radius: 50px; font-size: 15px; font-weight: 800; cursor: pointer;
     display: flex; align-items: center; justify-content: center; gap: 10px;
     box-shadow: 0 0 20px rgba(29, 185, 84, 0.4); transition: transform 0.2s;
