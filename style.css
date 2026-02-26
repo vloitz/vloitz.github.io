@@ -90,6 +90,11 @@ body, html {
     fill: currentColor;
 }
 
+.social-icon.email:hover {
+    background-color: #D44638; /* Rojo corporativo de email */
+    color: var(--dark-bg);
+}
+
 .profile-extra-content {
     padding-top: 20px;
     width: 250px;
@@ -982,6 +987,8 @@ html, body {
     -ms-overflow-style: none !important;  /* IE */
     overflow-x: hidden; /* CORRECCIÓN: Permite scroll vertical nativo */
 }
+
+
 
 /* ASEGURAR ALTURA COMPLETA (Crucial para el fix)
    ELIMINADO: html { height: 100%; } causaba que PC no hiciera scroll */
