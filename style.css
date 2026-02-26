@@ -954,6 +954,14 @@ input:checked + .st-slider { background-color: #1DB954; }
 input:checked + .st-slider:before { transform: translateX(18px); }
 .st-quality-label { font-size: 11px; font-weight: 700; color: #aaa; text-transform: uppercase; }
 
+/* INICIO FASE COLOR */
+.st-color-picker { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; color: #b3b3b3; font-size: 12px; font-weight: 500; }
+.st-color-options { display: flex; gap: 10px; flex-grow: 1; justify-content: flex-end; }
+.st-color-dot { width: 20px; height: 20px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: transform 0.2s, border-color 0.2s; box-shadow: 0 0 5px rgba(0,0,0,0.5); }
+.st-color-dot:hover { transform: scale(1.1); }
+.st-color-dot.active { border-color: #ffffff; transform: scale(1.2); box-shadow: 0 0 8px currentColor; }
+/* FIN FASE COLOR */
+
 /* Select (Dropdown) */
 .st-select {
     background: #333;
