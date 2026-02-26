@@ -467,6 +467,43 @@
 
     </script>
 
+    <script>
+        // ==========================================================================
+        // [VLOITZ SMART SCROLL] Auto-ajuste de vista inicial en móviles
+        // ==========================================================================
+        window.addEventListener('load', () => {
+            // 1. ¿Es pantalla móvil? Si es PC, no hacemos nada.
+            if (window.innerWidth > 768) return;
+
+            // 2. ¿Es un enlace compartido? Si tiene "/share/" o "?t=", lo abortamos para no pisar el otro scroll.
+            if (window.location.href.includes('/share/') || window.location.href.includes('?t=')) return;
+
+            // 3. Damos 1 segundo para que la carátula y fuentes carguen bien y tomen su tamaño real
+            setTimeout(() => {
+                const controls = document.querySelector('.player-controls'); // El objetivo final
+
+                if (controls) {
+                    // Matemática de colisión: Calculamos dónde está la caja de botones vs el alto de la pantalla
+                    const rect = controls.getBoundingClientRect();
+
+                    // 🎛️ TU VARIABLE DE AJUSTE: (Auméntala si quieres ver más espacio debajo de los botones)
+                    const aireInferior = 15;
+
+                    // Cuánto sobra hacia abajo
+                    const scrollAmount = rect.bottom - window.innerHeight + aireInferior;
+
+                    // Si el valor es positivo, significa que los botones están ocultos abajo. ¡Hacemos scroll!
+                    if (scrollAmount > 0) {
+                        window.scrollBy({ top: scrollAmount, behavior: 'smooth' });
+                        console.log(`[Vloitz Smart Scroll] Ajuste perfecto aplicado: ${Math.round(scrollAmount)}px`);
+                    }
+                }
+            }, 1000);
+        });
+
+    </script>
+
+
 
 </body>
 
