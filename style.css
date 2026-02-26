@@ -818,7 +818,11 @@ body, html {
     background: rgba(0,0,0,0.95);
     z-index: 9999;
     display: none;
-    flex-direction: column; align-items: center; justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start; /* Permite que el contenido empiece arriba y se desplace hacia abajo */
+    overflow-y: auto; /* Activa el scroll vertical si el contenido no cabe */
+    padding: 40px 0; /* Agrega espacio arriba y abajo para que los botones no toquen los bordes */
     opacity: 0; transition: opacity 0.3s ease;
 }
 #storyOverlay.active { display: flex; opacity: 1; }
@@ -1010,7 +1014,7 @@ input:checked + .st-slider:before { transform: translateX(18px); }
     font-size: 13px;
     font-weight: 700;
     cursor: pointer;
-    margin-bottom: 12px;
+    margin-bottom: 40px; /* Aumentamos el margen para que el botón no quede pegado al borde del celular */
     transition: all 0.2s;
 }
 .st-preview-btn:hover { background: rgba(255, 255, 255, 0.1); border-color: #1DB954; }
