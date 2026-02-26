@@ -91,8 +91,9 @@ body, html {
 }
 
 .social-icon.email:hover {
-    background-color: #D44638; /* Rojo corporativo de email */
-    color: var(--dark-bg);
+    background-color: #ea4335; /* Rojo oficial de Google/Gmail */
+    color: #fff;
+    transform: translateY(-3px);
 }
 
 .profile-extra-content {
