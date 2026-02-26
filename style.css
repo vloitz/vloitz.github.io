@@ -1244,6 +1244,8 @@ html {
     justify-content: center;
     overflow: hidden;
     padding: 15px;
+    box-sizing: border-box;
+    /* <--- La magia del centrado perfecto */
     opacity: 0;
     transition: opacity 0.3s ease;
 }
