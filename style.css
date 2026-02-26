@@ -892,6 +892,24 @@ body, html {
     font-weight: bold;
     min-width: 50px;
 }
+
+.st-fade-control {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    color: #b3b3b3;
+    font-size: 12px;
+    font-weight: 500;
+}
+.st-fade-control input[type=range] {
+    flex-grow: 1;
+    margin-left: 15px;
+    accent-color: #1DB954;
+    cursor: pointer;
+}
+.st-fade-control span { color: #1DB954; font-weight: bold; min-width: 35px; text-align: right;}
+
 /* FIN FASE 1 */
 
 /* Controles de Configuración (Calidad/Duración) */
