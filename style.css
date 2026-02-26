@@ -977,7 +977,30 @@ input:checked + .st-slider:before { transform: translateX(18px); }
 }
 .st-select:focus { border-color: #1DB954; }
 
+/* Botón Flotante de Cancelación (Pro) */
+.st-cancel-floating-btn {
+    position: absolute;
+    bottom: 30px; /* Ubicación inferior para no tapar el arte */
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 0, 0, 0.7); /* Rojo Premium semi-transparente */
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 14px 25px;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 800;
+    z-index: 10005; /* Prioridad visual máxima sobre el canvas */
+    cursor: pointer;
+    white-space: nowrap;
+    backdrop-filter: blur(5px);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+    transition: all 0.2s;
+}
+.st-cancel-floating-btn:active { transform: translateX(-50%) scale(0.95); }
+
 .st-preview-btn {
+    margin-top: 15px;
     background: rgba(255, 255, 255, 0.05);
     color: #fff;
     border: 1px solid #444;
