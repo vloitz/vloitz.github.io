@@ -908,7 +908,21 @@ body, html {
     accent-color: #1DB954;
     cursor: pointer;
 }
-.st-fade-control span { color: #1DB954; font-weight: bold; min-width: 35px; text-align: right;}
+.st-fade-inputs-wrapper { display: flex; align-items: center; gap: 10px; flex-grow: 1; margin-left: 15px; }
+.st-num-input {
+    background: #1e1e1e;
+    border: 1px solid #333;
+    color: #1DB954;
+    border-radius: 4px;
+    width: 60px;
+    padding: 4px;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 13px;
+    font-weight: bold;
+    text-align: center;
+    outline: none;
+}
+.st-num-input:focus { border-color: #1DB954; }
 
 /* FIN FASE 1 */
 
