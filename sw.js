@@ -20,6 +20,7 @@ const STORE_NAME = 'audio_fragments';
 const DB_VERSION = 2;
 
 let performanceTier = 'ALTA/PC';
+let isIOSDevice = false; // <--- AÑADIDO
 let cacheLimit = 200; // Límite de fragmentos (Default Alta)
 
 // Tabla de límites adaptativos (Evita llenar la memoria del fan)
@@ -184,9 +185,10 @@ self.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'CONFIG_HARDWARE') {
         performanceTier = event.data.tier;
         cacheLimit = TIER_LIMITS[performanceTier] || 200;
+        isIOSDevice = event.data.isIOS || false; // <--- AÑADIDO: Guardar estado iOS
 
         console.log(
-            `%c[Vloitz Cache] 🧠 Escudo Adaptativo: Nivel ${performanceTier} detectado. Límite de seguridad: ${cacheLimit} fragmentos.`,
+            `%c[Vloitz Cache] 🧠 Escudo Adaptativo: Nivel ${performanceTier} detectado. Límite de seguridad: ${cacheLimit} fragmentos. (iOS: ${isIOSDevice})`,
             "background: #121212; color: #FF00FF; font-weight: bold; padding: 2px 4px; border: 1px solid #FF00FF; border-radius: 3px;"
         );
     }
@@ -218,6 +220,14 @@ self.addEventListener('activate', (e) => {
 
 // 3. INTERCEPTACIÓN: Si piden algo, miramos el caché primero
 self.addEventListener('fetch', (e) => {
+
+    // --- AÑADIDO: SALVOCONDUCTO iOS ---
+    // Si es iPhone/iPad, dejamos pasar los fragmentos de audio nativo sin tocar IndexedDB
+    // para evitar que iOS asfixie el audio en segundo plano.
+    if (isIOSDevice && (e.request.url.includes('.m4s') || e.request.url.includes('.m3u8'))) {
+        return; // Deja que Safari/Chrome-iOS gestione la red nativamente
+    }
+    // --- FIN SALVOCONDUCTO ---
 
     // 🛰️ ESTRATEGIA SENIOR: Carga inmediata del caché + Actualización silenciosa para la próxima visita
     if (e.request.url.includes('sets.json')) {
