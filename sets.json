@@ -6,7 +6,7 @@
     "sets": [
         {
             "id": "GDL005",
-            "title": "GDL005",
+            "title": "GridLoock Groovy 005",
             "server": "CF",
             "date": "2026-03-31 19:05:39",
             "tracklist": [
@@ -19,7 +19,7 @@
         },
         {
             "id": "GDL004",
-            "title": "GridLock Groovy 004",
+            "title": "GridLoock Groovy 004",
             "server": "CF",
             "date": "2026-02-23 16:21:05",
             "tracklist": [
@@ -127,7 +127,7 @@
         },
         {
             "id": "GDL003",
-            "title": "GridLock Groovy 003",
+            "title": "GridLoock Groovy 003",
             "server": "CF",
             "date": "2026-02-20 19:44:48",
             "tracklist": [
