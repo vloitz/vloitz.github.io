@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vloitz-app-v11.3';
+const CACHE_NAME = 'vloitz-app-v11.4';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache'; // Bóveda de 2s para Latencia Cero
 const ASSETS_TO_CACHE = [
     './',
@@ -229,34 +229,46 @@ self.addEventListener('fetch', (e) => {
     }
     // --- FIN SALVOCONDUCTO ---
 
-    // 🛰️ ESTRATEGIA SENIOR: Carga inmediata del caché + Actualización silenciosa para la próxima visita
+    // 🛰️ ESTRATEGIA VLOITZ ULTRA-FRESH: Carga 0ms + Verificación Real Forzada
     if (e.request.url.includes('sets.json')) {
         e.respondWith(
             caches.match(e.request).then((cachedResponse) => {
-                // Se añadio 'async' para poder comparar los textos del JSON
-                const fetchPromise = fetch(e.request).then(async (networkResponse) => {
+                // Bypass de Caché: Creamos una URL única para obligar a GitHub a darnos la verdad
+                const freshUrl = e.request.url + '?t=' + Date.now();
+
+                // Usamos 'no-store' para que el navegador NO guarde esta petición en su disco interno
+                const fetchPromise = fetch(freshUrl, {
+                    cache: 'no-store'
+                }).then(async (networkResponse) => {
                     if (networkResponse.ok) {
                         const copy = networkResponse.clone();
+                        const newText = await networkResponse.clone().text();
 
-                        // --- INICIO: DETECCIÓN DE NUEVO SET Y AVISO ---
                         if (cachedResponse) {
                             const oldText = await cachedResponse.clone().text();
-                            const newText = await networkResponse.clone().text();
-                            if (oldText !== newText) {
+
+                            // Si el contenido real cambió, disparamos la actualización
+                            if (oldText.trim() !== newText.trim()) {
+                                const cache = await caches.open(CACHE_NAME);
+                                // Guardamos la versión nueva (con la URL limpia) para la próxima vez
+                                await cache.put(e.request, copy);
+
+                                // Avisamos a app.js para recargar la página automáticamente
                                 const clientsList = await self.clients.matchAll();
                                 clientsList.forEach(client => client.postMessage({
                                     type: 'NUEVO_SET_DETECTADO'
                                 }));
                             }
+                        } else {
+                            // Si es la primera vez que entra, guardamos el JSON
+                            const cache = await caches.open(CACHE_NAME);
+                            await cache.put(e.request, copy);
                         }
-                        // --- FIN: DETECCIÓN DE NUEVO SET ---
-                        // Guardamos el cambio detectado para que aparezca en la PRÓXIMA recarga
-                        caches.open(CACHE_NAME).then((cache) => cache.put(e.request, copy));
                     }
                     return networkResponse;
-                }).catch(() => {}); // Si falla el internet, el sistema no hace nada y el fan ni se entera
+                }).catch(() => {});
 
-                // Entregamos el caché actual (viejo) para asegurar 0ms de espera
+                // ENTREGAMOS EL CACHÉ AL INSTANTE (0ms de espera para el usuario)
                 return cachedResponse || fetchPromise;
             })
         );
