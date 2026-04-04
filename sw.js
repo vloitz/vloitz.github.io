@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vloitz-app-v11.4';
+const CACHE_NAME = 'vloitz-app-v11.5';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache'; // Bóveda de 2s para Latencia Cero
 const ASSETS_TO_CACHE = [
     './',
@@ -233,6 +233,7 @@ self.addEventListener('fetch', (e) => {
     if (e.request.url.includes('sets.json')) {
         e.respondWith(
             caches.match(e.request).then((cachedResponse) => {
+                const safeCachedResponse = cachedResponse ? cachedResponse.clone() : null; // Clon seguro antes de consumirse
                 // Bypass de Caché: Creamos una URL única para obligar a GitHub a darnos la verdad
                 const freshUrl = e.request.url + '?t=' + Date.now();
 
@@ -244,8 +245,8 @@ self.addEventListener('fetch', (e) => {
                         const copy = networkResponse.clone();
                         const newText = await networkResponse.clone().text();
 
-                        if (cachedResponse) {
-                            const oldText = await cachedResponse.clone().text();
+                        if (safeCachedResponse) {
+                            const oldText = await safeCachedResponse.text();
 
                             // Si el contenido real cambió, disparamos la actualización
                             if (oldText.trim() !== newText.trim()) {
@@ -279,12 +280,13 @@ self.addEventListener('fetch', (e) => {
     if (e.request.mode === 'navigate' || e.request.url.includes('index.html') || e.request.url === self.registration.scope) {
         e.respondWith(
             caches.match(e.request).then((cachedResponse) => {
+                const safeHtmlResponse = cachedResponse ? cachedResponse.clone() : null;
                 const fetchPromise = fetch(e.request).then(async (networkResponse) => {
                     if (networkResponse.ok) {
                         const copy = networkResponse.clone();
 
-                        if (cachedResponse) {
-                            const oldText = await cachedResponse.clone().text();
+                        if (safeHtmlResponse) {
+                            const oldText = await safeHtmlResponse.text();
                             const newText = await networkResponse.clone().text();
                             if (oldText !== newText) {
                                 // Si el código base o la variable dev_mode cambia, forzamos recarga total
