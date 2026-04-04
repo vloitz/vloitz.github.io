@@ -5,6 +5,19 @@
     },
     "sets": [
         {
+            "id": "GDL006",
+            "title": "GDL006",
+            "server": "CF",
+            "date": "2026-04-04 14:25:06",
+            "tracklist": [
+                {
+                    "time": "0:00",
+                    "emoji": "🌅",
+                    "title": "ID"
+                }
+            ]
+        },
+        {
             "id": "GDL005",
             "title": "GridLoock Groovy 005",
             "server": "CF",
