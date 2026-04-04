@@ -6,14 +6,89 @@
     "sets": [
         {
             "id": "GDL006",
-            "title": "GDL006",
+            "title": "GridLoock Groovy 006",
             "server": "CF",
             "date": "2026-04-04 14:25:06",
             "tracklist": [
                 {
                     "time": "0:00",
-                    "emoji": "🌅",
-                    "title": "ID"
+                    "emoji": "🪩☀️",
+                    "title": "Melon Bomb - Galia"
+                },
+                {
+                    "time": "3:08",
+                    "emoji": "🪩🕶️",
+                    "title": "Friend Within - First Time"
+                },
+                {
+                    "time": "6:20",
+                    "emoji": "🪩🛼",
+                    "title": "Funkerman, Divine - Do You Want To Go Down"
+                },
+                {
+                    "time": "9:28",
+                    "emoji": "🪩🎷",
+                    "title": "Seamus D, Belters Only - My Love"
+                },
+                {
+                    "time": "12:14",
+                    "emoji": "🪩🍹",
+                    "title": "Rafa Calello - Teraphy"
+                },
+                {
+                    "time": "15:11",
+                    "emoji": "🪩⚡",
+                    "title": "Mother Funkerz - In Da House"
+                },
+                {
+                    "time": "17:27",
+                    "emoji": "🪩📻",
+                    "title": "BERNA. - To Me"
+                },
+                {
+                    "time": "19:59",
+                    "emoji": "🪩🕺",
+                    "title": "Ferreck Dawn - Serious"
+                },
+                {
+                    "time": "22:29",
+                    "emoji": "🪩🌙",
+                    "title": "Constanza Pucheta - The Shore & Back"
+                },
+                {
+                    "time": "25:30",
+                    "emoji": "🪩🍒",
+                    "title": "Javi Bora, Vibe Killers - Bumpy"
+                },
+                {
+                    "time": "28:30",
+                    "emoji": "🪩🎹",
+                    "title": "Stanford, Orson Welsh - L.A.T. (Living Apart Together)"
+                },
+                {
+                    "time": "31:00",
+                    "emoji": "🪩💥",
+                    "title": "Devin Jetski - Can't Stop"
+                },
+                {
+                    "time": "34:22",
+                    "emoji": "🪩🦩",
+                    "title": "Johan S - Need Some Love"
+                },
+                {
+                    "time": "37:37",
+                    "emoji": "🪩🌟",
+                    "title": "Trimtone - The Thrills"
+                },
+                {
+                    "time": "41:51",
+                    "emoji": "🪩🔥",
+                    "title": "Arctic Funkies - Turn Up The Music"
+                },
+                {
+                    "time": "45:56",
+                    "emoji": "🪩🚀",
+                    "title": "Marco Maniera - Another Love"
                 }
             ]
         },
