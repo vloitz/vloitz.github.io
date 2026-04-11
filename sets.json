@@ -6,14 +6,89 @@
     "sets": [
         {
             "id": "GDL008",
-            "title": "GDL008",
+            "title": "GridLoock Groovy 008",
             "server": "CF",
             "date": "2026-04-11 10:38:25",
             "tracklist": [
                 {
                     "time": "0:00",
-                    "emoji": "🌅",
-                    "title": "ID"
+                    "emoji": "🌀🌴",
+                    "title": "paskman - MUEVE"
+                },
+                {
+                    "time": "1:45",
+                    "emoji": "🌀🔥",
+                    "title": "Angelo Raguso, FAW9, Eze Drill - Funky"
+                },
+                {
+                    "time": "4:00",
+                    "emoji": "🌀🥁",
+                    "title": "Funanori, Santi (IT) - Sempre Asi"
+                },
+                {
+                    "time": "5:58",
+                    "emoji": "🌀🕶️",
+                    "title": "Vanetty, SINHEDA, Ren Ocean - Reunite"
+                },
+                {
+                    "time": "7:57",
+                    "emoji": "🌀💣",
+                    "title": "Jason Grimes - Nuestro Secreto"
+                },
+                {
+                    "time": "10:11",
+                    "emoji": "🌀⚡",
+                    "title": "Manuel Ribeca, Notwins - Traigo Mi Flow"
+                },
+                {
+                    "time": "12:10",
+                    "emoji": "🌀🌪️",
+                    "title": "Stanny Abram - Igualdade"
+                },
+                {
+                    "time": "14:24",
+                    "emoji": "🌀🐍",
+                    "title": "A.D.P. - Regreso"
+                },
+                {
+                    "time": "15:53",
+                    "emoji": "🌀👁️",
+                    "title": "Jay de Lys - Loaded Clipz"
+                },
+                {
+                    "time": "18:07",
+                    "emoji": "🌀🩸",
+                    "title": "Draxx (ITA), ACID HARRY - Tikiti"
+                },
+                {
+                    "time": "20:36",
+                    "emoji": "🌀🔥",
+                    "title": "Yvvan Back, LoreFox, Jean Casas, Johnny Fontana - Touchable"
+                },
+                {
+                    "time": "23:20",
+                    "emoji": "🌀🧩",
+                    "title": "YYVNG, Chipie (FR) - Born This Moment"
+                },
+                {
+                    "time": "25:51",
+                    "emoji": "🌀🚀",
+                    "title": "Robbie Rivera, Federico Scavo - Que Lindo"
+                },
+                {
+                    "time": "27:48",
+                    "emoji": "🌀🧬",
+                    "title": "Marcox - Wait the Trumpet"
+                },
+                {
+                    "time": "29:32",
+                    "emoji": "🌀🛰️",
+                    "title": "Dj Maury Tripp - Kitten"
+                },
+                {
+                    "time": "32:15",
+                    "emoji": "🌀🏁",
+                    "title": "Ninetree - Rain On Me"
                 }
             ]
         },
