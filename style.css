@@ -653,6 +653,47 @@ html {
     transform: scale(1.1);
 }
 
+/* --- NUEVOS BOTONES DE ACCIÓN (FASE BEATPORT) --- */
+.action-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: 10px;
+}
+
+.track-action-btn {
+    background: none;
+    border: none;
+    color: #777;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.track-action-btn svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+}
+
+.btn-copy:hover {
+    color: #fff;
+    transform: scale(1.1);
+}
+
+.btn-search:hover {
+    color: #1DB954;
+    transform: scale(1.1);
+}
+
 /* --- Responsive --- */
 @media (max-width: 992px) {
     .profile-extra-content {
