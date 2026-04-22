@@ -63,6 +63,7 @@ html {
     height: 150px;
     border-radius: 50%;
     border: 4px solid var(--dark-bg);
+    box-shadow: 0 0 0 1px var(--dark-bg);
     object-fit: cover;
     background-color: var(--dark-bg);
     flex-shrink: 0;
