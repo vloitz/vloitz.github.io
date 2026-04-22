@@ -522,12 +522,12 @@ html {
 .track-item {
     display: flex;
     align-items: center;
-    padding: 10px;
+    padding: 10px 5px;
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.2s;
-    gap: 15px;
-    /* Controla el espacio interno de forma perfecta */
+    gap: 10px;
+    /* Reducimos el gap para ganar espacio */
 }
 
 .track-item:hover,
@@ -536,11 +536,12 @@ html {
 }
 
 .track-item-cover {
-    width: 50px;
-    height: 50px;
+    width: 42px;
+    height: 42px;
     object-fit: cover;
     border-radius: 4px;
     background-color: var(--dark-bg);
+    margin: 0;
     flex-shrink: 0;
     /* Evita que la carátula se aplaste en móviles */
 }
@@ -553,8 +554,8 @@ html {
 }
 
 .track-item-title {
-    font-size: 1.1em;
-    font-weight: 500;
+    font-size: 13px;
+    font-weight: 600;
     display: block;
     white-space: nowrap;
     overflow: hidden;
@@ -563,11 +564,12 @@ html {
 }
 
 .track-item-date {
-    font-size: 0.9em;
+    font-size: 10px;
     color: var(--text-secondary);
     flex-shrink: 0;
     /* Evita que la fecha se rompa o aplaste */
     text-align: right;
+    margin: 0;
     font-family: 'Roboto Mono', monospace, sans-serif;
     /* Look técnico */
 }
