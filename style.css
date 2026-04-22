@@ -522,12 +522,12 @@ html {
 .track-item {
     display: flex;
     align-items: center;
-    padding: 10px 5px;
+    padding: 10px;
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.2s;
-    gap: 10px;
-    /* Reducimos el gap para ganar espacio */
+    gap: 15px;
+    /* Espacio amplio para PC */
 }
 
 .track-item:hover,
@@ -536,42 +536,38 @@ html {
 }
 
 .track-item-cover {
-    width: 42px;
-    height: 42px;
+    width: 50px;
+    /* Tamaño original PC */
+    height: 50px;
+    /* Tamaño original PC */
     object-fit: cover;
     border-radius: 4px;
     background-color: var(--dark-bg);
-    margin: 0;
     flex-shrink: 0;
-    /* Evita que la carátula se aplaste en móviles */
 }
 
-/* El contenedor del título: La clave de la solución */
 .track-item-title-container {
     flex-grow: 1;
     min-width: 0;
-    /* ESTA ES LA MAGIA: Obliga al texto a cortarse si no cabe */
 }
 
 .track-item-title {
-    font-size: 13px;
-    font-weight: 600;
+    font-size: 1.1em;
+    /* Tamaño original PC */
+    font-weight: 500;
     display: block;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    /* Pone los ... si es muy largo */
 }
 
 .track-item-date {
-    font-size: 10px;
+    font-size: 0.9em;
+    /* Tamaño original PC */
     color: var(--text-secondary);
     flex-shrink: 0;
-    /* Evita que la fecha se rompa o aplaste */
     text-align: right;
-    margin: 0;
     font-family: 'Roboto Mono', monospace, sans-serif;
-    /* Look técnico */
 }
 
 /* --- 4. Tracklist del Set Actual --- */
@@ -1004,6 +1000,34 @@ html {
         font-size: 0.65em;
         padding: 2px 6px;
     }
+
+    /* ==========================================================================
+       [ INICIO: COMPRESIÓN MÓVIL V-MATRIX | ELITE HOUSE UI ]
+       ========================================================================== */
+    .track-item {
+        padding: 10px 5px;
+        gap: 10px;
+    }
+
+    .track-item-cover {
+        width: 42px;
+        height: 42px;
+    }
+
+    .track-item-title {
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .track-item-date {
+        font-size: 10px;
+    }
+
+    /* ==========================================================================
+       [ FIN: COMPRESIÓN MÓVIL V-MATRIX ]
+       ========================================================================== */
+
+
 }
 
 /* --- Badge FLAC --- */
