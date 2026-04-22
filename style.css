@@ -799,6 +799,7 @@ html {
         /* Tu medida personalizada */
         background-position: 50% 41%;
         background-size: 243% auto;
+        filter: brightness(0.75);
         /* Centrar la imagen en el nuevo espacio */
     }
 
