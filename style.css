@@ -748,9 +748,49 @@ html {
     }
 
     .profile-bio {
-        max-width: 100%;
-        margin-bottom: 15px;
-        font-size: 0.9em;
+        font-size: 13.8px;
+        line-height: 1.6;
+        letter-spacing: 0.3px;
+        max-width: 335px;
+        margin: 0 auto 15px;
+        color: rgb(176, 176, 176);
+        text-wrap: pretty;
+        font-weight: 300;
+        opacity: 0.9;
+        text-align: center;
+    }
+
+    /* Ocultar saltos de linea solo en movil para permitir el text-wrap */
+    #bio-short br {
+        display: none;
+    }
+
+    /* Estilos del toggle de expansion V-MATRIX solo en movil */
+    .bio-toggle-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 75%;
+        margin: 2px auto 10px;
+        padding: 2px 0px;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        background: transparent;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .bio-toggle-link:hover {
+        border-top-color: rgba(29, 185, 84, 0.4);
+        background: rgba(255, 255, 255, 0.02);
+    }
+
+    /* Intercambio de UI: Ocultar texto de PC, Mostrar SVG de movil */
+    .bio-toggle-link .txt-desktop {
+        display: none;
+    }
+
+    .bio-toggle-link .svg-mobile {
+        display: flex !important;
     }
 
     .profile-socials {
