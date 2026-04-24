@@ -1084,7 +1084,7 @@ html {
     }
 
     #current-track-title {
-        gap: 7px !important;
+        gap: 9px !important;
         display: flex !important;
         align-items: center;
         white-space: normal;
