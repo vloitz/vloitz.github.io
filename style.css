@@ -53,7 +53,7 @@ html {
     align-items: flex-start;
     justify-content: space-between;
     padding: 0 30px;
-    margin-top: -110px;
+    margin-top: -75px;
     position: relative;
     z-index: 2;
     gap: 25px;
@@ -819,6 +819,7 @@ html {
         width: 120px;
         height: 120px;
         margin-top: -21px;
+        box-shadow: 0 0 0 1.5px var(--dark-bg);
     }
 
     .profile-details-container {
@@ -1075,6 +1076,7 @@ html {
         /* Tamaño exacto de la carátula del set */
         margin-top: 0px;
         /* Ya no necesitamos margin-left porque el padding de 35px de arriba hace el anclaje perfecto */
+        box-shadow: 0 0 0 1.5px var(--dark-bg);
     }
 
     .player-controls {
