@@ -1082,6 +1082,15 @@ html {
     .player-controls {
         margin-top: 25px;
     }
+
+    #current-track-title {
+        display: inline-flex;
+        align-items: center;
+        gap: 15px;
+        white-space: normal;
+        /* Permite que el botón baje si el nombre es muy largo */
+    }
+
 }
 
 /* --- MODAL COMPARTIR --- */
