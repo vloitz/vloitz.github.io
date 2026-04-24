@@ -1084,11 +1084,16 @@ html {
     }
 
     #current-track-title {
-        display: inline-flex;
+        display: flex !important;
         align-items: center;
-        gap: 15px;
         white-space: normal;
-        /* Permite que el botón baje si el nombre es muy largo */
+        /* Permite que el nombre respire */
+        overflow: visible !important;
+    }
+
+    .share-btn-floating {
+        position: static !important;
+        flex-shrink: 0;
     }
 
 }
