@@ -42,7 +42,12 @@ const PortadaVisualEngine = (() => {
             reactivity: {
                 bass_gas_opacity: 0.4,       // Latido más notable
                 bass_particle_glow: 0.6      // Destello más notable
-            }
+            },
+            // --- FÍSICA VLOITZ: Gravedad y Humo Rave ---
+            gravity_center: { x: 0.5, y: 0.5 }, // Centro exacto (foto de perfil)
+            gravity_pull: 0.08,                 // Fuerza de succión hacia el centro con el bass
+            smoke_friction: 0.95,               // Fricción densa (suaviza el tirón)
+            gas_breathing_speed: 0.0004         // Velocidad de respiración orgánica
         }
     };
 
@@ -80,6 +85,20 @@ const PortadaVisualEngine = (() => {
         }
         update() {
             this.x += this.speedX;
+
+            // --- INYECCIÓN VLOITZ: Física de Gravedad y Humo Rave ---
+            if (activePreset.gravity_pull && AudioState.bass > 0) {
+                const centerX = width * activePreset.gravity_center.x;
+                const centerY = height * activePreset.gravity_center.y;
+                const dx = centerX - this.x;
+                const dy = centerY - this.y;
+
+                // Las partículas son atraídas al centro (agujero negro) con fricción de humo
+                this.x += dx * activePreset.gravity_pull * AudioState.bass * activePreset.smoke_friction;
+                this.y += dy * activePreset.gravity_pull * AudioState.bass * activePreset.smoke_friction;
+            }
+            // --------------------------------------------------------
+
             this.alpha = this.baseAlpha + Math.sin(Date.now() * this.twinkleSpeed) * 0.15;
             if (this.x < -10) {
                 this.x = width + 10;
@@ -105,13 +124,21 @@ const PortadaVisualEngine = (() => {
         }
         update() { this.angle += this.rotSpeed; }
         draw() {
-            const reactiveAlpha = Math.max(0, Math.min(1, 0.5 + (AudioState.bass * activePreset.reactivity.bass_gas_opacity)));
+            // --- INYECCIÓN VLOITZ: Respiración Orgánica ---
+            const breathing = activePreset.gas_breathing_speed ? Math.sin(Date.now() * activePreset.gas_breathing_speed) : 0;
+            const reactiveAlpha = Math.max(0, Math.min(1, 0.5 + (AudioState.bass * activePreset.reactivity.bass_gas_opacity) + (breathing * 0.15)));
+
             ctx.save();
             ctx.translate(this.x, this.y);
             ctx.rotate(this.angle);
             ctx.globalCompositeOperation = 'screen';
             ctx.globalAlpha = reactiveAlpha;
-            ctx.scale(1, 0.55);
+
+            // Efecto 3D pulsante (Humo vivo expandiéndose)
+            const breathScale = 1 + (breathing * 0.08);
+            ctx.scale(breathScale, 0.55 * breathScale);
+            // ----------------------------------------------
+
             ctx.drawImage(this.texture, -this.baseRadius, -this.baseRadius, this.baseRadius * 2, this.baseRadius * 2);
             ctx.restore();
         }
