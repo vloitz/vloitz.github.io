@@ -1,7 +1,7 @@
 /**
- * VLOITZ PORTADA VISUAL ENGINE (V3 - Pure Deep Tech Edition)
- * Arquitectura modular agnóstica basada en presets matemáticos estricto-minimalistas.
- * Diseñado para no asfixiar el hilo principal, con hooks preparados para audio-reactividad.
+ * VLOITZ PORTADA VISUAL ENGINE (V3.1 - Pure Deep Tech Edition - PATCHED)
+ * Arquitectura modular agnóstica basada en presets.
+ * FIX: Ciclo de vida de inicialización corregido y Observer blindado.
  */
 
 const PortadaVisualEngine = (() => {
@@ -9,8 +9,8 @@ const PortadaVisualEngine = (() => {
     let ctx = null;
     let animationId = null;
     let isRunning = false;
-    let isVisible = false; // Control de ciclo de vida mediante IntersectionObserver
-    let width, height;
+    let isVisible = false;
+    let width = 0, height = 0;
 
     let stars = [];
     let nebulas = [];
@@ -21,35 +21,34 @@ const PortadaVisualEngine = (() => {
 
     function simulateAudio() {
         const time = Date.now() * 0.001;
-        // Pulso matemático ultra sutil de fondo (solo activo en testing interno)
         AudioState.bass = (Math.sin(time) + 1) / 2 * 0.08;
     }
 
     // ========================================================================
-    // 🎛️ PRESET MATEMÁTICO ÚNICO (Modifica solo aquí en el futuro)
+    // 🎛️ PRESET MATEMÁTICO ÚNICO
     // ========================================================================
     const VISUAL_PRESETS = {
         'deep_tech_minimal': {
-            bg_color: '#030206',             // Vacío abisal de fondo
+            bg_color: '#030206',
             gas_enabled: true,
             gas_colors: [
-                ['rgba(12, 8, 20, 0.22)', 'rgba(3, 1, 6, 0.05)'], // Niebla violeta ultra-profunda y sobria
-                ['rgba(8, 14, 25, 0.15)', 'rgba(2, 4, 8, 0.02)']   // Matiz azul frío casi imperceptible
+                ['rgba(12, 8, 20, 0.22)', 'rgba(3, 1, 6, 0.05)'],
+                ['rgba(8, 14, 25, 0.15)', 'rgba(2, 4, 8, 0.02)']
             ],
-            particles_count: 140,            // Densidad baja y fina (Elegancia minimalista)
-            particles_base_size: 0.6,        // Tamaño milimétrico (Cero burbujas, solo polvo nítido)
-            particles_colors: ['rgba(255,255,255,', 'rgba(195,215,245,'], // Blanco puro y celeste frío lavado
-            speed_multiplier: 0.015,         // Paneo cinematográfico hiper-lento
+            particles_count: 140,
+            particles_base_size: 0.6,
+            particles_colors: ['rgba(255,255,255,', 'rgba(195,215,245,'],
+            speed_multiplier: 0.015,
             reactivity: {
-                bass_gas_opacity: 0.12,      // Expansión sutil de gas con el bajo
-                bass_particle_glow: 0.35     // Destello fino de estrellas con el bajo
+                bass_gas_opacity: 0.12,
+                bass_particle_glow: 0.35
             }
         }
     };
 
     let activePreset = VISUAL_PRESETS['deep_tech_minimal'];
 
-    // --- CACHÉ DE TEXTURAS (Pre-rendering en memoria para 0% lag) ---
+    // --- CACHÉ DE TEXTURAS ---
     function createNebulaTexture(colorCenter, colorEdge, radius) {
         const offCanvas = document.createElement('canvas');
         offCanvas.width = radius * 2; offCanvas.height = radius * 2;
@@ -63,15 +62,14 @@ const PortadaVisualEngine = (() => {
         return offCanvas;
     }
 
-    // --- ENTIDADES CÓSMICAS (Controladas matemáticamente por el preset) ---
+    // --- ENTIDADES CÓSMICAS ---
     class Particle {
         constructor() { this.reset(true); }
         reset(isInit = false) {
             this.x = Math.random() * width;
             this.y = Math.random() * height;
-            this.z = Math.random() * 4 + 1; // Factor de profundidad real
+            this.z = Math.random() * 4 + 1;
 
-            // Puntos finos y calculados
             this.size = (Math.random() * activePreset.particles_base_size + 0.1) / this.z;
             this.color = activePreset.particles_colors[Math.floor(Math.random() * activePreset.particles_colors.length)];
 
@@ -89,7 +87,6 @@ const PortadaVisualEngine = (() => {
             }
         }
         draw() {
-            // Hook reactivo inyectado en el Alpha
             const reactiveAlpha = Math.max(0, Math.min(1, this.alpha + (AudioState.bass * activePreset.reactivity.bass_particle_glow)));
             ctx.globalAlpha = reactiveAlpha;
             ctx.fillStyle = this.color + reactiveAlpha + ')';
@@ -104,17 +101,17 @@ const PortadaVisualEngine = (() => {
             this.x = x; this.y = y; this.baseRadius = radius;
             this.texture = createNebulaTexture(colorC, colorE, radius);
             this.angle = Math.random() * Math.PI * 2;
-            this.rotSpeed = (Math.random() - 0.5) * 0.0002; // Rotación casi imperceptible
+            this.rotSpeed = (Math.random() - 0.5) * 0.0002;
         }
         update() { this.angle += this.rotSpeed; }
         draw() {
-            const reactiveAlpha = 0.5 + (AudioState.bass * activePreset.reactivity.bass_gas_opacity);
+            const reactiveAlpha = Math.max(0, Math.min(1, 0.5 + (AudioState.bass * activePreset.reactivity.bass_gas_opacity)));
             ctx.save();
             ctx.translate(this.x, this.y);
             ctx.rotate(this.angle);
             ctx.globalCompositeOperation = 'screen';
             ctx.globalAlpha = reactiveAlpha;
-            ctx.scale(1, 0.55); // Achatar nubes orgánicamente
+            ctx.scale(1, 0.55);
             ctx.drawImage(this.texture, -this.baseRadius, -this.baseRadius, this.baseRadius * 2, this.baseRadius * 2);
             ctx.restore();
         }
@@ -124,7 +121,6 @@ const PortadaVisualEngine = (() => {
     const buildScene = () => {
         stars = []; nebulas = [];
 
-        // Lee dinámicamente tu variable de app.js (mobile_theme)
         const themeName = (currentConfig && currentConfig.mobile_theme) ? currentConfig.mobile_theme : 'deep_tech_minimal';
         activePreset = VISUAL_PRESETS[themeName] || VISUAL_PRESETS['deep_tech_minimal'];
 
@@ -140,26 +136,27 @@ const PortadaVisualEngine = (() => {
         }
     };
 
-    // --- BUCLE DE RENDERIZADO PRINCIPAL (60 FPS NATIVOS DESDE GPU) ---
+    // --- BUCLE DE RENDERIZADO PRINCIPAL ---
     const loop = () => {
-        if (!isRunning || !isVisible) return;
+        if (!isRunning || !isVisible) {
+            animationId = null; // Blindaje anti-fugas de memoria
+            return;
+        }
+
         simulateAudio();
 
-        // 1. Limpieza con el color sólido del preset (Blindaje anti-lente destructivo)
         ctx.globalCompositeOperation = 'source-over';
         ctx.globalAlpha = 1;
         ctx.fillStyle = activePreset.bg_color;
         ctx.fillRect(0, 0, width, height);
 
-        // 2. Pintado de capas
         nebulas.forEach(n => { n.update(); n.draw(); });
         ctx.globalCompositeOperation = 'screen';
         stars.forEach(s => { s.update(); s.draw(); });
 
-        // 3. FUSIÓN ÓPTICA INVISIBLE (Mata el sangrado de la línea naranja de abajo)
         const grad = ctx.createLinearGradient(0, height - 95, 0, height);
         grad.addColorStop(0, 'rgba(18, 18, 18, 0)');
-        grad.addColorStop(1, '#121212'); // Sincroniza exacto con el fondo de tu web
+        grad.addColorStop(1, '#121212');
         ctx.globalCompositeOperation = 'source-over';
         ctx.globalAlpha = 1;
         ctx.fillStyle = grad;
@@ -183,7 +180,9 @@ const PortadaVisualEngine = (() => {
         const banner = document.querySelector('.profile-banner');
         if (!banner) return;
 
-        // Ocultar fondo nativo para evitar solapamientos inútiles de CPU
+        // 1. ACTIVAR FLAG PRIMERO (El fix crucial)
+        isRunning = true;
+
         banner.dataset.originalBg = banner.style.backgroundImage;
         banner.style.backgroundImage = 'none';
 
@@ -196,23 +195,27 @@ const PortadaVisualEngine = (() => {
             pointerEvents: 'none',
             zIndex: 0,
             backgroundColor: activePreset.bg_color,
-            filter: 'contrast(1.1) brightness(0.95)' // Tratamiento clínico de la imagen
+            filter: 'contrast(1.1) brightness(0.95)'
         });
 
         banner.insertBefore(canvas, banner.firstChild);
         ctx = canvas.getContext('2d');
 
+        // 2. AHORA SÍ CONSTRUIMOS (width y height se llenarán y buildScene se ejecutará)
         handleResize();
         window.addEventListener('resize', handleResize);
 
-        isRunning = true;
-
-        // Ahorro extremo de batería: Apaga los motores si el usuario navega el tracklist inferior
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 isVisible = entry.isIntersecting;
-                if (isVisible && isRunning) loop();
-                else cancelAnimationFrame(animationId);
+                if (isVisible && isRunning) {
+                    if (!animationId) loop(); // Solo inicia si no hay otro loop corriendo
+                } else {
+                    if (animationId) {
+                        cancelAnimationFrame(animationId);
+                        animationId = null;
+                    }
+                }
             });
         });
         observer.observe(banner);
@@ -221,7 +224,10 @@ const PortadaVisualEngine = (() => {
     const stopAndDestroy = () => {
         isRunning = false;
         isVisible = false;
-        cancelAnimationFrame(animationId);
+        if (animationId) {
+            cancelAnimationFrame(animationId);
+            animationId = null;
+        }
         window.removeEventListener('resize', handleResize);
 
         const banner = document.querySelector('.profile-banner');
