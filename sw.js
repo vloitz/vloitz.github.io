@@ -1,10 +1,11 @@
-const CACHE_NAME = 'vloitz-app-v12.1';
+const CACHE_NAME = 'vloitz-app-v12.2';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache'; // Bóveda de 2s para Latencia Cero
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
     './style.css',
     './app.js',
+    './calibradores.js', // <--- AÑADE ESTO
     './sets.json',
     './perfil/perfil.webp',
     './perfil/banner.webp',
