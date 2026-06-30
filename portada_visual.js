@@ -1,7 +1,7 @@
 /**
- * VLOITZ PORTADA VISUAL ENGINE (V5.2 - WEBGL FIXED & OPTIMIZED)
+ * VLOITZ PORTADA VISUAL ENGINE (V5.3 - THE TRUE SMOKE VORTEX)
  * Arquitectura escalable basada en Arrays de Visuales.
- * Renderizado por GPU para máximo rendimiento. Memory leak corregido.
+ * FIX: Órbita estancada corregida. Turbulencia de humo inyectada. Fondo visible.
  */
 
 const PortadaVisualEngine = (() => {
@@ -17,7 +17,6 @@ const PortadaVisualEngine = (() => {
     let particles = [];
     let particleData = null;
 
-    // Programas de WebGL y Variables en Caché (Fix de Memoria)
     let bgProgram, particleProgram;
     let bgUniforms = {},
         particleUniforms = {};
@@ -33,7 +32,7 @@ const PortadaVisualEngine = (() => {
 
     function simulateAudio() {
         if (!isMusicPlaying) {
-            AudioState.bass *= 0.95; // Caída suave y cinemática en pausa
+            AudioState.bass *= 0.95;
             return;
         }
         // Simulador de Sub-Bajo: Oscilación densa y viscosa
@@ -49,29 +48,28 @@ const PortadaVisualEngine = (() => {
         id: 'deep_tech_minimal',
         name: 'Pure Deep Tech Minimal (Fractal Vortex)',
         config: {
-            particles_count: 500, // Densidad justa y elegante
-            particles_base_size: 1.5, // Puntos finos como polvo estelar
-            speed_multiplier: 0.015, // Flotación lenta
+            particles_count: 450, // Densidad elegante
+            particles_base_size: 2.2, // Puntos finos pero claramente visibles
+            speed_multiplier: 0.015,
             reactivity: {
-                bass_particle_glow: 0.25 // Destello fino y elegante
+                bass_particle_glow: 0.3
             },
             physics: {
                 gravity_center: {
                     x: 0.5,
                     y: 0.45
                 },
-                gravity_pull: 0.6, // Atracción al centro
-                vortex_strength: 1.5, // Intensidad del espiral (giro)
-                smoke_friction: 0.94 // Fricción viscosa
+                gravity_pull: 0.9, // Atracción más fuerte para que CAIGAN
+                vortex_strength: 0.4, // Giro suave (Evita el "anillo estancado")
+                smoke_friction: 0.91 // Fricción viscosa de humo
             },
             colors: [
-                [255, 255, 255], // Blanco
-                [160, 200, 255], // Celeste frío
-                [140, 100, 255] // Violeta oscuro
+                [255, 255, 255], // Blanco estelar
+                [140, 180, 255], // Celeste hielo
+                [160, 100, 240] // Violeta rave
             ]
         },
         shaders: {
-            // FBM SMOKE SHADER: Nubes orgánicas matemáticas en GPU
             background: {
                 vertex: `
                         attribute vec2 position;
@@ -98,17 +96,20 @@ const PortadaVisualEngine = (() => {
 
                         void main() {
                             vec2 uv = gl_FragCoord.xy / u_resolution;
-                            vec3 color = vec3(0.015, 0.012, 0.025);
+
+                            // Fondo base más brillante para que no muera en OLEDs
+                            vec3 color = vec3(0.03, 0.02, 0.05);
 
                             vec2 pos = uv * 2.5 + vec2(u_time * 0.03, u_time * 0.02);
                             float smoke = fbm(pos + fbm(pos + u_time * 0.05));
 
-                            // Ajuste al centro de gravedad (0.55 en WebGL equivale a 0.45 en CSS)
+                            // Ajuste al centro
                             float distCenter = length(uv - vec2(0.5, 0.55));
                             float mask = smoothstep(1.0, 0.0, distCenter);
 
-                            vec3 nebulaColor = vec3(0.20, 0.12, 0.38);
-                            float smokeIntensity = smoke * mask * (0.2 + u_bass * 0.6);
+                            // Color de la nebulosa potenciado para ser visible
+                            vec3 nebulaColor = vec3(0.35, 0.20, 0.60);
+                            float smokeIntensity = smoke * mask * (0.6 + u_bass * 1.2); // Más intensidad base
 
                             color = mix(color, nebulaColor, smokeIntensity);
                             gl_FragColor = vec4(color, 1.0);
@@ -126,7 +127,6 @@ const PortadaVisualEngine = (() => {
 
                         void main() {
                             vec2 clipSpace = (a_position / u_resolution) * 2.0 - 1.0;
-                            // Invertir Y porque WebGL va de abajo a arriba
                             gl_Position = vec4(clipSpace * vec2(1.0, -1.0), 0.0, 1.0);
                             gl_PointSize = a_size;
                             v_color = a_color;
@@ -140,9 +140,9 @@ const PortadaVisualEngine = (() => {
                             float dist = length(gl_PointCoord - vec2(0.5));
                             if (dist > 0.5) discard;
 
-                            // Suavizado anti-alias para bordes
-                            float alpha = 1.0 - smoothstep(0.3, 0.5, dist);
-                            gl_FragColor = vec4(v_color.rgb, v_color.a * alpha);
+                            // Brillo central con bordes difuminados muy suaves
+                            float alpha = 1.0 - smoothstep(0.1, 0.5, dist);
+                            gl_FragColor = vec4(v_color.rgb * alpha, v_color.a * alpha);
                         }
                     `
             }
@@ -152,7 +152,7 @@ const PortadaVisualEngine = (() => {
     let activeVisual = VISUALS_REGISTRY[0];
 
     // ========================================================================
-    // 🧠 LÓGICA DE FÍSICA EN CPU: VÓRTICE ORBITAL
+    // 🧠 LÓGICA DE FÍSICA EN CPU: VÓRTICE ORGÁNICO
     // ========================================================================
     class ParticleCore {
         constructor() {
@@ -162,11 +162,11 @@ const PortadaVisualEngine = (() => {
         reset(isInit = false) {
             if (!isInit) {
                 if (Math.random() > 0.5) {
-                    this.x = Math.random() > 0.5 ? -10 : width + 10;
+                    this.x = Math.random() > 0.5 ? -20 : width + 20;
                     this.y = Math.random() * height;
                 } else {
                     this.x = Math.random() * width;
-                    this.y = Math.random() > 0.5 ? -10 : height + 10;
+                    this.y = Math.random() > 0.5 ? -20 : height + 20;
                 }
             } else {
                 this.x = Math.random() * width;
@@ -209,7 +209,7 @@ const PortadaVisualEngine = (() => {
                     return;
                 }
 
-                // Matemáticas del VÓRTICE
+                // Matemáticas del VÓRTICE (Gravedad > Giro)
                 const reactivePull = activeVisual.config.physics.gravity_pull * (0.3 + (AudioState.bass * 0.7));
                 const pull = reactivePull / this.z;
 
@@ -217,8 +217,14 @@ const PortadaVisualEngine = (() => {
                 const tx = -dy;
                 const ty = dx;
 
-                this.vx += ((dx / dist) + (tx / dist) * vStrength) * pull;
-                this.vy += ((dy / dist) + (ty / dist) * vStrength) * pull;
+                // 💨 TURBULENCIA (El factor clave para que parezca humo orgánico y no un anillo estático)
+                const timeStr = Date.now() * 0.0005;
+                const turbX = Math.sin(this.y * 0.01 + timeStr) * 0.3;
+                const turbY = Math.cos(this.x * 0.01 + timeStr) * 0.3;
+
+                // Sumamos Atracción + Giro + Turbulencia
+                this.vx += ((dx / dist) + (tx / dist) * vStrength) * pull + turbX;
+                this.vy += ((dy / dist) + (ty / dist) * vStrength) * pull + turbY;
 
                 this.vx *= activeVisual.config.physics.smoke_friction;
                 this.vy *= activeVisual.config.physics.smoke_friction;
@@ -234,7 +240,7 @@ const PortadaVisualEngine = (() => {
                 this.alpha = this.baseAlpha + Math.sin(Date.now() * this.twinkleSpeed) * 0.15;
             }
 
-            if (this.x < -20 || this.x > width + 20 || this.y < -20 || this.y > height + 20) {
+            if (this.x < -30 || this.x > width + 30 || this.y < -30 || this.y > height + 30) {
                 this.reset();
             }
         }
@@ -283,7 +289,6 @@ const PortadaVisualEngine = (() => {
         pColLoc = gl.getAttribLocation(particleProgram, "a_color");
         pSizeLoc = gl.getAttribLocation(particleProgram, "a_size");
 
-        // Creado UNA VEZ, evita el colapso de memoria
         quadBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]), gl.STATIC_DRAW);
@@ -296,9 +301,6 @@ const PortadaVisualEngine = (() => {
 
         particleData = new Float32Array(count * 7);
         particleBuffer = gl.createBuffer();
-
-        gl.enable(gl.BLEND);
-        gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
     };
 
     // ========================================================================
@@ -312,7 +314,12 @@ const PortadaVisualEngine = (() => {
 
         simulateAudio();
 
-        // 1. DIBUJAR FONDO (Quad)
+        // Limpiar el lienzo
+        gl.clearColor(0.015, 0.012, 0.025, 1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+
+        // 1. DIBUJAR FONDO (Quad) - SIN MEZCLA ADITIVA (Evita que el fondo se vuelva blanco)
+        gl.disable(gl.BLEND);
         gl.useProgram(bgProgram);
         gl.uniform2f(bgUniforms.resolution, width, height);
         gl.uniform1f(bgUniforms.time, Date.now() * 0.001);
@@ -323,10 +330,13 @@ const PortadaVisualEngine = (() => {
         gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
         gl.drawArrays(gl.TRIANGLES, 0, 6);
 
-        // 2. ACTUALIZAR Y DIBUJAR PARTÍCULAS
+        // 2. ACTUALIZAR Y DIBUJAR PARTÍCULAS - CON MEZCLA ADITIVA (Luz brillante)
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+
         let offset = 0;
         const count = particles.length;
-        const dpr = window.devicePixelRatio || 1; // FIX: Escala para pantallas Retina/Alta densidad
+        const dpr = window.devicePixelRatio || 1;
 
         for (let i = 0; i < count; i++) {
             const p = particles[i];
@@ -340,7 +350,7 @@ const PortadaVisualEngine = (() => {
 
             const finalAlpha = Math.max(0, Math.min(1, p.alpha + (AudioState.bass * activeVisual.config.reactivity.bass_particle_glow)));
             particleData[offset++] = finalAlpha;
-            particleData[offset++] = p.baseSize * dpr; // FIX: Partículas visibles
+            particleData[offset++] = p.baseSize * dpr;
         }
 
         gl.useProgram(particleProgram);
@@ -418,7 +428,11 @@ const PortadaVisualEngine = (() => {
         });
         banner.appendChild(gradientOverlay);
 
-        gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        gl = canvas.getContext('webgl', {
+            alpha: false
+        }) || canvas.getContext('experimental-webgl', {
+            alpha: false
+        });
         if (!gl) {
             console.error("WebGL no soportado.");
             return;
