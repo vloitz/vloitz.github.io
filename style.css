@@ -2018,4 +2018,66 @@ body {
    ELIMINADO: html { height: 100%; } causaba que PC no hiciera scroll */
 /* body { min-height: 100%; } */
 
+
+
+/* ==========================================================================
+   VLOITZ GHOST SCRUBBING PRO - FASE 1 (HUD & EXPANSIÓN)
+   ========================================================================== */
+#vloitz-hud {
+    position: fixed;
+    top: 30%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.85);
+    color: #1DB954;
+    padding: 20px;
+    border-radius: 15px;
+    font-family: 'Roboto Mono', monospace, sans-serif;
+    font-size: 32px;
+    font-weight: bold;
+    display: none;
+    z-index: 999999;
+    border: 2px solid #1DB954;
+    pointer-events: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9);
+}
+
+#vloitz-ghost-pointer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 2px;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.6);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    pointer-events: none;
+    display: none;
+    z-index: 10;
+}
+
+@media (max-width: 768px) {
+
+    /* Estirar la Tarjeta hacia los bordes del teléfono */
+    .player-card {
+        margin-left: -14px !important;
+        margin-right: -14px !important;
+        border-radius: 0px !important;
+    }
+
+    /* Estirar la Onda hacia los bordes de la Tarjeta */
+    .waveform-container {
+        margin-left: -20px !important;
+        margin-right: -20px !important;
+        width: calc(100% + 40px) !important;
+        position: relative !important;
+        /* Clave para el puntero fantasma */
+    }
+
+    .player-details #waveform {
+        height: 80px !important;
+        overflow: visible !important;
+    }
+}
+
+
 /* --- FIN DEL ARCHIVO --- */
