@@ -1,5 +1,5 @@
 /**
- * VLOITZ PORTADA VISUAL ENGINE (V3.1 - Pure Deep Tech Edition - PATCHED)
+ * VLOITZ PORTADA VISUAL ENGINE (V4.0 - Premium Deep Tech 3D Edition)
  * Arquitectura modular agnóstica basada en presets.
  * FIX: Ciclo de vida de inicialización corregido y Observer blindado.
  */
@@ -16,24 +16,20 @@ const PortadaVisualEngine = (() => {
     let nebulas = [];
     let currentConfig = null;
 
-   // 🔗 CABLES LISTOS PARA TU AUDIO EN EL FUTURO (0.0 a 1.0)
+    // 🔗 CABLES LISTOS PARA TU AUDIO EN EL FUTURO (0.0 a 1.0)
     const AudioState = { bass: 0, overall: 0 };
     let isMusicPlaying = false; // <-- El interruptor real del reproductor
 
     function simulateAudio() {
         if (!isMusicPlaying) {
-            AudioState.bass *= 0.9; // Caída suave de la energía si pones pausa
+            AudioState.bass *= 0.95; // Caída hiper-suave y cinemática en reposo
             return;
         }
-        // Simulador de Bombo (Kick) de Deep Tech a ~122 BPM (Aprox 491ms por golpe)
-        const bpm = 122;
-        const msPerBeat = 60000 / bpm;
-        const time = Date.now() % msPerBeat;
-
-        // Crea una onda de impacto: Sube de golpe a 1, y decae rápidamente
-        const pulse = Math.max(0, 1 - (time / (msPerBeat * 0.6)));
-        // Curva de poder para hacer el golpe más seco y violento
-        AudioState.bass = Math.pow(pulse, 3);
+        // Simulador de Sub-Bajo: Oscilación densa, viscosa y pesada (Sin picos estroboscópicos)
+        const time = Date.now() * 0.0015;
+        // Doble onda desfasada para un groove orgánico, simulando un bajo envolvente
+        const groove = (Math.sin(time) + Math.sin(time * 0.8)) / 2;
+        AudioState.bass = (groove + 1) / 2 * 0.35;
     }
 
     // ========================================================================
@@ -52,14 +48,19 @@ const PortadaVisualEngine = (() => {
             particles_colors: ['rgba(255,255,255,', 'rgba(170,200,255,'],
             speed_multiplier: 0.05,          // Movimiento cinemático pero perceptible a la vista
             reactivity: {
-                bass_gas_opacity: 0.4,       // Latido más notable
-                bass_particle_glow: 0.6      // Destello más notable
+                bass_gas_opacity: 0.2,       // Reducido: Latido sutil y viscoso (Anti-Strobe)
+                bass_particle_glow: 0.3      // Reducido: Destello controlado y elegante
             },
             physics: {
                 gravity_center: { x: 0.5, y: 0.45 }, // Un poco más arriba, justo donde está tu cara
-                gravity_pull: 2.5,                   // FUERZA MULTIPLICADA X30 (Succión real)
-                smoke_friction: 0.88,                // Fricción ajustada para que aceleren rápido y se frenen de golpe
-                gas_breathing_speed: 0.0005
+                gravity_pull: 1.2,                   // Atracción densa, no violenta
+                smoke_friction: 0.92,                // Fricción alta: movimiento viscoso como bajo el agua o humo espeso
+                gas_breathing_speed: 0.0003          // Respiración de la nebulosa aún más lenta y orgánica
+            },
+            bokeh: {
+                enabled: true,
+                big_particles_count: 12,     // Partículas gigantes desenfocadas en primer plano
+                base_size: 18                // Tamaño masivo para simular cercanía al lente
             }
         }
     };
@@ -82,13 +83,24 @@ const PortadaVisualEngine = (() => {
 
     // --- ENTIDADES CÓSMICAS ---
     class Particle {
-        constructor() { this.reset(true); }
+        constructor(isBokeh = false) {
+            this.isBokeh = isBokeh; // Nueva propiedad para identificar la capa frontal
+            this.reset(true);
+        }
         reset(isInit = false) {
             this.x = Math.random() * width;
             this.y = Math.random() * height;
             this.z = Math.random() * 4 + 1;
 
-            this.size = (Math.random() * activePreset.particles_base_size + 0.1) / this.z;
+            if (this.isBokeh && activePreset.bokeh && activePreset.bokeh.enabled) {
+                // Capa Bokeh: Partículas masivas pasando muy cerca del "lente"
+                this.size = Math.random() * activePreset.bokeh.base_size + (activePreset.bokeh.base_size / 2);
+                this.z = Math.random() * 0.5 + 0.1; // Z muy bajo = Parallax frontal pronunciado
+            } else {
+                // Capa Fondo: Estrellas nítidas
+                this.size = (Math.random() * activePreset.particles_base_size + 0.1) / this.z;
+            }
+
             this.color = activePreset.particles_colors[Math.floor(Math.random() * activePreset.particles_colors.length)];
 
             this.baseAlpha = Math.random() * 0.4 + 0.1;
@@ -101,7 +113,7 @@ const PortadaVisualEngine = (() => {
             this.vy = 0;
         }
         update() {
-           // Si el REPRODUCTOR está en PLAY, activamos el Agujero Negro
+            // Si el REPRODUCTOR está en PLAY, activamos el Agujero Negro
             if (isMusicPlaying && activePreset.physics) {
                 const targetX = width * activePreset.physics.gravity_center.x;
                 const targetY = height * activePreset.physics.gravity_center.y;
@@ -110,33 +122,53 @@ const PortadaVisualEngine = (() => {
                 const dy = targetY - this.y;
                 const dist = Math.sqrt(dx * dx + dy * dy);
 
-                // ¡TU PROPUESTA!: Si la partícula llega a la foto (Agujero negro), desaparece y nace de la nada
+                // Horizonte de Sucesos: Desvanecimiento orgánico al acercarse al centro (Adiós "popeo" arcade)
+                let eventHorizonAlpha = 1;
+                if (dist < 180) {
+                    eventHorizonAlpha = Math.max(0, dist - 40) / 140; // Cae de 1 a 0 suavemente entre 180px y 40px
+                }
+
+                // Si la partícula llega a la foto (Agujero negro), desaparece y nace de la nada
                 if (dist < 40) {
-                    this.reset(true); // Renace aleatoriamente en el espacio
+                    this.reset(true); // Renace silenciosamente en el espacio exterior
                     return;
                 }
 
-               // Atracción reactiva al "Bombo" (Pulso agresivo)
-                // Mantiene una succión base del 20%, más el 80% de la fuerza en cada latido
-                const reactivePull = activePreset.physics.gravity_pull * (0.2 + (AudioState.bass * 0.8));
+                // Atracción reactiva y viscosa vinculada al Sub-Bass
+                const reactivePull = activePreset.physics.gravity_pull * (0.4 + (AudioState.bass * 0.6));
                 const pull = reactivePull / this.z;
-                this.vx += (dx / dist) * pull;
-                this.vy += (dy / dist) * pull;
 
-                // Fricción de humo denso
+                // La capa Bokeh casi no es afectada por la gravedad para mantener la ilusión de que está frente a la pantalla
+                if (this.isBokeh) {
+                    this.vx += (dx / dist) * (pull * 0.15);
+                    this.vy += (dy / dist) * (pull * 0.15);
+                } else {
+                    this.vx += (dx / dist) * pull;
+                    this.vy += (dy / dist) * pull;
+                }
+
+                // Fricción de humo denso (suaviza la velocidad para que no sean balas)
                 this.vx *= activePreset.physics.smoke_friction;
                 this.vy *= activePreset.physics.smoke_friction;
 
                 this.x += this.vx;
                 this.y += this.vy;
+
+                // Aplicamos el desvanecimiento del Horizonte de Sucesos al cálculo final
+                this.alpha = (this.baseAlpha + Math.sin(Date.now() * this.twinkleSpeed) * 0.15) * eventHorizonAlpha;
+
             } else {
                 // Modo reposo: Movimiento cinemático normal estático
                 this.vx = this.speedX;
                 this.vy = 0;
                 this.x += this.speedX;
+                this.alpha = this.baseAlpha + Math.sin(Date.now() * this.twinkleSpeed) * 0.15;
             }
 
-            this.alpha = this.baseAlpha + Math.sin(Date.now() * this.twinkleSpeed) * 0.15;
+            // Reducimos radicalmente la opacidad de la capa Bokeh para lograr el efecto "difuminado/fuera de foco"
+            if (this.isBokeh) {
+                this.alpha *= 0.15;
+            }
 
             // Reaparición si sale de la pantalla (modo normal)
             if (this.x < -10) {
@@ -167,12 +199,11 @@ const PortadaVisualEngine = (() => {
             const breathing = activePreset.physics ? Math.sin(Date.now() * activePreset.physics.gas_breathing_speed) : 0;
             const organicAlpha = 0.5 + (breathing * 0.15); // Cambio sutil de opacidad
 
-            // Destello agresivo: Multiplicamos el efecto del bajo para que el gas se ilumine de verdad
-            const reactiveAlpha = Math.max(0, Math.min(1, organicAlpha + (AudioState.bass * (activePreset.reactivity.bass_gas_opacity * 2.5))));
+            // Destello controlado y elegante vinculado al Sub-Bass
+            const reactiveAlpha = Math.max(0, Math.min(1, organicAlpha + (AudioState.bass * activePreset.reactivity.bass_gas_opacity)));
 
-            // Impacto físico: El humo se expande de golpe (15%) con cada Kick
-            const kickScale = AudioState.bass * 0.15;
-            const scalePulse = activePreset.physics ? 1 + (breathing * 0.05) + kickScale : 1;
+            // Impacto físico: El humo se expande muy suavemente con el Sub-Bass
+            const scalePulse = activePreset.physics ? 1 + (breathing * 0.05) + (AudioState.bass * 0.05) : 1;
 
             ctx.save();
             ctx.translate(this.x, this.y);
@@ -192,7 +223,13 @@ const PortadaVisualEngine = (() => {
         const themeName = (currentConfig && currentConfig.mobile_theme) ? currentConfig.mobile_theme : 'deep_tech_minimal';
         activePreset = VISUAL_PRESETS[themeName] || VISUAL_PRESETS['deep_tech_minimal'];
 
-        for (let i = 0; i < activePreset.particles_count; i++) stars.push(new Particle());
+        // 1. Estrellas de fondo nítidas
+        for (let i = 0; i < activePreset.particles_count; i++) stars.push(new Particle(false));
+
+        // 2. Inyección de capa 3D frontal (Cinematic Bokeh)
+        if (activePreset.bokeh && activePreset.bokeh.enabled) {
+            for (let i = 0; i < activePreset.bokeh.big_particles_count; i++) stars.push(new Particle(true));
+        }
 
         if (activePreset.gas_enabled) {
             const gC = activePreset.gas_colors;
@@ -320,7 +357,7 @@ const PortadaVisualEngine = (() => {
         else stopAndDestroy();
     };
 
-   return {
+    return {
         init: (configObj) => {
             currentConfig = configObj;
             evaluateEnvironment();
