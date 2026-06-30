@@ -2120,4 +2120,71 @@ img,
 }
 
 
+/* ==========================================================================
+   VLOITZ UI UX FIX: Touch Shields Avanzados (Safe Scrolling Zones)
+   ========================================================================== */
+@media (max-width: 768px) {
+
+    /* 1. Preparamos los contenedores padre para anclar los escudos */
+    .current-tracklist-container,
+    .tracklist-container {
+        position: relative;
+    }
+
+    /* 2. ESCUDOS PARA "Tracklist del Set" (Favoritos)
+       - Valores solicitados: Izq 50px, Der 50px
+       - Ojo: Evitamos tapar el header (top: 80px) */
+    .current-tracklist-container::before {
+        content: '';
+        position: absolute;
+        top: 80px;
+        left: 0;
+        bottom: 0;
+        width: 50px;
+        /* Borde izquierdo */
+        z-index: 50;
+        touch-action: pan-y;
+        /* Solo permite scroll vertical */
+    }
+
+    .current-tracklist-container::after {
+        content: '';
+        position: absolute;
+        top: 80px;
+        right: 0;
+        bottom: 0;
+        width: 50px;
+        /* Borde derecho */
+        z-index: 50;
+        touch-action: pan-y;
+    }
+
+    /* 3. ESCUDOS PARA "Todos los Sets" (General)
+       - Valores solicitados: Izq 69px, Der 30px
+       - Ojo: Evitamos tapar el buscador (top: 60px) */
+    .tracklist-container::before {
+        content: '';
+        position: absolute;
+        top: 60px;
+        left: 0;
+        bottom: 0;
+        width: 69px;
+        /* Borde izquierdo amplio para la foto */
+        z-index: 50;
+        touch-action: pan-y;
+    }
+
+    .tracklist-container::after {
+        content: '';
+        position: absolute;
+        top: 60px;
+        right: 0;
+        bottom: 0;
+        width: 30px;
+        /* Borde derecho delgado */
+        z-index: 50;
+        touch-action: pan-y;
+    }
+}
+
 /* --- FIN DEL ARCHIVO --- */
