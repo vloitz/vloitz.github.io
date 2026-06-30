@@ -1,0 +1,1331 @@
+{
+    "profile": {
+        "profile_pic_url": "./perfil/perfil.webp",
+        "banner_url": "./perfil/banner.webp"
+    },
+    "sets": [
+        {
+            "id": "GDL012",
+            "title": "GridLoock Groovy 012",
+            "server": "CF",
+            "date": "2026-06-20 13:00:23",
+            "tracklist": [
+                {
+                    "time": "0:00",
+                    "emoji": "👥",
+                    "title": "Mihai Popoviciu - To The People"
+                },
+                {
+                    "time": "3:14",
+                    "emoji": "🛸",
+                    "title": "Jack District - Take Me Higher"
+                },
+                {
+                    "time": "5:59",
+                    "emoji": "🔮",
+                    "title": "Daniel Orpi - Never Enough"
+                },
+                {
+                    "time": "8:58",
+                    "emoji": "👁️",
+                    "title": "Mike Millrain - Signs"
+                },
+                {
+                    "time": "12:43",
+                    "emoji": "🏁",
+                    "title": "Reboot, Shokë - Here We Go"
+                },
+                {
+                    "time": "16:12",
+                    "emoji": "🔥",
+                    "title": "Enrico Dragoni - Getting It On"
+                },
+                {
+                    "time": "18:30",
+                    "emoji": "🪩",
+                    "title": "JHAY RHOD - Funky In The Club"
+                },
+                {
+                    "time": "20:58",
+                    "emoji": "🔧",
+                    "title": "Prodmark0 - I Need a Fix"
+                },
+                {
+                    "time": "23:43",
+                    "emoji": "👟",
+                    "title": "MAd Sequencers - Bailalo"
+                },
+                {
+                    "time": "25:58",
+                    "emoji": "🔦",
+                    "title": "Rony Seikaly - Walking Out Of The Dark"
+                },
+                {
+                    "time": "28:58",
+                    "emoji": "💬",
+                    "title": "Cosmin Horatiu - Try To Say"
+                },
+                {
+                    "time": "30:56",
+                    "emoji": "🪽",
+                    "title": "NUSONIDO - Rizzo (Col), Sacchi (VE) - You Can Fly"
+                },
+                {
+                    "time": "33:44",
+                    "emoji": "🧲",
+                    "title": "LondonGround - Power8"
+                },
+                {
+                    "time": "36:43",
+                    "emoji": "🫧",
+                    "title": "Franco Schmidt - Tornasolado"
+                },
+                {
+                    "time": "38:26",
+                    "emoji": "🎫",
+                    "title": "Franck Jimenez - Dance"
+                },
+                {
+                    "time": "40:56",
+                    "emoji": "🫀",
+                    "title": "Joey A - When You Feel It"
+                },
+                {
+                    "time": "43:58",
+                    "emoji": "⏱️",
+                    "title": "Roland Clark, ROMBE4T, Doche - Don't Wait"
+                },
+                {
+                    "time": "46:28",
+                    "emoji": "🔭",
+                    "title": "Sweet World - To the Future"
+                },
+                {
+                    "time": "49:11",
+                    "emoji": "🕵️",
+                    "title": "Specialist - I Got Ya"
+                }
+            ]
+        },
+        {
+            "id": "GDL011",
+            "title": "GridLoock Groovy 011",
+            "server": "CF",
+            "date": "2026-06-06 20:33:03",
+            "tracklist": [
+                {
+                    "time": "0:00",
+                    "emoji": "☀️",
+                    "title": "Sebastian Xottelo - Conga 6AM"
+                },
+                {
+                    "time": "3:52",
+                    "emoji": "🕶️",
+                    "title": "Tzar (BR) - Ghetto"
+                },
+                {
+                    "time": "7:37",
+                    "emoji": "🔥",
+                    "title": "Svntiago (MEX) - Eres"
+                },
+                {
+                    "time": "9:43",
+                    "emoji": "🌴",
+                    "title": "Santi (IT) - Shake It"
+                },
+                {
+                    "time": "12:37",
+                    "emoji": "⚡",
+                    "title": "CLN (BR) - Jazz Funky"
+                },
+                {
+                    "time": "15:07",
+                    "emoji": "💧",
+                    "title": "Lujan Fernandez - Muevela"
+                },
+                {
+                    "time": "18:26",
+                    "emoji": "🔊",
+                    "title": "Jossephine - Pa Que Me Invitan"
+                },
+                {
+                    "time": "21:25",
+                    "emoji": "🖤",
+                    "title": "Anthony Godfather - Susurró - Anthony Godfather Remix"
+                },
+                {
+                    "time": "24:41",
+                    "emoji": "⛱️",
+                    "title": "Ferra Black - Exhale"
+                },
+                {
+                    "time": "27:33",
+                    "emoji": "🍒",
+                    "title": "Elegant Hands - Dama De Noche - Band&Dos Remix"
+                },
+                {
+                    "time": "30:48",
+                    "emoji": "💣",
+                    "title": "Jon Kinesis - Sun Sign"
+                },
+                {
+                    "time": "33:48",
+                    "emoji": "🧊",
+                    "title": "Samuel Morgan - Talk of the Town"
+                },
+                {
+                    "time": "36:17",
+                    "emoji": "💥",
+                    "title": "Angel Caamal - Your Presence"
+                },
+                {
+                    "time": "39:22",
+                    "emoji": "🚀",
+                    "title": "Sebastian Cordemans - Dubai"
+                },
+                {
+                    "time": "41:44",
+                    "emoji": "⚙️",
+                    "title": "Carlos Abloh - My People"
+                },
+                {
+                    "time": "44:44",
+                    "emoji": "🌪️",
+                    "title": "Karlos Kastillo - Bailalo"
+                },
+                {
+                    "time": "47:43",
+                    "emoji": "🧩",
+                    "title": "Da Costa - Prestao"
+                },
+                {
+                    "time": "50:21",
+                    "emoji": "👁️",
+                    "title": "Gustavo Reinert, Byred - Riffle"
+                },
+                {
+                    "time": "52:29",
+                    "emoji": "🐨",
+                    "title": "Laureano, Sam Oui - Piden House"
+                },
+                {
+                    "time": "56:07",
+                    "emoji": "☕",
+                    "title": "Almën - Carmen"
+                },
+                {
+                    "time": "57:54",
+                    "emoji": "🌇",
+                    "title": "STBAN - Gitanita - James Hurr Remix"
+                },
+                {
+                    "time": "59:30",
+                    "emoji": "💃",
+                    "title": "Javi Reina, Jose De Mara - Abusadora"
+                },
+                {
+                    "time": "61:53",
+                    "emoji": "🧠",
+                    "title": "Merissa Mahilaa - Crazy"
+                },
+                {
+                    "time": "64:23",
+                    "emoji": "🏆",
+                    "title": "Tira La Línea - Oye Pana"
+                },
+                {
+                    "time": "66:53",
+                    "emoji": "💋",
+                    "title": "Dj Twins - Love To Love You Baby"
+                },
+                {
+                    "time": "69:21",
+                    "emoji": "🛸",
+                    "title": "Andrey Solo - Llamada Entrante"
+                },
+                {
+                    "time": "73:22",
+                    "emoji": "🏎️",
+                    "title": "Roberto Surace - No Me Mires Mas"
+                },
+                {
+                    "time": "76:22",
+                    "emoji": "🥥",
+                    "title": "Nabyl - Crazy Woman"
+                },
+                {
+                    "time": "78:55",
+                    "emoji": "🎭",
+                    "title": "Mattfire & Montaud - Boom Boom"
+                },
+                {
+                    "time": "80:57",
+                    "emoji": "🗣️",
+                    "title": "DJamal (DA) - Boss"
+                },
+                {
+                    "time": "84:01",
+                    "emoji": "🍼",
+                    "title": "Loz Seka - Favela"
+                },
+                {
+                    "time": "85:44",
+                    "emoji": "🔨",
+                    "title": "Mayn - Kavazela"
+                },
+                {
+                    "time": "88:45",
+                    "emoji": "🔥",
+                    "title": "Utku Kayir - Ropa Fina"
+                }
+            ]
+        },
+        {
+            "id": "GDL010",
+            "title": "GridLoock Groovy 010",
+            "server": "CF",
+            "date": "2026-05-21 09:44:43",
+            "tracklist": [
+                {
+                    "time": "0:00",
+                    "emoji": "☀️",
+                    "title": "Cocuns, Ghezz - Outta System"
+                },
+                {
+                    "time": "4:03",
+                    "emoji": "🕶️",
+                    "title": "P2UYA - This Is London Baby"
+                },
+                {
+                    "time": "7:30",
+                    "emoji": "🔥",
+                    "title": "Calussa - Dum Duru"
+                },
+                {
+                    "time": "10:41",
+                    "emoji": "🌴",
+                    "title": "Andrés Lobos Music - All Around"
+                },
+                {
+                    "time": "12:40",
+                    "emoji": "⚡",
+                    "title": "Lit Square, Jaco Reigosa - Golden Groove"
+                },
+                {
+                    "time": "16:14",
+                    "emoji": "💧",
+                    "title": "Etwas (IT) - Bouyon"
+                },
+                {
+                    "time": "19:41",
+                    "emoji": "🔊",
+                    "title": "Soundtexx - Sexy (Lala)"
+                },
+                {
+                    "time": "22:53",
+                    "emoji": "🖤",
+                    "title": "Mat.Theo - Missing"
+                },
+                {
+                    "time": "26:05",
+                    "emoji": "⛱️",
+                    "title": "Maxi Galoppo - Beat"
+                },
+                {
+                    "time": "29:02",
+                    "emoji": "🍒",
+                    "title": "Paluma - Girls"
+                },
+                {
+                    "time": "31:15",
+                    "emoji": "💣",
+                    "title": "Fran Ares, Arzenic - Fantasy"
+                },
+                {
+                    "time": "32:58",
+                    "emoji": "🧊",
+                    "title": "Greck B., Anko A - El primo de Lucas"
+                },
+                {
+                    "time": "35:55",
+                    "emoji": "💥",
+                    "title": "Kily Ruiz - Check Its Out"
+                },
+                {
+                    "time": "37:39",
+                    "emoji": "🚀",
+                    "title": "Niall Cleary - My Joy"
+                },
+                {
+                    "time": "41:06",
+                    "emoji": "⚙️",
+                    "title": "Mirco Costa - Chopper"
+                },
+                {
+                    "time": "43:33",
+                    "emoji": "🌪️",
+                    "title": "Harmann - Next Level"
+                },
+                {
+                    "time": "46:45",
+                    "emoji": "🧩",
+                    "title": "GĀLÖ (US) - GA Peasant"
+                },
+                {
+                    "time": "49:00",
+                    "emoji": "👁️",
+                    "title": "DONT BLINK - BIT BY BIT"
+                },
+                {
+                    "time": "52:41",
+                    "emoji": "🐨",
+                    "title": "Diego Barrera - Koala"
+                },
+                {
+                    "time": "54:40",
+                    "emoji": "☕",
+                    "title": "Luke Alessi - B Phonk"
+                },
+                {
+                    "time": "57:07",
+                    "emoji": "🌇",
+                    "title": "Sante Sansone, Davide T - Rooftop"
+                },
+                {
+                    "time": "60:04",
+                    "emoji": "💃",
+                    "title": "Elisa Nau - Shake That Thing"
+                },
+                {
+                    "time": "62:24",
+                    "emoji": "🧠",
+                    "title": "Oravla Ziur - Trippin Now"
+                },
+                {
+                    "time": "65:06",
+                    "emoji": "🏆",
+                    "title": "Jay House, Rower (CH) - Gold Edition"
+                },
+                {
+                    "time": "67:49",
+                    "emoji": "💋",
+                    "title": "Julian Kumar - Kiss That"
+                },
+                {
+                    "time": "69:32",
+                    "emoji": "🛸",
+                    "title": "Niall Cleary - Take Me Away"
+                },
+                {
+                    "time": "71:44",
+                    "emoji": "🏎️",
+                    "title": "Malone Morez, Malcolm Zeller - Rushin"
+                },
+                {
+                    "time": "73:42",
+                    "emoji": "🥥",
+                    "title": "OFFU - Dame Ese Coco"
+                },
+                {
+                    "time": "75:56",
+                    "emoji": "🎭",
+                    "title": "Tito Jara - Act A Fool"
+                },
+                {
+                    "time": "77:39",
+                    "emoji": "🗣️",
+                    "title": "Diego Bustamante - Let Me Tell U Something"
+                },
+                {
+                    "time": "79:37",
+                    "emoji": "🍼",
+                    "title": "Lexlay - Baby Please"
+                },
+                {
+                    "time": "82:05",
+                    "emoji": "🔨",
+                    "title": "Malone Morez - Ban Ban"
+                }
+            ]
+        },
+        {
+            "id": "GDL009",
+            "title": "GridLoock Groovy 009",
+            "server": "CF",
+            "date": "2026-04-17 20:10:18",
+            "tracklist": [
+                {
+                    "time": "0:00",
+                    "emoji": "🌀🌑",
+                    "title": "Klaudie - Your love"
+                },
+                {
+                    "time": "2:00",
+                    "emoji": "🌀🔊",
+                    "title": "Trice Be, JackEL Beats - Girl Magnetiq"
+                },
+                {
+                    "time": "4:14",
+                    "emoji": "🌀💣",
+                    "title": "Tre Reynolds - Don't Go (Don't Leave)"
+                },
+                {
+                    "time": "6:45",
+                    "emoji": "🌀🕶️",
+                    "title": "Ford Scott - Just Wanna Party"
+                },
+                {
+                    "time": "9:30",
+                    "emoji": "🌀🧊",
+                    "title": "Fyza, Midas Field - Cool Vibration"
+                },
+                {
+                    "time": "12:12",
+                    "emoji": "🌀🔥",
+                    "title": "Roy Heyman - This Dance"
+                },
+                {
+                    "time": "14:42",
+                    "emoji": "🌀🐍",
+                    "title": "Andruss - Active"
+                },
+                {
+                    "time": "16:56",
+                    "emoji": "🌀👁️",
+                    "title": "Piem, Cecelia - Lovin On Repeat"
+                },
+                {
+                    "time": "19:11",
+                    "emoji": "🌀🖤",
+                    "title": "Nate Katz - Second Day"
+                },
+                {
+                    "time": "20:56",
+                    "emoji": "🌀⚡",
+                    "title": "Josh Butler - House Rules"
+                },
+                {
+                    "time": "23:10",
+                    "emoji": "🌀🌪️",
+                    "title": "Sandrop - The Place To Be"
+                },
+                {
+                    "time": "26:37",
+                    "emoji": "🌀🏗️",
+                    "title": "GENNARO - So Good"
+                },
+                {
+                    "time": "29:36",
+                    "emoji": "🌀⚙️",
+                    "title": "RUZE - Does Ya Momma Know"
+                },
+                {
+                    "time": "31:34",
+                    "emoji": "🌀🧪",
+                    "title": "Kolter - Plastic Jam"
+                },
+                {
+                    "time": "34:20",
+                    "emoji": "🌀🧬",
+                    "title": "Reebs, Messmile - I Believe"
+                },
+                {
+                    "time": "37:01",
+                    "emoji": "🌀🧩",
+                    "title": "Paperkraft - Funky Bluh Bluh"
+                },
+                {
+                    "time": "39:48",
+                    "emoji": "🌀💥",
+                    "title": "AMMIL - Play Funky"
+                },
+                {
+                    "time": "42:39",
+                    "emoji": "🌀🦋",
+                    "title": "Green Velvet, Jamie Jones - Butterflies"
+                },
+                {
+                    "time": "44:52",
+                    "emoji": "🌀🔋",
+                    "title": "Nate Katz - Never Stop"
+                },
+                {
+                    "time": "46:49",
+                    "emoji": "🌀🩸",
+                    "title": "PUNCHTIM - Seduction"
+                },
+                {
+                    "time": "48:48",
+                    "emoji": "🌀🤍",
+                    "title": "GISSA, JayC (NL) - Showblow"
+                },
+                {
+                    "time": "51:44",
+                    "emoji": "🌀🚀",
+                    "title": "Di Martinz - Rush"
+                },
+                {
+                    "time": "54:57",
+                    "emoji": "🌀🛰️",
+                    "title": "LondonGround - Saved"
+                },
+                {
+                    "time": "57:25",
+                    "emoji": "🌀🏁",
+                    "title": "Guy Burns - Touch Me"
+                }
+            ]
+        },
+        {
+            "id": "GDL008",
+            "title": "GridLoock Groovy 008",
+            "server": "CF",
+            "date": "2026-04-11 10:38:25",
+            "tracklist": [
+                {
+                    "time": "0:00",
+                    "emoji": "🌀🌴",
+                    "title": "paskman - MUEVE"
+                },
+                {
+                    "time": "1:45",
+                    "emoji": "🌀🔥",
+                    "title": "Angelo Raguso, FAW9, Eze Drill - Funky"
+                },
+                {
+                    "time": "4:00",
+                    "emoji": "🌀🥁",
+                    "title": "Funanori, Santi (IT) - Sempre Asi"
+                },
+                {
+                    "time": "5:58",
+                    "emoji": "🌀🕶️",
+                    "title": "Vanetty, SINHEDA, Ren Ocean - Reunite"
+                },
+                {
+                    "time": "7:57",
+                    "emoji": "🌀💣",
+                    "title": "Jason Grimes - Nuestro Secreto"
+                },
+                {
+                    "time": "10:11",
+                    "emoji": "🌀⚡",
+                    "title": "Manuel Ribeca, Notwins - Traigo Mi Flow"
+                },
+                {
+                    "time": "12:10",
+                    "emoji": "🌀🌪️",
+                    "title": "Stanny Abram - Igualdade"
+                },
+                {
+                    "time": "14:24",
+                    "emoji": "🌀🐍",
+                    "title": "A.D.P. - Regreso"
+                },
+                {
+                    "time": "15:53",
+                    "emoji": "🌀👁️",
+                    "title": "Jay de Lys - Loaded Clipz"
+                },
+                {
+                    "time": "18:07",
+                    "emoji": "🌀🩸",
+                    "title": "Draxx (ITA), ACID HARRY - Tikiti"
+                },
+                {
+                    "time": "20:36",
+                    "emoji": "🌀🔥",
+                    "title": "Yvvan Back, LoreFox, Jean Casas, Johnny Fontana - Touchable"
+                },
+                {
+                    "time": "23:20",
+                    "emoji": "🌀🧩",
+                    "title": "YYVNG, Chipie (FR) - Born This Moment"
+                },
+                {
+                    "time": "25:51",
+                    "emoji": "🌀🚀",
+                    "title": "Robbie Rivera, Federico Scavo - Que Lindo"
+                },
+                {
+                    "time": "27:48",
+                    "emoji": "🌀🧬",
+                    "title": "Marcox - Wait the Trumpet"
+                },
+                {
+                    "time": "29:32",
+                    "emoji": "🌀🛰️",
+                    "title": "Dj Maury Tripp - Kitten"
+                },
+                {
+                    "time": "32:15",
+                    "emoji": "🌀🏁",
+                    "title": "Ninetree - Rain On Me"
+                }
+            ]
+        },
+        {
+            "id": "GDL007",
+            "title": "GridLoock Groovy 007",
+            "server": "CF",
+            "date": "2026-04-08 13:24:35",
+            "tracklist": [
+                {
+                    "time": "0:00",
+                    "emoji": "🌀🌌",
+                    "title": "Edd - Dancing Together"
+                },
+                {
+                    "time": "2:24",
+                    "emoji": "🌀🛸",
+                    "title": "Robbie Doherty - My Love"
+                },
+                {
+                    "time": "5:49",
+                    "emoji": "🌀👁️",
+                    "title": "Carlo Caldareri - Bring This"
+                },
+                {
+                    "time": "8:22",
+                    "emoji": "🌀🖤",
+                    "title": "Labium - Low"
+                },
+                {
+                    "time": "10:57",
+                    "emoji": "🌀🔥",
+                    "title": "Alex Sax, lalo leyy, Edrian - Saturday Night"
+                },
+                {
+                    "time": "13:24",
+                    "emoji": "🌀⏳",
+                    "title": "Colin, Block & Crown - Smalltown Boy (feat. Colin)"
+                },
+                {
+                    "time": "16:34",
+                    "emoji": "🌀🔮",
+                    "title": "Beni Hana, Natalie Maida - Closer"
+                },
+                {
+                    "time": "19:29",
+                    "emoji": "🌀🌃",
+                    "title": "fka.m4a - Feelin' (So High)"
+                },
+                {
+                    "time": "22:11",
+                    "emoji": "🌀💎",
+                    "title": "CLOSE PROXIMITY - Endless Destinations"
+                },
+                {
+                    "time": "25:07",
+                    "emoji": "🌀🔌",
+                    "title": "Kyle Starkey - Get On Now"
+                },
+                {
+                    "time": "28:59",
+                    "emoji": "🌀🧩",
+                    "title": "Newtone - Burning Inside"
+                },
+                {
+                    "time": "33:15",
+                    "emoji": "🌀🚀",
+                    "title": "Baron Von Trax, Centre Court - Can't Get Enough"
+                },
+                {
+                    "time": "36:33",
+                    "emoji": "🌀🧬",
+                    "title": "Miguel de Bois - Is Everything Cool"
+                },
+                {
+                    "time": "39:54",
+                    "emoji": "🌀🛰️",
+                    "title": "Paige Tomlinson - Listen 2 Me"
+                },
+                {
+                    "time": "43:59",
+                    "emoji": "🌀🏁",
+                    "title": "GRØGAN - What you do"
+                }
+            ]
+        },
+        {
+            "id": "GDL006",
+            "title": "GridLoock Groovy 006",
+            "server": "CF",
+            "date": "2026-04-04 14:25:06",
+            "tracklist": [
+                {
+                    "time": "0:00",
+                    "emoji": "🪩☀️",
+                    "title": "Melon Bomb - Galia"
+                },
+                {
+                    "time": "3:08",
+                    "emoji": "🪩🕶️",
+                    "title": "Friend Within - First Time"
+                },
+                {
+                    "time": "6:20",
+                    "emoji": "🪩🛼",
+                    "title": "Funkerman, Divine - Do You Want To Go Down"
+                },
+                {
+                    "time": "9:28",
+                    "emoji": "🪩🎷",
+                    "title": "Seamus D, Belters Only - My Love"
+                },
+                {
+                    "time": "12:14",
+                    "emoji": "🪩🍹",
+                    "title": "Rafa Calello - Teraphy"
+                },
+                {
+                    "time": "15:11",
+                    "emoji": "🪩⚡",
+                    "title": "Mother Funkerz - In Da House"
+                },
+                {
+                    "time": "17:27",
+                    "emoji": "🪩📻",
+                    "title": "BERNA. - To Me"
+                },
+                {
+                    "time": "19:59",
+                    "emoji": "🪩🕺",
+                    "title": "Ferreck Dawn - Serious"
+                },
+                {
+                    "time": "22:29",
+                    "emoji": "🪩🌙",
+                    "title": "Constanza Pucheta - The Shore & Back"
+                },
+                {
+                    "time": "25:30",
+                    "emoji": "🪩🍒",
+                    "title": "Javi Bora, Vibe Killers - Bumpy"
+                },
+                {
+                    "time": "28:30",
+                    "emoji": "🪩🎹",
+                    "title": "Stanford, Orson Welsh - L.A.T. (Living Apart Together)"
+                },
+                {
+                    "time": "31:00",
+                    "emoji": "🪩💥",
+                    "title": "Devin Jetski - Can't Stop"
+                },
+                {
+                    "time": "34:22",
+                    "emoji": "🪩🦩",
+                    "title": "Johan S - Need Some Love"
+                },
+                {
+                    "time": "37:37",
+                    "emoji": "🪩🌟",
+                    "title": "Trimtone - The Thrills"
+                },
+                {
+                    "time": "41:51",
+                    "emoji": "🪩🔥",
+                    "title": "Arctic Funkies - Turn Up The Music"
+                },
+                {
+                    "time": "45:56",
+                    "emoji": "🪩🚀",
+                    "title": "Marco Maniera - Another Love"
+                }
+            ]
+        },
+        {
+            "id": "GDL005",
+            "title": "GridLoock Groovy 005",
+            "server": "CF",
+            "date": "2026-03-31 19:05:39",
+            "tracklist": [
+                {
+                    "time": "0:00",
+                    "emoji": "🌅",
+                    "title": "Lucas Scrofft - Keep The Party"
+                },
+                {
+                    "time": "3:30",
+                    "emoji": "🚗",
+                    "title": "Eros (RO) - Terrace"
+                },
+                {
+                    "time": "6:16",
+                    "emoji": "🥁",
+                    "title": "Meslow - Don't Know"
+                },
+                {
+                    "time": "10:30",
+                    "emoji": "🐆",
+                    "title": "Enrico Chirchiello - Carol"
+                },
+                {
+                    "time": "13:15",
+                    "emoji": "🔥",
+                    "title": "Selecta (ITA) - Volando"
+                },
+                {
+                    "time": "15:53",
+                    "emoji": "🌆",
+                    "title": "Sergiodnine, OCEANNN - Sunshine Day"
+                },
+                {
+                    "time": "18:54",
+                    "emoji": "🚀",
+                    "title": "Miguel Bastida - The Music Don't Stop"
+                },
+                {
+                    "time": "22:39",
+                    "emoji": "🌙",
+                    "title": "Tito Jara - Throw It Up"
+                },
+                {
+                    "time": "25:23",
+                    "emoji": "🐺",
+                    "title": "Landis LaPace - After Hours"
+                },
+                {
+                    "time": "28:36",
+                    "emoji": "🛸",
+                    "title": "Sergiodnine - Space"
+                },
+                {
+                    "time": "31:22",
+                    "emoji": "🔮",
+                    "title": "Shakti (UK), Basso (UK) - Dopamine"
+                },
+                {
+                    "time": "34:22",
+                    "emoji": "🔑",
+                    "title": "Adam Miller (H) - Bass Line Pumping"
+                },
+                {
+                    "time": "36:22",
+                    "emoji": "🌋",
+                    "title": "Lessone - Living"
+                },
+                {
+                    "time": "38:22",
+                    "emoji": "💣",
+                    "title": "Juli De Alonso - Cash"
+                },
+                {
+                    "time": "40:37",
+                    "emoji": "🎭",
+                    "title": "Eros (RO) - Bad Girls"
+                },
+                {
+                    "time": "43:50",
+                    "emoji": "👑",
+                    "title": "Lucas Scrofft - Like That"
+                },
+                {
+                    "time": "45:50",
+                    "emoji": "⚡",
+                    "title": "Cyava - Abajo"
+                },
+                {
+                    "time": "48:37",
+                    "emoji": "💎",
+                    "title": "Txalfon, Yulito Lamua - Jungly"
+                }
+            ]
+        },
+        {
+            "id": "GDL004",
+            "title": "GridLoock Groovy 004",
+            "server": "CF",
+            "date": "2026-02-23 16:21:05",
+            "tracklist": [
+                {
+                    "time": "0:00",
+                    "emoji": "🌅",
+                    "title": "Juve Alonso - Without Your Love - Original Mix"
+                },
+                {
+                    "time": "3:33",
+                    "emoji": "🚗",
+                    "title": "Cristina Lazic - Watch The Time - LondonGround Remix"
+                },
+                {
+                    "time": "5:32",
+                    "emoji": "🥁",
+                    "title": "Mustafa Ismaeel - Part Time Lover"
+                },
+                {
+                    "time": "8:01",
+                    "emoji": "🐆",
+                    "title": "Ztrong - Your Body - Original Mix"
+                },
+                {
+                    "time": "10:01",
+                    "emoji": "🔥",
+                    "title": "Italobros - Catch Me - Extended Mix"
+                },
+                {
+                    "time": "12:26",
+                    "emoji": "🌆",
+                    "title": "CASSIMM - Over You - Extended Mix"
+                },
+                {
+                    "time": "14:52",
+                    "emoji": "🚀",
+                    "title": "Iglesias - Take Your Pants Off"
+                },
+                {
+                    "time": "16:58",
+                    "emoji": "🌙",
+                    "title": "Fatimah Provillon, Luca Martin - Something Special Extended Mix"
+                },
+                {
+                    "time": "18:46",
+                    "emoji": "🐺",
+                    "title": "Joshwa - Lost In Music - Extended"
+                },
+                {
+                    "time": "21:44",
+                    "emoji": "🛸",
+                    "title": "Chinonegro - Bombero Calling"
+                },
+                {
+                    "time": "23:04",
+                    "emoji": "🔮",
+                    "title": "Mellizos - Get Lit"
+                },
+                {
+                    "time": "25:12",
+                    "emoji": "🔑",
+                    "title": "Italobros - Mirar - Extended Mix"
+                },
+                {
+                    "time": "27:40",
+                    "emoji": "🌋",
+                    "title": "RUZE, Ranger Trucco - Need Ur Lovin (Original Mix)"
+                },
+                {
+                    "time": "29:25",
+                    "emoji": "💣",
+                    "title": "Chloé Caillet - The One (feat. Jocelyn Brown) [Extended Mix]"
+                },
+                {
+                    "time": "31:30",
+                    "emoji": "🎭",
+                    "title": "SCHEINY - Ain't Nobody"
+                },
+                {
+                    "time": "33:39",
+                    "emoji": "👑",
+                    "title": "Kerri Chandler, Dennis Quin, Philip George - You Are In My System (Philip George Extended Mix)"
+                },
+                {
+                    "time": "35:54",
+                    "emoji": "⚡",
+                    "title": "Nari - Don't Start Now"
+                },
+                {
+                    "time": "37:44",
+                    "emoji": "💎",
+                    "title": "RUZE - Innervision (Original Mix)"
+                },
+                {
+                    "time": "39:56",
+                    "emoji": "🌀",
+                    "title": "Ralph C - When the Sound Goes Down - Extended Mix"
+                },
+                {
+                    "time": "42:37",
+                    "emoji": "🕶️",
+                    "title": "Mellizos - Freedom (Back 2 Tha Funk)"
+                }
+            ]
+        },
+        {
+            "id": "GDL003",
+            "title": "GridLoock Groovy 003",
+            "server": "CF",
+            "date": "2026-02-20 19:44:48",
+            "tracklist": [
+                {
+                    "time": "0:00",
+                    "emoji": "🌅",
+                    "title": "Patrizio Exclusive, Lollomezz - Sweet Love"
+                },
+                {
+                    "time": "2:29",
+                    "emoji": "🚗",
+                    "title": "Carloh - Pra Dançar"
+                },
+                {
+                    "time": "5:00",
+                    "emoji": "🥁",
+                    "title": "Elias R, Reenday - La Noche"
+                },
+                {
+                    "time": "6:31",
+                    "emoji": "🐆",
+                    "title": "Fercio - To The Dance Floor"
+                },
+                {
+                    "time": "8:38",
+                    "emoji": "🔥",
+                    "title": "Santi Dominguez - Believe"
+                },
+                {
+                    "time": "10:53",
+                    "emoji": "🌆",
+                    "title": "Seba Iturra - F CK YEAH !"
+                },
+                {
+                    "time": "12:52",
+                    "emoji": "🚀",
+                    "title": "Sergiodnine - Disco Fresh"
+                },
+                {
+                    "time": "14:37",
+                    "emoji": "🌙",
+                    "title": "Andres Blows, Fran-co - Flow Repeat"
+                },
+                {
+                    "time": "15:53",
+                    "emoji": "🐺",
+                    "title": "jeaneiffel - Trumbeat"
+                },
+                {
+                    "time": "18:52",
+                    "emoji": "🛸",
+                    "title": "BESSEMM - Wayout"
+                },
+                {
+                    "time": "20:23",
+                    "emoji": "🔮",
+                    "title": "Juan Ferreyro, Caitto - I Don't Have"
+                },
+                {
+                    "time": "22:38",
+                    "emoji": "🔑",
+                    "title": "Ivan Lopez - Don't Talk (Herloop Mix)"
+                },
+                {
+                    "time": "24:22",
+                    "emoji": "🌋",
+                    "title": "Nautik (US) - Third Eye"
+                },
+                {
+                    "time": "25:52",
+                    "emoji": "💣",
+                    "title": "Seba Cortes, ANDRES_HERRERA - Body Communicate"
+                },
+                {
+                    "time": "27:23",
+                    "emoji": "🎭",
+                    "title": "Yas, LASADJ - La Piña"
+                },
+                {
+                    "time": "29:53",
+                    "emoji": "👑",
+                    "title": "Roworth - Fiesta Loca"
+                },
+                {
+                    "time": "32:22",
+                    "emoji": "⚡",
+                    "title": "Carloh - Solo Tu"
+                },
+                {
+                    "time": "35:41",
+                    "emoji": "💎",
+                    "title": "Erick Cz, Juan Velasquez - GLICHSS"
+                },
+                {
+                    "time": "36:41",
+                    "emoji": "🌀",
+                    "title": "Smith & Welson - La Vida Loca (DJ Global Byte Mix)"
+                },
+                {
+                    "time": "38:12",
+                    "emoji": "🕶️",
+                    "title": "Eloyco - Heyyy!"
+                },
+                {
+                    "time": "40:42",
+                    "emoji": "👽",
+                    "title": "Jim Poel - Bempi"
+                },
+                {
+                    "time": "42:41",
+                    "emoji": "🎪",
+                    "title": "Raumakustik, Pete Kaltenburg - Hive"
+                },
+                {
+                    "time": "45:41",
+                    "emoji": "👻",
+                    "title": "S7VEN (SP) - Jumpin (Summer Mix)"
+                },
+                {
+                    "time": "47:41",
+                    "emoji": "🧬",
+                    "title": "Juan Velasquez - Viajera"
+                },
+                {
+                    "time": "48:32",
+                    "emoji": "🌊",
+                    "title": "Ricardo Criollo House - La Tribu"
+                },
+                {
+                    "time": "49:49",
+                    "emoji": "⛓️",
+                    "title": "Paul Clarkson - Hypnotic"
+                },
+                {
+                    "time": "52:11",
+                    "emoji": "🪐",
+                    "title": "LAVY (IT) - Linear Pulse"
+                },
+                {
+                    "time": "54:11",
+                    "emoji": "🍸",
+                    "title": "Raumakustik, Pete Kaltenburg - All Night Long"
+                },
+                {
+                    "time": "56:11",
+                    "emoji": "💥",
+                    "title": "Erland Galjaard - Music Move Your Feet"
+                }
+            ]
+        },
+        {
+            "id": "JRG004",
+            "title": "Jungle Rhythmic Grooves 004",
+            "server": "HF",
+            "date": "2026-02-20 19:43:18",
+            "tracklist": [
+                {
+                    "time": "0:00",
+                    "emoji": "🌅",
+                    "title": "Diego Bustamante - Madness (SEBS (US) Remix)"
+                },
+                {
+                    "time": "1:51",
+                    "emoji": "",
+                    "title": "Pablo Juarez, Resco (US) - So Sick (Original Mix)"
+                },
+                {
+                    "time": "3:57",
+                    "emoji": "🥁",
+                    "title": "Adrian Mejias - Never Stop (Original Mix)"
+                },
+                {
+                    "time": "5:25",
+                    "emoji": "🐆",
+                    "title": "Giovanni Nuñez - La Luna (Original Mix)"
+                },
+                {
+                    "time": "7:24",
+                    "emoji": "🔥",
+                    "title": "Reenday - Bongo (Extended Mix)"
+                },
+                {
+                    "time": "9:24",
+                    "emoji": "🌆",
+                    "title": "Sergiodnine - Awake (Original Mix)"
+                },
+                {
+                    "time": "11:08",
+                    "emoji": "🚀",
+                    "title": "Hermann Bravo, Vegaans - Right To The Flow (Original Mix)"
+                },
+                {
+                    "time": "13:39",
+                    "emoji": "🌙",
+                    "title": "NOISSE - AM EN IBIZA (Original Mix)"
+                },
+                {
+                    "time": "16:38",
+                    "emoji": "🐺",
+                    "title": "Dacello, Vincent Gomez - TOP G (Original Mix)"
+                },
+                {
+                    "time": "19:53",
+                    "emoji": "🛸",
+                    "title": "Josh Burnett (UK) - My Lovin' (Original Mix)"
+                },
+                {
+                    "time": "22:22",
+                    "emoji": "🔮",
+                    "title": "Dav (VE) - Morning Star (Original Mix)"
+                },
+                {
+                    "time": "24:02",
+                    "emoji": "🔑",
+                    "title": "Landis LaPace, Ferra Black - On A Roll (Original Mix)"
+                },
+                {
+                    "time": "25:48",
+                    "emoji": "🌋",
+                    "title": "Bautista (MX), Spicy Market - Sentimiento (Extended Mix)"
+                },
+                {
+                    "time": "28:44",
+                    "emoji": "💣",
+                    "title": "Lowderz, Los Canarios - Cole (Original Mix)"
+                },
+                {
+                    "time": "30:13",
+                    "emoji": "🎭",
+                    "title": "AtcG - Conteo (Original Mix)"
+                },
+                {
+                    "time": "32:48",
+                    "emoji": "👑",
+                    "title": "Kojo Funds, Brian Smith - Paranoid (Original Mix)"
+                },
+                {
+                    "time": "35:47",
+                    "emoji": "💥",
+                    "title": "Alex Atenciano, Inno (IT) - Choke (Extended Mix)"
+                },
+                {
+                    "time": "37:07",
+                    "emoji": "👁️",
+                    "title": "Villamizar, Edickson Manrique - Firebeat (Original Mix)"
+                },
+                {
+                    "time": "38:52",
+                    "emoji": "🐉",
+                    "title": "Albamuzikk - Café y Ron"
+                },
+                {
+                    "time": "40:56",
+                    "emoji": "🧠",
+                    "title": "Hatiras - Hypnotized (Extended Mix)"
+                },
+                {
+                    "time": "43:10",
+                    "emoji": "⚜️",
+                    "title": "Reebs, Lost Minds, Cumbiafrica - Shingaling Shingaling (Extended Mix)"
+                },
+                {
+                    "time": "45:41",
+                    "emoji": "💎",
+                    "title": "Ikharo White - Parola (Original Mix)"
+                },
+                {
+                    "time": "48:03",
+                    "emoji": "🎇",
+                    "title": "Gerardo Corona, Trokmat - Somos Bandidos (Original Mix)"
+                },
+                {
+                    "time": "51:05",
+                    "emoji": "🏁",
+                    "title": "Ayala042 - Acid Gleam (Original Mix)"
+                },
+                {
+                    "time": "52:34",
+                    "emoji": "🏆",
+                    "title": "Zkosta, Camtraks - Gold Linings ft. Camtraks (P-rez Remix)"
+                }
+            ]
+        }
+    ]
+}
