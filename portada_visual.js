@@ -1,7 +1,7 @@
 /**
- * VLOITZ PORTADA VISUAL ENGINE (V6.0 - REINICIO TOTAL WEBGL)
- * Arquitectura reconstruida desde cero.
- * A prueba de balas: ResizeObserver, Retina Display Fix, y Shaders a prueba de fallos.
+ * VLOITZ PORTADA VISUAL ENGINE (V6.2 - THE ORGANIC VORTEX FIX)
+ * Arquitectura WebGL pura.
+ * FIX: Campos de repulsión orgánicos (adiós atascos en los bordes) y Humo Visible garantizado.
  */
 
 const PortadaVisualEngine = (() => {
@@ -41,23 +41,23 @@ const PortadaVisualEngine = (() => {
     }
 
     // ========================================================================
-    // 🎛️ CONFIGURACIÓN MAESTRA (Fácil de ajustar)
+    // 🎛️ CONFIGURACIÓN MAESTRA
     // ========================================================================
     const CONFIG = {
-        particles_count: 350, // Densidad segura
-        particle_size: 3.5, // TAMAÑO AUMENTADO PARA QUE SE VEAN CLARAMENTE
-        speed: 0.02, // Velocidad de flotación
-        gravity_pull: 18.0, // Fuerza gravitacional potenciada (Cae más rápido)
-        friction: 0.93, // Fricción alta para inercia fluida al pausar
+        particles_count: 350, // Densidad elegante
+        particle_size: 3.5, // Tamaño nítido y visible
+        speed: 0.02, // Velocidad base
+        gravity_pull: 18.0, // Succión poderosa hacia el centro
+        friction: 0.93, // Fricción alta = inercia de humo fluido
         colors: [
-            [255, 255, 255], // Blanco
-            [100, 200, 255], // Celeste
-            [180, 100, 255] // Violeta
+            [255, 255, 255], // Blanco puro
+            [100, 200, 255], // Celeste hielo
+            [180, 100, 255] // Violeta oscuro
         ]
     };
 
     // ========================================================================
-    // 🧠 FÍSICA DE PARTÍCULAS
+    // 🧠 FÍSICA DE PARTÍCULAS ORGÁNICA
     // ========================================================================
     class Particle {
         constructor() {
@@ -65,8 +65,8 @@ const PortadaVisualEngine = (() => {
         }
 
         reset(isInit = false) {
-            // Si hay música y se reciclan, nacen fuera de la pantalla para ser succionadas.
-            // Si está en pausa, nacen DENTRO de la pantalla para que las podamos ver flotar.
+            // Si nacen durante la música, aparecen en los bordes para ser succionadas
+            // Si nacen en pausa, aparecen en cualquier lugar de la pantalla
             if (!isInit && isMusicPlaying) {
                 if (Math.random() > 0.5) {
                     this.x = Math.random() > 0.5 ? -10 : width + 10;
@@ -80,7 +80,7 @@ const PortadaVisualEngine = (() => {
                 this.y = Math.random() * height;
             }
 
-            this.z = Math.random() * 3 + 1; // Profundidad
+            this.z = Math.random() * 3 + 1; // Profundidad 3D
             this.size = (Math.random() * CONFIG.particle_size + 1.0) / this.z;
 
             const color = CONFIG.colors[Math.floor(Math.random() * CONFIG.colors.length)];
@@ -97,6 +97,7 @@ const PortadaVisualEngine = (() => {
 
         update() {
             if (isMusicPlaying) {
+                // MODO PLAY: El Agujero Negro en tu foto de perfil
                 const targetX = width * 0.5;
                 const targetY = height * 1.0;
 
@@ -104,57 +105,56 @@ const PortadaVisualEngine = (() => {
                 const dy = targetY - this.y;
                 const dist = Math.sqrt(dx * dx + dy * dy);
 
+                // Si son absorbidas, renacen en los bordes
                 if (dist < 40) {
                     this.reset();
                     return;
                 }
 
+                // Fuerza de gravedad inversa a la distancia (Aceleran al acercarse)
                 const pull = (CONFIG.gravity_pull * (1.0 + AudioState.bass * 2.5)) / Math.max(dist, 10.0);
 
+                // Turbulencia caótica (Giran y tiemblan mientras son succionadas)
                 const turbX = Math.sin(this.y * 0.02 + Date.now() * 0.002) * 0.6;
                 const turbY = Math.cos(this.x * 0.02 + Date.now() * 0.002) * 0.2;
 
                 this.vx += (dx * pull) + turbX;
                 this.vy += (dy * pull) + turbY;
-            } else {
-                // Modo Pausa (Cinemático): Turbulencia y gravedad suspendida
-                const timeStr = Date.now() * 0.0005;
-                this.vx += Math.sin(this.y * 0.01 + timeStr) * 0.06;
-                this.vy += Math.cos(this.x * 0.01 + timeStr) * 0.06;
 
-                // Leve tendencia a flotar hacia arriba como humo caliente
-                this.vy -= 0.02;
+            } else {
+                // MODO PAUSA: Suspensión Cinemática
+                const timeStr = Date.now() * 0.0005;
+
+                // Movimiento Browniano (Derivan como polvo suspendido en el aire)
+                this.vx += Math.sin(this.y * 0.01 + timeStr) * 0.05;
+                this.vy += Math.cos(this.x * 0.01 + timeStr) * 0.05;
+
+                // CAMPOS DE REPULSIÓN SUAVES: Evita que se peguen a los bordes como imanes
+                const margin = 40; // Distancia desde el borde donde empieza la repulsión
+                if (this.x < margin) this.vx += 0.015;
+                if (this.x > width - margin) this.vx -= 0.015;
+                if (this.y < margin) this.vy += 0.015;
+                if (this.y > height - margin) this.vy -= 0.015;
             }
 
-            // FRICCIÓN CONSTANTE
+            // Fricción constante para que el frenado al pausar sea orgánico
             this.vx *= CONFIG.friction;
             this.vy *= CONFIG.friction;
 
             this.x += this.vx;
             this.y += this.vy;
 
-            // SISTEMA DE COLISIÓN (LA CAJA DE CRISTAL)
+            // SISTEMA DE RECICLAJE INFINITO
             if (!isMusicPlaying) {
-                // Si está en pausa, las partículas rebotan contra las paredes y quedan atrapadas
-                // Se multiplican por -0.8 para perder un poco de fuerza al chocar
-                if (this.x <= 0) {
-                    this.x = 0;
-                    this.vx *= -0.8;
-                } else if (this.x >= width) {
-                    this.x = width;
-                    this.vx *= -0.8;
-                }
+                // Efecto "Pac-Man" en pausa: Si a pesar de la repulsión logran salir, entran por el lado opuesto.
+                if (this.x < -20) this.x = width + 20;
+                else if (this.x > width + 20) this.x = -20;
 
-                if (this.y <= 0) {
-                    this.y = 0;
-                    this.vy *= -0.8;
-                } else if (this.y >= height) {
-                    this.y = height;
-                    this.vy *= -0.8;
-                }
+                if (this.y < -20) this.y = height + 20;
+                else if (this.y > height + 20) this.y = -20;
             } else {
-                // Si hay música, se reciclan al salir de la pantalla para mantener el flujo del vórtice
-                if (this.x < -30 || this.x > width + 30 || this.y < -30 || this.y > height + 30) {
+                // En modo Play, si salen volando muy lejos, se reciclan para ser succionadas de nuevo
+                if (this.x < -50 || this.x > width + 50 || this.y < -50 || this.y > height + 50) {
                     this.reset();
                 }
             }
@@ -162,7 +162,7 @@ const PortadaVisualEngine = (() => {
     }
 
     // ========================================================================
-    // ⚙️ SHADERS (CÓDIGO DE TARJETA GRÁFICA A PRUEBA DE FALLOS)
+    // ⚙️ SHADERS WEBGL (El Motor Gráfico Real)
     // ========================================================================
     const SHADERS = {
         bgVertex: `attribute vec2 position; void main() { gl_Position = vec4(position, 0.0, 1.0); }`,
@@ -172,14 +172,14 @@ const PortadaVisualEngine = (() => {
             uniform float u_time;
             uniform float u_bass;
 
-            // Función de ruido rápida y segura
             float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
             float noise(vec2 p) {
                 vec2 i = floor(p); vec2 f = fract(p);
                 vec2 u = f*f*(3.0-2.0*f);
                 return mix(mix(hash(i), hash(i + vec2(1.0,0.0)), u.x),
-                mix(hash(i + vec2(0.0,1.0)), hash(i + vec2(1.0,1.0)), u.x), u.y);
+                           mix(hash(i + vec2(0.0,1.0)), hash(i + vec2(1.0,1.0)), u.x), u.y);
             }
+            // Generador de Nubes Fractales (4 Capas de detalle)
             float fbm(vec2 p) {
                 float v = 0.0; float a = 0.5;
                 for (int i=0; i<4; i++) { v+=a*noise(p); p*=2.0; a*=0.5; }
@@ -189,22 +189,21 @@ const PortadaVisualEngine = (() => {
             void main() {
                 vec2 uv = gl_FragCoord.xy / u_resolution;
 
-                // Movimiento del humo (Más detalle con 4 octavas de ruido)
-                vec2 pos = uv * 2.0 + vec2(u_time * 0.03, u_time * 0.05);
+                // Humo denso moviéndose hacia arriba
+                vec2 pos = uv * 2.5 + vec2(u_time * 0.02, u_time * 0.06);
                 float smoke = fbm(pos);
 
-                // Color base (Abismo un poco más cálido)
-                vec3 color = vec3(0.03, 0.02, 0.05);
+                // Color base (Abismo espacial, ligeramente iluminado para no ser negro puro)
+                vec3 color = vec3(0.04, 0.02, 0.08);
 
-                // Color del gas (Violeta eléctrico y brillante para que resalte)
-                vec3 nebula = vec3(0.45, 0.15, 0.80);
+                // Color de la nebulosa (Violeta eléctrico y brillante)
+                vec3 nebula = vec3(0.50, 0.10, 0.80);
 
-                // Máscara: Centro inferior (0.5, 0.0 en WebGL)
-                float distCenter = length(uv - vec2(0.5, 0.0));
-                float mask = smoothstep(1.5, 0.1, distCenter); // Expansión masiva en la pantalla
+                // Gradiente vertical: Más brillo abajo (cerca de la foto)
+                float gradient = 1.0 - uv.y;
 
-                // Intensidad: Base alta + reactividad al bajo
-                float intensity = smoke * mask * (0.6 + u_bass * 1.5);
+                // Intensidad calculada: Base + Gradiente + Latido del Bajo
+                float intensity = smoke * (0.3 + gradient * 0.6 + u_bass * 1.5);
 
                 color = mix(color, nebula, intensity);
                 gl_FragColor = vec4(color, 1.0);
@@ -218,7 +217,6 @@ const PortadaVisualEngine = (() => {
             varying vec4 v_color;
 
             void main() {
-                // Convertir (x,y) de CSS a espacio WebGL
                 vec2 clipSpace = (a_position / u_resolution) * 2.0 - 1.0;
                 gl_Position = vec4(clipSpace * vec2(1.0, -1.0), 0.0, 1.0);
                 gl_PointSize = a_size;
@@ -231,7 +229,8 @@ const PortadaVisualEngine = (() => {
             void main() {
                 float dist = length(gl_PointCoord - vec2(0.5));
                 if (dist > 0.5) discard;
-                float alpha = smoothstep(0.5, 0.1, dist);
+                // Suavizado perfecto para bordes redondos de las estrellas
+                float alpha = smoothstep(0.5, 0.2, dist);
                 gl_FragColor = vec4(v_color.rgb, v_color.a * alpha);
             }
         `
@@ -254,7 +253,7 @@ const PortadaVisualEngine = (() => {
     };
 
     // ========================================================================
-    // 🛠️ MOTOR PRINCIPAL
+    // 🛠️ INICIALIZACIÓN DEL MOTOR
     // ========================================================================
     const initEngine = () => {
         bgProgram = buildProgram(SHADERS.bgVertex, SHADERS.bgFragment);
@@ -285,10 +284,9 @@ const PortadaVisualEngine = (() => {
 
         simulateAudio();
 
-        // 1. DIBUJAR FONDO (Sin mezcla aditiva para no lavar colores)
+        // 1. FONDO FRACTAL (Humo)
         gl.disable(gl.BLEND);
         gl.useProgram(bgProgram);
-        // FIX: Enviar tamaño físico del canvas
         gl.uniform2f(bgUniforms.res, canvas.width, canvas.height);
         gl.uniform1f(bgUniforms.time, Date.now() * 0.001);
         gl.uniform1f(bgUniforms.bass, AudioState.bass);
@@ -299,7 +297,7 @@ const PortadaVisualEngine = (() => {
         gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
         gl.drawArrays(gl.TRIANGLES, 0, 6);
 
-        // 2. DIBUJAR PARTÍCULAS (Con mezcla aditiva para brillo)
+        // 2. PARTÍCULAS
         gl.enable(gl.BLEND);
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
 
@@ -316,16 +314,12 @@ const PortadaVisualEngine = (() => {
             particleData[offset++] = p.g;
             particleData[offset++] = p.b;
 
-            // Destello rítmico
             const activeAlpha = Math.min(1.0, p.alpha + (AudioState.bass * 0.5));
             particleData[offset++] = activeAlpha;
-
-            // FIX: Escalar tamaño por DPR para que no desaparezcan en móviles
             particleData[offset++] = p.size * dpr;
         }
 
         gl.useProgram(particleProgram);
-        // FIX: Enviar tamaño lógico de CSS para calcular posiciones correctas
         gl.uniform2f(particleUniforms.res, width, height);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, particleBuffer);
@@ -382,7 +376,6 @@ const PortadaVisualEngine = (() => {
 
         banner.insertBefore(canvas, banner.firstChild);
 
-        // Degradado protector del texto
         const gradient = document.createElement('div');
         gradient.id = 'vloitz-webgl-gradient';
         Object.assign(gradient.style, {
@@ -404,7 +397,6 @@ const PortadaVisualEngine = (() => {
         initEngine();
         updateDimensions();
 
-        // FIX: Observador robusto para redimensiones dinámicas en DevTools/Móviles
         resizeObserver = new ResizeObserver(() => updateDimensions());
         resizeObserver.observe(banner);
 
@@ -427,7 +419,6 @@ const PortadaVisualEngine = (() => {
     const evaluate = () => {
         if (!currentConfig || !currentConfig.master_switch) return stop();
 
-        // Verifica si es móvil o si forzaste escritorio en el objeto de configuración
         const isMobile = window.innerWidth <= 768;
         if (isMobile && currentConfig.enable_mobile) start();
         else if (!isMobile && currentConfig.enable_desktop) start();
@@ -438,7 +429,7 @@ const PortadaVisualEngine = (() => {
         init: (config) => {
             currentConfig = config;
             evaluate();
-            window.addEventListener('resize', evaluate); // Verifica al cambiar el tamaño de ventana
+            window.addEventListener('resize', evaluate);
         },
         setPlayState: (isPlaying) => {
             isMusicPlaying = isPlaying;
