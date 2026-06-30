@@ -27,21 +27,21 @@ const PortadaVisualEngine = (() => {
     // ========================================================================
     // 🎛️ PRESET MATEMÁTICO ÚNICO
     // ========================================================================
-    const VISUAL_PRESETS = {
+   const VISUAL_PRESETS = {
         'deep_tech_minimal': {
-            bg_color: '#030206',
+            bg_color: '#06050a',             // Abismo muy sutil, no negro puro
             gas_enabled: true,
             gas_colors: [
-                ['rgba(12, 8, 20, 0.22)', 'rgba(3, 1, 6, 0.05)'],
-                ['rgba(8, 14, 25, 0.15)', 'rgba(2, 4, 8, 0.02)']
+                ['rgba(70, 40, 120, 0.35)', 'rgba(15, 5, 25, 0.05)'], // Púrpura oscuro, pero VISIBLE
+                ['rgba(30, 60, 100, 0.25)', 'rgba(5, 10, 20, 0.05)']  // Azul acero profundo
             ],
-            particles_count: 140,
-            particles_base_size: 0.6,
-            particles_colors: ['rgba(255,255,255,', 'rgba(195,215,245,'],
-            speed_multiplier: 0.015,
+            particles_count: 150,            // Densidad elegante
+            particles_base_size: 2.5,        // FIX CRÍTICO: 2.5px permite que el canvas las dibuje nítidas
+            particles_colors: ['rgba(255,255,255,', 'rgba(170,200,255,'],
+            speed_multiplier: 0.05,          // Movimiento cinemático pero perceptible a la vista
             reactivity: {
-                bass_gas_opacity: 0.12,
-                bass_particle_glow: 0.35
+                bass_gas_opacity: 0.4,       // Latido más notable
+                bass_particle_glow: 0.6      // Destello más notable
             }
         }
     };
