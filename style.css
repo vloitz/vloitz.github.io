@@ -2024,36 +2024,30 @@ body {
    VLOITZ GHOST SCRUBBING PRO - FASE 1 (HUD & EXPANSIÓN)
    ========================================================================== */
 #vloitz-hud {
-    position: fixed;
-    top: 30%;
+    position: absolute;
+    /* Ahora será relativo al reproductor, no a la pantalla */
+    /* top: se inyectará por JS dinámicamente */
     left: 50%;
     transform: translateX(-50%);
     background: rgba(18, 18, 18, 0.7);
-    /* Fondo oscuro semitransparente (Glassmorphism) */
     backdrop-filter: blur(10px);
-    /* Efecto de cristal esmerilado nativo */
     -webkit-backdrop-filter: blur(10px);
     color: #ffffff;
-    /* Texto blanco puro y limpio */
-    padding: 12px 24px;
-    /* Más ancho que alto para darle forma de píldora */
-    border-radius: 30px;
-    /* Bordes totalmente redondeados */
+    padding: 6px 18px;
+    /* Más compacto para no empujar la onda */
+    border-radius: 20px;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    /* Tipografía nativa más limpia */
-    font-size: 22px;
-    /* Tamaño menos agresivo */
+    font-size: 16px;
+    /* Ajustado al tamaño de un título */
     font-weight: 600;
-    /* Semi-bold para legibilidad */
     letter-spacing: 1px;
-    /* Un poco de aire entre números */
     display: none;
-    z-index: 999999;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    /* Borde súper sutil casi invisible */
+    z-index: 20;
+    border: 1px solid rgba(255, 255, 255, 0.05);
     pointer-events: none;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-    /* Sombra elegante */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    white-space: nowrap;
+    /* Evita que el texto baje a dos líneas */
 }
 
 #vloitz-ghost-pointer {
