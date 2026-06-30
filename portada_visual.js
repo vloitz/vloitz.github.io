@@ -1,261 +1,348 @@
 /**
- * VLOITZ PORTADA VISUAL ENGINE (V4.1 - Pure Deep Tech Minimal)
- * Arquitectura modular agnóstica basada en presets.
- * Estética: Polvo estelar nítido, atmósfera densa y succión fluida (Humo pesado).
+ * VLOITZ PORTADA VISUAL ENGINE (V5.0 - WebGL PURE DEEP TECH EDITION)
+ * Arquitectura escalable basada en Arrays de Visuales.
+ * Renderizado por GPU para máximo rendimiento en móviles de gama baja.
  */
 
 const PortadaVisualEngine = (() => {
     let canvas = null;
-    let ctx = null;
+    let gl = null;
     let animationId = null;
     let isRunning = false;
     let isVisible = false;
     let width = 0,
         height = 0;
 
-    let stars = [];
-    let nebulas = [];
     let currentConfig = null;
+    let particles = [];
+    let particleData = null; // Buffer de datos para WebGL
 
-    // 🔗 CABLES LISTOS PARA TU AUDIO EN EL FUTURO (0.0 a 1.0)
+    // Programas de WebGL
+    let bgProgram, particleProgram;
+    let bgUniforms = {},
+        particleUniforms = {};
+    let particleBuffer;
+
+    // 🔗 CABLES LISTOS PARA TU AUDIO
     const AudioState = {
         bass: 0,
         overall: 0
     };
-    let isMusicPlaying = false; // <-- El interruptor real del reproductor
+    let isMusicPlaying = false;
 
     function simulateAudio() {
         if (!isMusicPlaying) {
-            AudioState.bass *= 0.95; // Caída hiper-suave y cinemática en reposo
+            AudioState.bass *= 0.95; // Caída suave en pausa
             return;
         }
-        // Simulador de Sub-Bajo: Oscilación densa, viscosa y pesada (Sin picos estroboscópicos)
+        // Simulador de Sub-Bajo: Oscilación densa y pesada (Sin picos estroboscópicos)
         const time = Date.now() * 0.0015;
-        // Doble onda desfasada para un groove orgánico, simulando un bajo envolvente
         const groove = (Math.sin(time) + Math.sin(time * 0.8)) / 2;
         AudioState.bass = (groove + 1) / 2 * 0.35;
     }
 
     // ========================================================================
-    // 🎛️ PRESET MATEMÁTICO ÚNICO
+    // 🗄️ REGISTRO DE VISUALES (ARRAY ESCALABLE PARA FUTURA EXTRACCIÓN)
     // ========================================================================
-    const VISUAL_PRESETS = {
-        'deep_tech_minimal': {
-            bg_color: '#040308', // Abismo aún más oscuro y sobrio
-            gas_enabled: true,
-            gas_colors: [
-                ['rgba(45, 25, 80, 0.20)', 'rgba(10, 5, 20, 0.02)'], // Violeta oscuro y profundo
-                ['rgba(15, 30, 60, 0.15)', 'rgba(5, 10, 15, 0.02)'] // Celeste frío muy atenuado
-            ],
-            particles_count: 220, // Densidad alta de polvo estelar
-            particles_base_size: 1.8, // Calibrado exacto: Nítido pero visible en pantallas móviles
-            particles_colors: ['rgba(255,255,255,', 'rgba(180,210,255,', 'rgba(140,100,220,'], // Celestes fríos, violetas oscuros
-            speed_multiplier: 0.015, // Movimiento casi estático, flotación pura
+    const VISUALS_REGISTRY = [{
+        id: 'deep_tech_minimal',
+        name: 'Pure Deep Tech Minimal (WebGL)',
+        config: {
+            particles_count: 800, // WebGL maneja 800+ partículas sin inmutarse
+            particles_base_size: 2.0, // Puntos minúsculos y finos (polvo estelar)
+            speed_multiplier: 0.015, // Movimiento casi estático (flotación)
             reactivity: {
-                bass_gas_opacity: 0.15, // Latido atmosférico sutil
                 bass_particle_glow: 0.2 // Destello finísimo
             },
             physics: {
                 gravity_center: {
                     x: 0.5,
                     y: 0.45
-                }, // Centro de gravedad (tu foto)
-                gravity_pull: 0.5, // Atracción suave y elegante
-                smoke_friction: 0.965, // Fricción ALTA: fluido espeso y denso
-                gas_breathing_speed: 0.00015 // Respiración orgánica lentísima
+                }, // Atracción a tu foto
+                gravity_pull: 0.5, // Atracción suave
+                smoke_friction: 0.965 // Fricción ALTA: fluido espeso y denso
+            },
+            colors: [
+                [255, 255, 255], // Blanco
+                [180, 210, 255], // Celeste frío
+                [140, 100, 220] // Violeta oscuro
+            ]
+        },
+        shaders: {
+            // Shader para el fondo (Nebulosas oscuras generadas matemáticamente en GPU)
+            background: {
+                vertex: `
+                        attribute vec2 position;
+                        void main() { gl_Position = vec4(position, 0.0, 1.0); }
+                    `,
+                fragment: `
+                        precision mediump float;
+                        uniform vec2 u_resolution;
+                        uniform float u_time;
+                        uniform float u_bass;
+
+                        void main() {
+                            vec2 uv = gl_FragCoord.xy / u_resolution;
+
+                            // Abismo profundo (Sobrio y minimalista)
+                            vec3 color = vec3(0.015, 0.012, 0.031);
+
+                            // Respiración orgánica lentísima
+                            float breath = sin(u_time * 0.2) * 0.5 + 0.5;
+
+                            // Nebulosa 1 (Violeta muy oscuro)
+                            float d1 = length(uv - vec2(0.25, 0.35));
+                            float neb1 = smoothstep(0.6, 0.0, d1) * (0.15 + breath * 0.05);
+                            color = mix(color, vec3(0.17, 0.1, 0.31), neb1 * (1.0 + u_bass * 0.4));
+
+                            // Nebulosa 2 (Azul acero muy atenuado)
+                            float d2 = length(uv - vec2(0.75, 0.65));
+                            float neb2 = smoothstep(0.7, 0.0, d2) * (0.12 + (1.0 - breath) * 0.05);
+                            color = mix(color, vec3(0.06, 0.12, 0.23), neb2 * (1.0 + u_bass * 0.4));
+
+                            gl_FragColor = vec4(color, 1.0);
+                        }
+                    `
+            },
+            // Shader para las partículas
+            particles: {
+                vertex: `
+                        attribute vec2 a_position;
+                        attribute vec4 a_color;
+                        attribute float a_size;
+
+                        uniform vec2 u_resolution;
+                        varying vec4 v_color;
+
+                        void main() {
+                            // Convertir coordenadas de píxeles a espacio de clip de WebGL (-1 a +1)
+                            vec2 clipSpace = (a_position / u_resolution) * 2.0 - 1.0;
+                            gl_Position = vec4(clipSpace * vec2(1, -1), 0.0, 1.0);
+                            gl_PointSize = a_size;
+                            v_color = a_color;
+                        }
+                    `,
+                fragment: `
+                        precision mediump float;
+                        varying vec4 v_color;
+
+                        void main() {
+                            // Forma circular suave para el polvo estelar
+                            float dist = length(gl_PointCoord - vec2(0.5));
+                            if (dist > 0.5) discard;
+
+                            float alpha = smoothstep(0.5, 0.2, dist);
+                            gl_FragColor = vec4(v_color.rgb, v_color.a * alpha);
+                        }
+                    `
             }
         }
-    };
+    }];
 
-    let activePreset = VISUAL_PRESETS['deep_tech_minimal'];
+    let activeVisual = VISUALS_REGISTRY[0]; // Por ahora seleccionamos el primero por defecto
 
-    // --- CACHÉ DE TEXTURAS ---
-    function createNebulaTexture(colorCenter, colorEdge, radius) {
-        const offCanvas = document.createElement('canvas');
-        offCanvas.width = radius * 2;
-        offCanvas.height = radius * 2;
-        const offCtx = offCanvas.getContext('2d');
-        const gradient = offCtx.createRadialGradient(radius, radius, 0, radius, radius, radius);
-        gradient.addColorStop(0, colorCenter);
-        gradient.addColorStop(0.5, colorEdge);
-        gradient.addColorStop(1, 'transparent');
-        offCtx.fillStyle = gradient;
-        offCtx.fillRect(0, 0, radius * 2, radius * 2);
-        return offCanvas;
-    }
-
-    // --- ENTIDADES CÓSMICAS ---
-    class Particle {
+    // ========================================================================
+    // 🧠 LÓGICA DE FÍSICA EN CPU (Mantiene el control exacto de Vloitz)
+    // ========================================================================
+    class ParticleCore {
         constructor() {
             this.reset(true);
         }
+
         reset(isInit = false) {
             this.x = Math.random() * width;
             this.y = Math.random() * height;
-            this.z = Math.random() * 4 + 1;
+            this.z = Math.random() * 4 + 1.5;
 
-            // Capa Fondo: Polvo estelar nítido y fino
-            this.size = (Math.random() * activePreset.particles_base_size + 0.5) / this.z;
+            this.baseSize = (Math.random() * activeVisual.config.particles_base_size + 0.5) / this.z;
 
-            this.color = activePreset.particles_colors[Math.floor(Math.random() * activePreset.particles_colors.length)];
+            const colorSet = activeVisual.config.colors[Math.floor(Math.random() * activeVisual.config.colors.length)];
+            this.r = colorSet[0] / 255;
+            this.g = colorSet[1] / 255;
+            this.b = colorSet[2] / 255;
 
             this.baseAlpha = Math.random() * 0.4 + 0.1;
             this.alpha = this.baseAlpha;
             this.twinkleSpeed = Math.random() * 0.003 + 0.001;
-            this.speedX = -(activePreset.speed_multiplier / this.z);
 
-            // Vectores 2D inyectados para el modo gravedad/humo
+            this.speedX = -(activeVisual.config.speed_multiplier / this.z);
             this.vx = this.speedX;
             this.vy = 0;
         }
+
         update() {
-            // Si el REPRODUCTOR está en PLAY, activamos el Agujero Negro
-            if (isMusicPlaying && activePreset.physics) {
-                const targetX = width * activePreset.physics.gravity_center.x;
-                const targetY = height * activePreset.physics.gravity_center.y;
+            if (isMusicPlaying) {
+                const targetX = width * activeVisual.config.physics.gravity_center.x;
+                const targetY = height * activeVisual.config.physics.gravity_center.y;
 
                 const dx = targetX - this.x;
                 const dy = targetY - this.y;
                 const dist = Math.sqrt(dx * dx + dy * dy);
 
-                // Horizonte de Sucesos: Desvanecimiento orgánico al acercarse al centro (Adiós "popeo" arcade)
+                // Horizonte de Sucesos: Desvanecimiento orgánico
                 let eventHorizonAlpha = 1;
                 if (dist < 150) {
                     eventHorizonAlpha = Math.max(0, dist - 40) / 110;
                 }
 
-                // Si la partícula llega a la foto (Agujero negro), desaparece y nace de la nada
+                // Renacimiento al llegar al agujero negro
                 if (dist < 40) {
-                    this.reset(true); // Renace silenciosamente en el espacio exterior
+                    this.reset(true);
                     return;
                 }
 
-                // Atracción reactiva y viscosa vinculada al Sub-Bass
-                const reactivePull = activePreset.physics.gravity_pull * (0.4 + (AudioState.bass * 0.6));
+                // Atracción matemática densa (Gravedad)
+                const reactivePull = activeVisual.config.physics.gravity_pull * (0.3 + (AudioState.bass * 0.7));
                 const pull = reactivePull / this.z;
 
                 this.vx += (dx / dist) * pull;
                 this.vy += (dy / dist) * pull;
 
-                // Fricción de humo denso (suaviza la velocidad fuertemente)
-                this.vx *= activePreset.physics.smoke_friction;
-                this.vy *= activePreset.physics.smoke_friction;
+                // Fricción altísima para simular humo de rave
+                this.vx *= activeVisual.config.physics.smoke_friction;
+                this.vy *= activeVisual.config.physics.smoke_friction;
 
                 this.x += this.vx;
                 this.y += this.vy;
 
-                // Aplicamos el desvanecimiento del Horizonte de Sucesos al cálculo final
                 this.alpha = (this.baseAlpha + Math.sin(Date.now() * this.twinkleSpeed) * 0.15) * eventHorizonAlpha;
-
             } else {
-                // Modo reposo: Movimiento cinemático normal estático
                 this.vx = this.speedX;
                 this.vy = 0;
                 this.x += this.speedX;
                 this.alpha = this.baseAlpha + Math.sin(Date.now() * this.twinkleSpeed) * 0.15;
             }
 
-            // Reaparición si sale de la pantalla (modo normal)
             if (this.x < -10) {
                 this.x = width + 10;
                 this.y = Math.random() * height;
             }
         }
-        draw() {
-            const reactiveAlpha = Math.max(0, Math.min(1, this.alpha + (AudioState.bass * activePreset.reactivity.bass_particle_glow)));
-            ctx.globalAlpha = reactiveAlpha;
-            ctx.fillStyle = this.color + reactiveAlpha + ')';
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-            ctx.fill();
-        }
     }
 
-    class GasCloud {
-        constructor(x, y, radius, colorC, colorE) {
-            this.x = x;
-            this.y = y;
-            this.baseRadius = radius;
-            this.texture = createNebulaTexture(colorC, colorE, radius);
-            this.angle = Math.random() * Math.PI * 2;
-            this.rotSpeed = (Math.random() - 0.5) * 0.0002;
+    // ========================================================================
+    // ⚙️ COMPILADOR Y GESTOR WEBGL
+    // ========================================================================
+    const createShader = (type, source) => {
+        const shader = gl.createShader(type);
+        gl.shaderSource(shader, source);
+        gl.compileShader(shader);
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+            console.error('Error compilando shader:', gl.getShaderInfoLog(shader));
+            gl.deleteShader(shader);
+            return null;
         }
-        update() {
-            this.angle += this.rotSpeed;
-        }
-        draw() {
-            // Respiración orgánica temporal (Pulso de nebulosa)
-            const breathing = activePreset.physics ? Math.sin(Date.now() * activePreset.physics.gas_breathing_speed) : 0;
-            const organicAlpha = 0.35 + (breathing * 0.1); // Opacidad reducida para no robar protagonismo a la foto
-
-            // Destello controlado y elegante vinculado al Sub-Bass
-            const reactiveAlpha = Math.max(0, Math.min(1, organicAlpha + (AudioState.bass * activePreset.reactivity.bass_gas_opacity)));
-
-            // Impacto físico: El humo se expande muy suavemente con el Sub-Bass
-            const scalePulse = activePreset.physics ? 1 + (breathing * 0.03) + (AudioState.bass * 0.03) : 1;
-
-            ctx.save();
-            ctx.translate(this.x, this.y);
-            ctx.rotate(this.angle);
-            ctx.globalCompositeOperation = 'screen';
-            ctx.globalAlpha = reactiveAlpha;
-            ctx.scale(scalePulse, 0.55 * scalePulse);
-            ctx.drawImage(this.texture, -this.baseRadius, -this.baseRadius, this.baseRadius * 2, this.baseRadius * 2);
-            ctx.restore();
-        }
-    }
-
-    // --- CONSTRUCTOR DE ESCENAS ---
-    const buildScene = () => {
-        stars = [];
-        nebulas = [];
-
-        const themeName = (currentConfig && currentConfig.mobile_theme) ? currentConfig.mobile_theme : 'deep_tech_minimal';
-        activePreset = VISUAL_PRESETS[themeName] || VISUAL_PRESETS['deep_tech_minimal'];
-
-        for (let i = 0; i < activePreset.particles_count; i++) stars.push(new Particle());
-
-        if (activePreset.gas_enabled) {
-            const gC = activePreset.gas_colors;
-            nebulas = [
-                new GasCloud(width * 0.25, height * 0.35, 280, gC[0][0], gC[0][1]),
-                new GasCloud(width * 0.75, height * 0.65, 380, gC[1][0], gC[1][1]),
-                new GasCloud(width * 0.50, height * 0.50, 320, gC[0][0], gC[0][1])
-            ];
-        }
+        return shader;
     };
 
-    // --- BUCLE DE RENDERIZADO PRINCIPAL ---
+    const createProgram = (vertexSrc, fragmentSrc) => {
+        const vs = createShader(gl.VERTEX_SHADER, vertexSrc);
+        const fs = createShader(gl.FRAGMENT_SHADER, fragmentSrc);
+        const prog = gl.createProgram();
+        gl.attachShader(prog, vs);
+        gl.attachShader(prog, fs);
+        gl.linkProgram(prog);
+        return prog;
+    };
+
+    const initWebGL = () => {
+        // Compilar programa de fondo (Nebulosa generada por GPU)
+        bgProgram = createProgram(activeVisual.shaders.background.vertex, activeVisual.shaders.background.fragment);
+        bgUniforms = {
+            resolution: gl.getUniformLocation(bgProgram, "u_resolution"),
+            time: gl.getUniformLocation(bgProgram, "u_time"),
+            bass: gl.getUniformLocation(bgProgram, "u_bass")
+        };
+
+        // Compilar programa de partículas
+        particleProgram = createProgram(activeVisual.shaders.particles.vertex, activeVisual.shaders.particles.fragment);
+        particleUniforms = {
+            resolution: gl.getUniformLocation(particleProgram, "u_resolution")
+        };
+
+        // Inicializar datos lógicos
+        particles = [];
+        const count = activeVisual.config.particles_count;
+        for (let i = 0; i < count; i++) {
+            particles.push(new ParticleCore());
+        }
+
+        // Cada partícula usa 7 valores (x, y, r, g, b, a, size)
+        particleData = new Float32Array(count * 7);
+        particleBuffer = gl.createBuffer();
+
+        // Habilitar mezcla aditiva (Screen mode equivalente en WebGL)
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE); // Screen / Additive blend
+    };
+
+    // ========================================================================
+    // 🔄 BUCLE PRINCIPAL DE RENDERIZADO
+    // ========================================================================
     const loop = () => {
         if (!isRunning || !isVisible) {
-            animationId = null; // Blindaje anti-fugas de memoria
+            animationId = null;
             return;
         }
 
         simulateAudio();
 
-        ctx.globalCompositeOperation = 'source-over';
-        ctx.globalAlpha = 1;
-        ctx.fillStyle = activePreset.bg_color;
-        ctx.fillRect(0, 0, width, height);
+        // 1. DIBUJAR FONDO (Quad a pantalla completa)
+        gl.useProgram(bgProgram);
+        gl.uniform2f(bgUniforms.resolution, width, height);
+        gl.uniform1f(bgUniforms.time, Date.now() * 0.001);
+        gl.uniform1f(bgUniforms.bass, AudioState.bass);
 
-        nebulas.forEach(n => {
-            n.update();
-            n.draw();
-        });
-        ctx.globalCompositeOperation = 'screen';
-        stars.forEach(s => {
-            s.update();
-            s.draw();
-        });
+        // Geometría rápida para llenar la pantalla
+        const quadBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]), gl.STATIC_DRAW);
+        const posLoc = gl.getAttribLocation(bgProgram, "position");
+        gl.enableVertexAttribArray(posLoc);
+        gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
 
-        const grad = ctx.createLinearGradient(0, height - 95, 0, height);
-        grad.addColorStop(0, 'rgba(18, 18, 18, 0)');
-        grad.addColorStop(1, '#121212');
-        ctx.globalCompositeOperation = 'source-over';
-        ctx.globalAlpha = 1;
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, height - 95, width, 97);
+        // 2. ACTUALIZAR Y DIBUJAR PARTÍCULAS
+        let offset = 0;
+        const count = particles.length;
+        for (let i = 0; i < count; i++) {
+            const p = particles[i];
+            p.update();
+
+            // Empaquetar datos para la GPU
+            particleData[offset++] = p.x;
+            particleData[offset++] = p.y;
+            particleData[offset++] = p.r;
+            particleData[offset++] = p.g;
+            particleData[offset++] = p.b;
+
+            // Reacción sutil de opacidad al bajo
+            const finalAlpha = Math.max(0, Math.min(1, p.alpha + (AudioState.bass * activeVisual.config.reactivity.bass_particle_glow)));
+            particleData[offset++] = finalAlpha;
+            particleData[offset++] = p.baseSize;
+        }
+
+        gl.useProgram(particleProgram);
+        gl.uniform2f(particleUniforms.resolution, width, height);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, particleBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, particleData, gl.DYNAMIC_DRAW);
+
+        const stride = 7 * 4; // 7 floats * 4 bytes
+        const pPosLoc = gl.getAttribLocation(particleProgram, "a_position");
+        const pColLoc = gl.getAttribLocation(particleProgram, "a_color");
+        const pSizeLoc = gl.getAttribLocation(particleProgram, "a_size");
+
+        gl.enableVertexAttribArray(pPosLoc);
+        gl.vertexAttribPointer(pPosLoc, 2, gl.FLOAT, false, stride, 0);
+
+        gl.enableVertexAttribArray(pColLoc);
+        gl.vertexAttribPointer(pColLoc, 4, gl.FLOAT, false, stride, 2 * 4);
+
+        gl.enableVertexAttribArray(pSizeLoc);
+        gl.vertexAttribPointer(pSizeLoc, 1, gl.FLOAT, false, stride, 6 * 4);
+
+        gl.drawArrays(gl.POINTS, 0, count);
 
         animationId = requestAnimationFrame(loop);
     };
@@ -265,9 +352,12 @@ const PortadaVisualEngine = (() => {
         const rect = canvas.parentElement.getBoundingClientRect();
         width = rect.width;
         height = rect.height;
-        canvas.width = width;
-        canvas.height = height;
-        if (isRunning) buildScene();
+
+        // Optimización WebGL: Ajuste al DevicePixelRatio para mayor nitidez
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        gl.viewport(0, 0, canvas.width, canvas.height);
     };
 
     const start = () => {
@@ -275,14 +365,19 @@ const PortadaVisualEngine = (() => {
         const banner = document.querySelector('.profile-banner');
         if (!banner) return;
 
-        // 1. ACTIVAR FLAG PRIMERO (El fix crucial)
         isRunning = true;
+
+        // Encontrar el visual correcto del Array
+        const themeId = (currentConfig && currentConfig.mobile_theme) ? currentConfig.mobile_theme : 'deep_tech_minimal';
+        activeVisual = VISUALS_REGISTRY.find(v => v.id === themeId) || VISUALS_REGISTRY[0];
 
         banner.dataset.originalBg = banner.style.backgroundImage;
         banner.style.backgroundImage = 'none';
+        banner.style.position = 'relative';
 
+        // Inyección del Canvas WebGL
         canvas = document.createElement('canvas');
-        canvas.id = 'v-cosmic-canvas';
+        canvas.id = 'v-cosmic-canvas-webgl';
         Object.assign(canvas.style, {
             position: 'absolute',
             top: 0,
@@ -290,15 +385,33 @@ const PortadaVisualEngine = (() => {
             width: '100%',
             height: '100%',
             pointerEvents: 'none',
-            zIndex: 0,
-            backgroundColor: activePreset.bg_color,
-            filter: 'contrast(1.1) brightness(0.95)'
+            zIndex: 0
         });
 
         banner.insertBefore(canvas, banner.firstChild);
-        ctx = canvas.getContext('2d');
 
-        // 2. AHORA SÍ CONSTRUIMOS (width y height se llenarán y buildScene se ejecutará)
+        // Inyección del degradado inferior (Protegido y desacoplado del canvas)
+        const gradientOverlay = document.createElement('div');
+        gradientOverlay.id = 'v-cosmic-gradient';
+        Object.assign(gradientOverlay.style, {
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            width: '100%',
+            height: '95px',
+            background: 'linear-gradient(to bottom, rgba(18,18,18,0) 0%, #121212 100%)',
+            pointerEvents: 'none',
+            zIndex: 1
+        });
+        banner.appendChild(gradientOverlay);
+
+        gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        if (!gl) {
+            console.error("WebGL no soportado.");
+            return;
+        }
+
+        initWebGL();
         handleResize();
         window.addEventListener('resize', handleResize);
 
@@ -306,7 +419,7 @@ const PortadaVisualEngine = (() => {
             entries.forEach(entry => {
                 isVisible = entry.isIntersecting;
                 if (isVisible && isRunning) {
-                    if (!animationId) loop(); // Solo inicia si no hay otro loop corriendo
+                    if (!animationId) loop();
                 } else {
                     if (animationId) {
                         cancelAnimationFrame(animationId);
@@ -328,10 +441,12 @@ const PortadaVisualEngine = (() => {
         window.removeEventListener('resize', handleResize);
 
         const banner = document.querySelector('.profile-banner');
-        if (canvas && canvas.parentElement) {
-            canvas.parentElement.removeChild(canvas);
-        }
+        if (canvas && canvas.parentElement) canvas.parentElement.removeChild(canvas);
+        const grad = document.getElementById('v-cosmic-gradient');
+        if (grad && grad.parentElement) grad.parentElement.removeChild(grad);
+
         canvas = null;
+        gl = null;
 
         if (banner && banner.dataset.originalBg) {
             banner.style.backgroundImage = banner.dataset.originalBg;
