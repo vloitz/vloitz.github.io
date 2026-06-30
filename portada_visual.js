@@ -21,8 +21,19 @@ const PortadaVisualEngine = (() => {
     let isMusicPlaying = false; // <-- El interruptor real del reproductor
 
     function simulateAudio() {
-        const time = Date.now() * 0.001;
-        AudioState.bass = (Math.sin(time) + 1) / 2 * 0.08;
+        if (!isMusicPlaying) {
+            AudioState.bass *= 0.9; // Caída suave de la energía si pones pausa
+            return;
+        }
+        // Simulador de Bombo (Kick) de Deep Tech a ~122 BPM (Aprox 491ms por golpe)
+        const bpm = 122;
+        const msPerBeat = 60000 / bpm;
+        const time = Date.now() % msPerBeat;
+
+        // Crea una onda de impacto: Sube de golpe a 1, y decae rápidamente
+        const pulse = Math.max(0, 1 - (time / (msPerBeat * 0.6)));
+        // Curva de poder para hacer el golpe más seco y violento
+        AudioState.bass = Math.pow(pulse, 3);
     }
 
     // ========================================================================
@@ -105,8 +116,10 @@ const PortadaVisualEngine = (() => {
                     return;
                 }
 
-                // Atracción innegable
-                const pull = (activePreset.physics.gravity_pull) / this.z;
+               // Atracción reactiva al "Bombo" (Pulso agresivo)
+                // Mantiene una succión base del 20%, más el 80% de la fuerza en cada latido
+                const reactivePull = activePreset.physics.gravity_pull * (0.2 + (AudioState.bass * 0.8));
+                const pull = reactivePull / this.z;
                 this.vx += (dx / dist) * pull;
                 this.vy += (dy / dist) * pull;
 
@@ -154,8 +167,12 @@ const PortadaVisualEngine = (() => {
             const breathing = activePreset.physics ? Math.sin(Date.now() * activePreset.physics.gas_breathing_speed) : 0;
             const organicAlpha = 0.5 + (breathing * 0.15); // Cambio sutil de opacidad
 
-            const reactiveAlpha = Math.max(0, Math.min(1, organicAlpha + (AudioState.bass * activePreset.reactivity.bass_gas_opacity)));
-            const scalePulse = activePreset.physics ? 1 + (breathing * 0.05) : 1; // Expansión física lenta del humo
+            // Destello agresivo: Multiplicamos el efecto del bajo para que el gas se ilumine de verdad
+            const reactiveAlpha = Math.max(0, Math.min(1, organicAlpha + (AudioState.bass * (activePreset.reactivity.bass_gas_opacity * 2.5))));
+
+            // Impacto físico: El humo se expande de golpe (15%) con cada Kick
+            const kickScale = AudioState.bass * 0.15;
+            const scalePulse = activePreset.physics ? 1 + (breathing * 0.05) + kickScale : 1;
 
             ctx.save();
             ctx.translate(this.x, this.y);
