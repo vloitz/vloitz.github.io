@@ -2192,4 +2192,37 @@ img,
     }
 }
 
+/* ==========================================================================
+   VLOITZ UI UX FIX: Calibración Micrométrica de Controles (God Mode)
+   ========================================================================== */
+/* Movemos el SVG interno para que la 'bolita' del click no se descuadre ni salte */
+button#prevBtn.skip-btn svg {
+    transform: translate(-10px, 0px);
+}
+
+button#seekBackBtn.seek-btn svg {
+    transform: translate(-5px, 0px);
+}
+
+button#seekFwdBtn.seek-btn svg {
+    transform: translate(5.5px, 0px);
+}
+
+button#nextBtn.skip-btn svg {
+    transform: translate(10px, 0px);
+}
+
+/* Elementos de texto (Sin conflicto de transform en estado active) */
+div.time-display {
+    transform: translate(5px, 0px);
+}
+
+span#currentTime {
+    transform: translate(15px, 0px);
+}
+
+span#totalDuration {
+    transform: translate(4.5px, 0px);
+}
+
 /* --- FIN DEL ARCHIVO --- */
