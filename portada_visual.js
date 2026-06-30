@@ -65,8 +65,9 @@ const PortadaVisualEngine = (() => {
         }
 
         reset(isInit = false) {
-            // Renacen en la parte superior o en los lados
-            if (!isInit) {
+            // Si hay música y se reciclan, nacen fuera de la pantalla para ser succionadas.
+            // Si está en pausa, nacen DENTRO de la pantalla para que las podamos ver flotar.
+            if (!isInit && isMusicPlaying) {
                 if (Math.random() > 0.5) {
                     this.x = Math.random() > 0.5 ? -10 : width + 10;
                     this.y = Math.random() * height;
@@ -108,33 +109,54 @@ const PortadaVisualEngine = (() => {
                     return;
                 }
 
-                // Atracción gravitacional (Inversamente proporcional a la distancia)
                 const pull = (CONFIG.gravity_pull * (1.0 + AudioState.bass * 2.5)) / Math.max(dist, 10.0);
 
-                // Turbulencia intensa para simular humo caótico
                 const turbX = Math.sin(this.y * 0.02 + Date.now() * 0.002) * 0.6;
                 const turbY = Math.cos(this.x * 0.02 + Date.now() * 0.002) * 0.2;
 
                 this.vx += (dx * pull) + turbX;
                 this.vy += (dy * pull) + turbY;
-
             } else {
-                // Modo Pausa (Cinemático): Conservan su inercia anterior y derivan como polvo orgánico
+                // Modo Pausa (Cinemático): Turbulencia y gravedad suspendida
                 const timeStr = Date.now() * 0.0005;
                 this.vx += Math.sin(this.y * 0.01 + timeStr) * 0.06;
                 this.vy += Math.cos(this.x * 0.01 + timeStr) * 0.06;
-                // Eliminamos la subida forzada. Ahora la fricción hará el trabajo de frenarlas.
+
+                // Leve tendencia a flotar hacia arriba como humo caliente
+                this.vy -= 0.02;
             }
 
-            // FRICCIÓN CONSTANTE (Aplica a ambos estados para un frenado suave al pausar)
+            // FRICCIÓN CONSTANTE
             this.vx *= CONFIG.friction;
             this.vy *= CONFIG.friction;
 
             this.x += this.vx;
             this.y += this.vy;
 
-            if (this.x < -30 || this.x > width + 30 || this.y < -30 || this.y > height + 30) {
-                this.reset();
+            // SISTEMA DE COLISIÓN (LA CAJA DE CRISTAL)
+            if (!isMusicPlaying) {
+                // Si está en pausa, las partículas rebotan contra las paredes y quedan atrapadas
+                // Se multiplican por -0.8 para perder un poco de fuerza al chocar
+                if (this.x <= 0) {
+                    this.x = 0;
+                    this.vx *= -0.8;
+                } else if (this.x >= width) {
+                    this.x = width;
+                    this.vx *= -0.8;
+                }
+
+                if (this.y <= 0) {
+                    this.y = 0;
+                    this.vy *= -0.8;
+                } else if (this.y >= height) {
+                    this.y = height;
+                    this.vy *= -0.8;
+                }
+            } else {
+                // Si hay música, se reciclan al salir de la pantalla para mantener el flujo del vórtice
+                if (this.x < -30 || this.x > width + 30 || this.y < -30 || this.y > height + 30) {
+                    this.reset();
+                }
             }
         }
     }
