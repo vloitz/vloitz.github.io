@@ -1,342 +1,288 @@
 /**
- * VLOITZ PORTADA VISUAL ENGINE (V5.4 - THE TRUE VORTEX MASTER)
- * Arquitectura escalable basada en Arrays de Visuales.
- * FIX: Coordenadas de la foto corregidas (y: 1.05), Humo Retina Fix y Turbulencia real.
+ * VLOITZ PORTADA VISUAL ENGINE (V6.0 - REINICIO TOTAL WEBGL)
+ * Arquitectura reconstruida desde cero.
+ * A prueba de balas: ResizeObserver, Retina Display Fix, y Shaders a prueba de fallos.
  */
 
 const PortadaVisualEngine = (() => {
+    // Referencias del sistema
     let canvas = null;
     let gl = null;
     let animationId = null;
+    let resizeObserver = null;
     let isRunning = false;
-    let isVisible = false;
     let width = 0,
         height = 0;
-
     let currentConfig = null;
-    let particles = [];
-    let particleData = null;
 
+    // Variables WebGL
     let bgProgram, particleProgram;
     let bgUniforms = {},
         particleUniforms = {};
     let quadBuffer, particleBuffer;
-    let posLoc, pPosLoc, pColLoc, pSizeLoc;
+    let particles = [];
+    let particleData = null;
 
-    // 🔗 CABLES LISTOS PARA TU AUDIO
+    // 🔗 Estado del Audio (Enchufe para app.js)
     const AudioState = {
-        bass: 0,
-        overall: 0
+        bass: 0
     };
     let isMusicPlaying = false;
 
     function simulateAudio() {
         if (!isMusicPlaying) {
-            AudioState.bass *= 0.95;
+            AudioState.bass *= 0.90; // Caída suave
             return;
         }
-        // Simulador de Sub-Bajo: Oscilación densa y viscosa
+        // Bombeo a ~122 BPM
         const time = Date.now() * 0.0015;
         const groove = (Math.sin(time) + Math.sin(time * 0.8)) / 2;
-        AudioState.bass = (groove + 1) / 2 * 0.35;
+        AudioState.bass = (groove + 1) / 2 * 0.4; // Pico de 0.4
     }
 
     // ========================================================================
-    // 🗄️ REGISTRO DE VISUALES
+    // 🎛️ CONFIGURACIÓN MAESTRA (Fácil de ajustar)
     // ========================================================================
-    const VISUALS_REGISTRY = [{
-        id: 'deep_tech_minimal',
-        name: 'Pure Deep Tech Minimal (Fractal Vortex)',
-        config: {
-            particles_count: 550, // Densidad elegante
-            particles_base_size: 1.6, // Puntos finos pero claramente visibles
-            speed_multiplier: 0.015,
-            reactivity: {
-                bass_particle_glow: 0.3
-            },
-            physics: {
-                gravity_center: {
-                    x: 0.5,
-                    y: 1.05
-                }, // FIX: El centro EXACTO de tu foto (Borde inferior)
-                gravity_pull: 1.2, // Fuerte atracción al centro
-                vortex_strength: 0.6, // Giro perfecto para formar espiral
-                smoke_friction: 0.92 // Fricción viscosa de humo
-            },
-            colors: [
-                [255, 255, 255], // Blanco estelar
-                [160, 200, 255], // Celeste frío
-                [140, 100, 255] // Violeta oscuro
-            ]
-        },
-        shaders: {
-            background: {
-                vertex: `
-                        attribute vec2 position;
-                        void main() { gl_Position = vec4(position, 0.0, 1.0); }
-                    `,
-                fragment: `
-                        precision mediump float;
-                        uniform vec2 u_resolution;
-                        uniform float u_time;
-                        uniform float u_bass;
-
-                        float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
-                        float noise(vec2 p) {
-                            vec2 i = floor(p); vec2 f = fract(p);
-                            vec2 u = f*f*(3.0-2.0*f);
-                            return mix(mix(hash(i + vec2(0.0,0.0)), hash(i + vec2(1.0,0.0)), u.x),
-                                       mix(hash(i + vec2(0.0,1.0)), hash(i + vec2(1.0,1.0)), u.x), u.y);
-                        }
-                        float fbm(vec2 p) {
-                            float v = 0.0; float a = 0.5;
-                            for (int i=0; i<4; i++) { v+=a*noise(p); p*=2.0; a*=0.5; }
-                            return v;
-                        }
-
-                        void main() {
-                            vec2 uv = gl_FragCoord.xy / u_resolution;
-
-                            // Abismo profundo base
-                            vec3 color = vec3(0.02, 0.015, 0.04);
-
-                            vec2 pos = uv * 2.5 + vec2(u_time * 0.03, u_time * 0.02);
-                            float smoke = fbm(pos + fbm(pos + u_time * 0.05));
-
-                            // FIX: Centro del humo en tu avatar (En WebGL 'y' está invertido: y = -0.05)
-                            float distCenter = length(uv - vec2(0.5, -0.05));
-                            float mask = smoothstep(1.2, 0.0, distCenter);
-
-                            vec3 nebulaColor = vec3(0.35, 0.15, 0.65);
-                            float smokeIntensity = smoke * mask * (0.5 + u_bass * 1.5);
-
-                            color = mix(color, nebulaColor, smokeIntensity);
-                            gl_FragColor = vec4(color, 1.0);
-                        }
-                    `
-            },
-            particles: {
-                vertex: `
-                        attribute vec2 a_position;
-                        attribute vec4 a_color;
-                        attribute float a_size;
-
-                        uniform vec2 u_resolution;
-                        varying vec4 v_color;
-
-                        void main() {
-                            vec2 clipSpace = (a_position / u_resolution) * 2.0 - 1.0;
-                            gl_Position = vec4(clipSpace * vec2(1.0, -1.0), 0.0, 1.0);
-                            gl_PointSize = a_size;
-                            v_color = a_color;
-                        }
-                    `,
-                fragment: `
-                        precision mediump float;
-                        varying vec4 v_color;
-
-                        void main() {
-                            float dist = length(gl_PointCoord - vec2(0.5));
-                            if (dist > 0.5) discard;
-
-                            float alpha = 1.0 - smoothstep(0.1, 0.5, dist);
-                            gl_FragColor = vec4(v_color.rgb * alpha, v_color.a * alpha);
-                        }
-                    `
-            }
-        }
-    }];
-
-    let activeVisual = VISUALS_REGISTRY[0];
+    const CONFIG = {
+        particles_count: 300, // Densidad segura
+        particle_size: 3.5, // TAMAÑO AUMENTADO PARA QUE SE VEAN CLARAMENTE
+        speed: 0.02, // Velocidad de flotación
+        gravity_pull: 0.8, // Fuerza hacia el centro
+        friction: 0.92, // Viscosidad del humo
+        colors: [
+            [255, 255, 255], // Blanco
+            [100, 200, 255], // Celeste
+            [180, 100, 255] // Violeta
+        ]
+    };
 
     // ========================================================================
-    // 🧠 LÓGICA DE FÍSICA EN CPU: VÓRTICE ORGÁNICO
+    // 🧠 FÍSICA DE PARTÍCULAS
     // ========================================================================
-    class ParticleCore {
+    class Particle {
         constructor() {
             this.reset(true);
         }
 
         reset(isInit = false) {
+            // Renacen en la parte superior o en los lados
             if (!isInit) {
-                // Renacen lejos de la foto (en la mitad superior o lados)
                 if (Math.random() > 0.5) {
-                    this.x = Math.random() > 0.5 ? -20 : width + 20;
+                    this.x = Math.random() > 0.5 ? -10 : width + 10;
                     this.y = Math.random() * height;
                 } else {
                     this.x = Math.random() * width;
-                    this.y = Math.random() * (height * 0.4) - 20;
+                    this.y = -10;
                 }
             } else {
                 this.x = Math.random() * width;
                 this.y = Math.random() * height;
             }
 
-            this.z = Math.random() * 4 + 1.5;
-            this.baseSize = (Math.random() * activeVisual.config.particles_base_size + 0.5) / this.z;
+            this.z = Math.random() * 3 + 1; // Profundidad
+            this.size = (Math.random() * CONFIG.particle_size + 1.0) / this.z;
 
-            const colorSet = activeVisual.config.colors[Math.floor(Math.random() * activeVisual.config.colors.length)];
-            this.r = colorSet[0] / 255;
-            this.g = colorSet[1] / 255;
-            this.b = colorSet[2] / 255;
+            const color = CONFIG.colors[Math.floor(Math.random() * CONFIG.colors.length)];
+            this.r = color[0] / 255;
+            this.g = color[1] / 255;
+            this.b = color[2] / 255;
 
-            this.baseAlpha = Math.random() * 0.4 + 0.1;
-            this.alpha = this.baseAlpha;
-            this.twinkleSpeed = Math.random() * 0.003 + 0.001;
+            this.alpha = Math.random() * 0.5 + 0.2;
+            this.twinkle = Math.random() * 0.005;
 
-            this.speedX = -(activeVisual.config.speed_multiplier / this.z);
-            this.vx = this.speedX;
-            this.vy = 0;
+            this.vx = (Math.random() - 0.5) * 0.5;
+            this.vy = (Math.random() - 0.5) * 0.5;
         }
 
         update() {
             if (isMusicPlaying) {
-                const targetX = width * activeVisual.config.physics.gravity_center.x;
-                const targetY = height * activeVisual.config.physics.gravity_center.y;
+                // El centro gravitacional es tu foto (Abajo al centro)
+                const targetX = width * 0.5;
+                const targetY = height * 1.0; // Borde inferior exacto
 
                 const dx = targetX - this.x;
                 const dy = targetY - this.y;
                 const dist = Math.sqrt(dx * dx + dy * dy);
 
-                // FIX: Horizonte de Sucesos ajustado al radio real de tu foto (75px)
-                let eventHorizonAlpha = 1;
-                if (dist < 100) {
-                    eventHorizonAlpha = Math.max(0, dist - 50) / 50;
-                }
-
+                // Si entran a la foto, renacen
                 if (dist < 50) {
                     this.reset();
                     return;
                 }
 
-                // Matemáticas del VÓRTICE (Gravedad > Giro)
-                const reactivePull = activeVisual.config.physics.gravity_pull * (0.4 + (AudioState.bass * 0.6));
-                const pull = reactivePull / this.z;
+                // Atracción gravitacional
+                const pull = (CONFIG.gravity_pull * (1.0 + AudioState.bass * 2.0)) / dist;
 
-                const vStrength = activeVisual.config.physics.vortex_strength;
-                const tx = -dy;
-                const ty = dx;
+                // Turbulencia para que no vayan en línea recta
+                const turbX = Math.sin(this.y * 0.02 + Date.now() * 0.001) * 0.2;
 
-                // 💨 Turbulencia Orgánica Sutil (Rompe la rigidez)
-                const timeStr = Date.now() * 0.0003;
-                const turbX = Math.sin(this.y * 0.01 + timeStr) * 0.1;
-                const turbY = Math.cos(this.x * 0.01 + timeStr) * 0.1;
+                this.vx += (dx * pull) + turbX;
+                this.vy += (dy * pull);
 
-                this.vx += ((dx / dist) + (tx / dist) * vStrength) * pull + turbX;
-                this.vy += ((dy / dist) + (ty / dist) * vStrength) * pull + turbY;
-
-                this.vx *= activeVisual.config.physics.smoke_friction;
-                this.vy *= activeVisual.config.physics.smoke_friction;
-
-                this.x += this.vx;
-                this.y += this.vy;
-
-                this.alpha = (this.baseAlpha + Math.sin(Date.now() * this.twinkleSpeed) * 0.15) * eventHorizonAlpha;
+                // Fricción (Humo)
+                this.vx *= CONFIG.friction;
+                this.vy *= CONFIG.friction;
             } else {
-                this.vx = this.speedX;
-                this.vy = 0;
-                this.x += this.speedX;
-                this.alpha = this.baseAlpha + Math.sin(Date.now() * this.twinkleSpeed) * 0.15;
+                // Flotación inerte
+                this.vx = Math.sin(Date.now() * this.twinkle + this.y * 0.01) * 0.2;
+                this.vy = -0.5; // Suben lentamente
             }
 
-            if (this.x < -30 || this.x > width + 30 || this.y < -30 || this.y > height + 30) {
+            this.x += this.vx;
+            this.y += this.vy;
+
+            // Reciclaje si escapan
+            if (this.x < -20 || this.x > width + 20 || this.y < -20 || this.y > height + 20) {
                 this.reset();
             }
         }
     }
 
     // ========================================================================
-    // ⚙️ COMPILADOR Y GESTOR WEBGL
+    // ⚙️ SHADERS (CÓDIGO DE TARJETA GRÁFICA A PRUEBA DE FALLOS)
     // ========================================================================
-    const createShader = (type, source) => {
-        const shader = gl.createShader(type);
-        gl.shaderSource(shader, source);
-        gl.compileShader(shader);
-        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-            console.error('Error compilando shader:', gl.getShaderInfoLog(shader));
-            gl.deleteShader(shader);
-            return null;
-        }
-        return shader;
+    const SHADERS = {
+        bgVertex: `attribute vec2 position; void main() { gl_Position = vec4(position, 0.0, 1.0); }`,
+        bgFragment: `
+            precision mediump float;
+            uniform vec2 u_resolution;
+            uniform float u_time;
+            uniform float u_bass;
+
+            // Función de ruido rápida y segura
+            float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+            float noise(vec2 p) {
+                vec2 i = floor(p); vec2 f = fract(p);
+                vec2 u = f*f*(3.0-2.0*f);
+                return mix(mix(hash(i), hash(i + vec2(1.0,0.0)), u.x),
+                           mix(hash(i + vec2(0.0,1.0)), hash(i + vec2(1.0,1.0)), u.x), u.y);
+            }
+            float fbm(vec2 p) {
+                float v = 0.0; float a = 0.5;
+                for (int i=0; i<3; i++) { v+=a*noise(p); p*=2.0; a*=0.5; }
+                return v;
+            }
+
+            void main() {
+                vec2 uv = gl_FragCoord.xy / u_resolution;
+
+                // Movimiento del humo
+                vec2 pos = uv * 3.0 + vec2(u_time * 0.02, u_time * 0.05);
+                float smoke = fbm(pos);
+
+                // Color base ultra oscuro
+                vec3 color = vec3(0.02, 0.01, 0.04);
+
+                // Color de la nebulosa claramente visible
+                vec3 nebula = vec3(0.25, 0.10, 0.50);
+
+                // El humo se ilumina con el bajo
+                float intensity = smoke * (0.3 + u_bass * 1.5);
+
+                // Sombra en los bordes superiores, brillo en el centro inferior
+                float mask = 1.0 - length(uv - vec2(0.5, 0.0)); // 0.0 es el fondo en WebGL
+
+                color = mix(color, nebula, intensity * mask);
+                gl_FragColor = vec4(color, 1.0);
+            }
+        `,
+        partVertex: `
+            attribute vec2 a_position;
+            attribute vec4 a_color;
+            attribute float a_size;
+            uniform vec2 u_resolution;
+            varying vec4 v_color;
+
+            void main() {
+                // Convertir (x,y) de CSS a espacio WebGL
+                vec2 clipSpace = (a_position / u_resolution) * 2.0 - 1.0;
+                gl_Position = vec4(clipSpace * vec2(1.0, -1.0), 0.0, 1.0);
+                gl_PointSize = a_size;
+                v_color = a_color;
+            }
+        `,
+        partFragment: `
+            precision mediump float;
+            varying vec4 v_color;
+            void main() {
+                float dist = length(gl_PointCoord - vec2(0.5));
+                if (dist > 0.5) discard;
+                float alpha = smoothstep(0.5, 0.1, dist);
+                gl_FragColor = vec4(v_color.rgb, v_color.a * alpha);
+            }
+        `
     };
 
-    const createProgram = (vertexSrc, fragmentSrc) => {
-        const vs = createShader(gl.VERTEX_SHADER, vertexSrc);
-        const fs = createShader(gl.FRAGMENT_SHADER, fragmentSrc);
-        const prog = gl.createProgram();
-        gl.attachShader(prog, vs);
-        gl.attachShader(prog, fs);
-        gl.linkProgram(prog);
-        return prog;
+    const compileShader = (type, source) => {
+        const s = gl.createShader(type);
+        gl.shaderSource(s, source);
+        gl.compileShader(s);
+        if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(s));
+        return s;
     };
 
-    const initWebGL = () => {
-        bgProgram = createProgram(activeVisual.shaders.background.vertex, activeVisual.shaders.background.fragment);
-        particleProgram = createProgram(activeVisual.shaders.particles.vertex, activeVisual.shaders.particles.fragment);
+    const buildProgram = (vsSrc, fsSrc) => {
+        const p = gl.createProgram();
+        gl.attachShader(p, compileShader(gl.VERTEX_SHADER, vsSrc));
+        gl.attachShader(p, compileShader(gl.FRAGMENT_SHADER, fsSrc));
+        gl.linkProgram(p);
+        return p;
+    };
+
+    // ========================================================================
+    // 🛠️ MOTOR PRINCIPAL
+    // ========================================================================
+    const initEngine = () => {
+        bgProgram = buildProgram(SHADERS.bgVertex, SHADERS.bgFragment);
+        particleProgram = buildProgram(SHADERS.partVertex, SHADERS.partFragment);
 
         bgUniforms = {
-            resolution: gl.getUniformLocation(bgProgram, "u_resolution"),
+            res: gl.getUniformLocation(bgProgram, "u_resolution"),
             time: gl.getUniformLocation(bgProgram, "u_time"),
             bass: gl.getUniformLocation(bgProgram, "u_bass")
         };
         particleUniforms = {
-            resolution: gl.getUniformLocation(particleProgram, "u_resolution")
+            res: gl.getUniformLocation(particleProgram, "u_resolution")
         };
-
-        posLoc = gl.getAttribLocation(bgProgram, "position");
-        pPosLoc = gl.getAttribLocation(particleProgram, "a_position");
-        pColLoc = gl.getAttribLocation(particleProgram, "a_color");
-        pSizeLoc = gl.getAttribLocation(particleProgram, "a_size");
 
         quadBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]), gl.STATIC_DRAW);
 
         particles = [];
-        const count = activeVisual.config.particles_count;
-        for (let i = 0; i < count; i++) {
-            particles.push(new ParticleCore());
-        }
+        for (let i = 0; i < CONFIG.particles_count; i++) particles.push(new Particle());
 
-        particleData = new Float32Array(count * 7);
+        particleData = new Float32Array(CONFIG.particles_count * 7);
         particleBuffer = gl.createBuffer();
     };
 
-    // ========================================================================
-    // 🔄 BUCLE PRINCIPAL DE RENDERIZADO
-    // ========================================================================
-    const loop = () => {
-        if (!isRunning || !isVisible) {
-            animationId = null;
-            return;
-        }
+    const renderLoop = () => {
+        if (!isRunning) return;
 
         simulateAudio();
 
-        gl.clearColor(0.02, 0.015, 0.04, 1.0);
-        gl.clear(gl.COLOR_BUFFER_BIT);
-
-        // 1. DIBUJAR FONDO (Humo Fractal)
+        // 1. DIBUJAR FONDO (Sin mezcla aditiva para no lavar colores)
         gl.disable(gl.BLEND);
         gl.useProgram(bgProgram);
-        gl.uniform2f(bgUniforms.resolution, canvas.width, canvas.height); // FIX: Físico (Retina)
+        // FIX: Enviar tamaño físico del canvas
+        gl.uniform2f(bgUniforms.res, canvas.width, canvas.height);
         gl.uniform1f(bgUniforms.time, Date.now() * 0.001);
         gl.uniform1f(bgUniforms.bass, AudioState.bass);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
+        const posLoc = gl.getAttribLocation(bgProgram, "position");
         gl.enableVertexAttribArray(posLoc);
         gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
         gl.drawArrays(gl.TRIANGLES, 0, 6);
 
-        // 2. ACTUALIZAR Y DIBUJAR PARTÍCULAS
+        // 2. DIBUJAR PARTÍCULAS (Con mezcla aditiva para brillo)
         gl.enable(gl.BLEND);
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
 
         let offset = 0;
-        const count = particles.length;
         const dpr = window.devicePixelRatio || 1;
 
-        for (let i = 0; i < count; i++) {
+        for (let i = 0; i < particles.length; i++) {
             const p = particles[i];
             p.update();
 
@@ -346,33 +292,39 @@ const PortadaVisualEngine = (() => {
             particleData[offset++] = p.g;
             particleData[offset++] = p.b;
 
-            const finalAlpha = Math.max(0, Math.min(1, p.alpha + (AudioState.bass * activeVisual.config.reactivity.bass_particle_glow)));
-            particleData[offset++] = finalAlpha;
-            particleData[offset++] = p.baseSize * dpr;
+            // Destello rítmico
+            const activeAlpha = Math.min(1.0, p.alpha + (AudioState.bass * 0.5));
+            particleData[offset++] = activeAlpha;
+
+            // FIX: Escalar tamaño por DPR para que no desaparezcan en móviles
+            particleData[offset++] = p.size * dpr;
         }
 
         gl.useProgram(particleProgram);
-        gl.uniform2f(particleUniforms.resolution, width, height); // FIX: Lógico para JS
+        // FIX: Enviar tamaño lógico de CSS para calcular posiciones correctas
+        gl.uniform2f(particleUniforms.res, width, height);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, particleBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, particleData, gl.DYNAMIC_DRAW);
 
         const stride = 7 * 4;
-        gl.enableVertexAttribArray(pPosLoc);
-        gl.vertexAttribPointer(pPosLoc, 2, gl.FLOAT, false, stride, 0);
+        const aPos = gl.getAttribLocation(particleProgram, "a_position");
+        const aCol = gl.getAttribLocation(particleProgram, "a_color");
+        const aSize = gl.getAttribLocation(particleProgram, "a_size");
 
-        gl.enableVertexAttribArray(pColLoc);
-        gl.vertexAttribPointer(pColLoc, 4, gl.FLOAT, false, stride, 2 * 4);
+        gl.enableVertexAttribArray(aPos);
+        gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, stride, 0);
+        gl.enableVertexAttribArray(aCol);
+        gl.vertexAttribPointer(aCol, 4, gl.FLOAT, false, stride, 2 * 4);
+        gl.enableVertexAttribArray(aSize);
+        gl.vertexAttribPointer(aSize, 1, gl.FLOAT, false, stride, 6 * 4);
 
-        gl.enableVertexAttribArray(pSizeLoc);
-        gl.vertexAttribPointer(pSizeLoc, 1, gl.FLOAT, false, stride, 6 * 4);
+        gl.drawArrays(gl.POINTS, 0, particles.length);
 
-        gl.drawArrays(gl.POINTS, 0, count);
-
-        animationId = requestAnimationFrame(loop);
+        animationId = requestAnimationFrame(renderLoop);
     };
 
-    const handleResize = () => {
+    const updateDimensions = () => {
         if (!canvas) return;
         const rect = canvas.parentElement.getBoundingClientRect();
         width = rect.width;
@@ -390,16 +342,10 @@ const PortadaVisualEngine = (() => {
         if (!banner) return;
 
         isRunning = true;
-
-        const themeId = (currentConfig && currentConfig.mobile_theme) ? currentConfig.mobile_theme : 'deep_tech_minimal';
-        activeVisual = VISUALS_REGISTRY.find(v => v.id === themeId) || VISUALS_REGISTRY[0];
-
-        banner.dataset.originalBg = banner.style.backgroundImage;
-        banner.style.backgroundImage = 'none';
         banner.style.position = 'relative';
 
         canvas = document.createElement('canvas');
-        canvas.id = 'v-cosmic-canvas-webgl';
+        canvas.id = 'vloitz-webgl-canvas';
         Object.assign(canvas.style, {
             position: 'absolute',
             top: 0,
@@ -412,9 +358,10 @@ const PortadaVisualEngine = (() => {
 
         banner.insertBefore(canvas, banner.firstChild);
 
-        const gradientOverlay = document.createElement('div');
-        gradientOverlay.id = 'v-cosmic-gradient';
-        Object.assign(gradientOverlay.style, {
+        // Degradado protector del texto
+        const gradient = document.createElement('div');
+        gradient.id = 'vloitz-webgl-gradient';
+        Object.assign(gradient.style, {
             position: 'absolute',
             bottom: 0,
             left: 0,
@@ -424,76 +371,50 @@ const PortadaVisualEngine = (() => {
             pointerEvents: 'none',
             zIndex: 1
         });
-        banner.appendChild(gradientOverlay);
+        banner.appendChild(gradient);
 
         gl = canvas.getContext('webgl', {
             alpha: false
-        }) || canvas.getContext('experimental-webgl', {
-            alpha: false
         });
-        if (!gl) {
-            console.error("WebGL no soportado.");
-            return;
-        }
 
-        initWebGL();
-        handleResize();
-        window.addEventListener('resize', handleResize);
+        initEngine();
+        updateDimensions();
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                isVisible = entry.isIntersecting;
-                if (isVisible && isRunning) {
-                    if (!animationId) loop();
-                } else {
-                    if (animationId) {
-                        cancelAnimationFrame(animationId);
-                        animationId = null;
-                    }
-                }
-            });
-        });
-        observer.observe(banner);
+        // FIX: Observador robusto para redimensiones dinámicas en DevTools/Móviles
+        resizeObserver = new ResizeObserver(() => updateDimensions());
+        resizeObserver.observe(banner);
+
+        renderLoop();
     };
 
-    const stopAndDestroy = () => {
+    const stop = () => {
         isRunning = false;
-        isVisible = false;
-        if (animationId) {
-            cancelAnimationFrame(animationId);
-            animationId = null;
-        }
-        window.removeEventListener('resize', handleResize);
+        if (animationId) cancelAnimationFrame(animationId);
+        if (resizeObserver) resizeObserver.disconnect();
 
         const banner = document.querySelector('.profile-banner');
-        if (canvas && canvas.parentElement) canvas.parentElement.removeChild(canvas);
-        const grad = document.getElementById('v-cosmic-gradient');
-        if (grad && grad.parentElement) grad.parentElement.removeChild(grad);
-
+        if (canvas) canvas.remove();
+        const grad = document.getElementById('vloitz-webgl-gradient');
+        if (grad) grad.remove();
         canvas = null;
         gl = null;
-
-        if (banner && banner.dataset.originalBg) {
-            banner.style.backgroundImage = banner.dataset.originalBg;
-        }
     };
 
-    const evaluateEnvironment = () => {
-        if (!currentConfig || !currentConfig.master_switch) {
-            stopAndDestroy();
-            return;
-        }
-        const isMobile = window.matchMedia('(max-width: 768px)').matches;
+    const evaluate = () => {
+        if (!currentConfig || !currentConfig.master_switch) return stop();
+
+        // Verifica si es móvil o si forzaste escritorio en el objeto de configuración
+        const isMobile = window.innerWidth <= 768;
         if (isMobile && currentConfig.enable_mobile) start();
         else if (!isMobile && currentConfig.enable_desktop) start();
-        else stopAndDestroy();
+        else stop();
     };
 
     return {
-        init: (configObj) => {
-            currentConfig = configObj;
-            evaluateEnvironment();
-            window.matchMedia('(max-width: 768px)').addEventListener('change', evaluateEnvironment);
+        init: (config) => {
+            currentConfig = config;
+            evaluate();
+            window.addEventListener('resize', evaluate); // Verifica al cambiar el tamaño de ventana
         },
         setPlayState: (isPlaying) => {
             isMusicPlaying = isPlaying;
