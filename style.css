@@ -2044,17 +2044,35 @@ body {
 
 #vloitz-ghost-pointer {
     position: absolute;
-    top: 0;
+    top: 15%;
+    /* Centrado: Deja margen arriba */
     left: 0;
-    width: 4px;
-    /* Más grueso, menos "palo", más "barra" */
-    height: 100%;
-    background-color: rgba(255, 255, 255, 0.45);
-    /* Blanco elegante semi-transparente */
-    border-radius: 2px;
+    width: 2px;
+    /* Más fino y elegante */
+    height: 70%;
+    /* No toca los bordes del contenedor */
+    /* Degradado láser: Transparente -> Blanco Brillante -> Transparente */
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.9) 50%, rgba(255, 255, 255, 0) 100%);
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+    /* Resplandor sutil */
     pointer-events: none;
     display: none;
     z-index: 10;
+}
+
+/* ==========================================================================
+   VLOITZ UI UX FIX: Bloqueo del menú nativo en móviles ("Descargar Imagen")
+   ========================================================================== */
+.player-card,
+.player-card img,
+.player-details img,
+#waveform,
+.waveform-container {
+    -webkit-touch-callout: none !important;
+    /* Bloquea el popup en iOS/Chrome */
+    -webkit-user-select: none !important;
+    /* Bloquea la selección de texto */
+    user-select: none !important;
 }
 
 @media (max-width: 768px) {
