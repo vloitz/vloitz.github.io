@@ -1,7 +1,6 @@
 /**
- * VLOITZ PORTADA VISUAL ENGINE
- * Módulo independiente para renderizado WebGL/Canvas en el header.
- * Diseñado para no asfixiar el hilo principal ni drenar batería.
+ * VLOITZ PORTADA VISUAL ENGINE (V2 - Neon Depth Edition)
+ * Integración óptica con fotografía de perfil, efecto Bokeh y parche de sangrado.
  */
 
 const PortadaVisualEngine = (() => {
@@ -9,51 +8,35 @@ const PortadaVisualEngine = (() => {
     let ctx = null;
     let animationId = null;
     let isRunning = false;
-    let isVisible = false; // Controlado por el Observer de Scroll
+    let isVisible = false;
     let width, height;
 
     let stars = [];
     let nebulas = [];
     let currentConfig = null;
 
-    // Conexión futura para tu audio
     const AudioState = { bass: 0, overall: 0 };
 
-    // Simulación temporal de audio (puedes borrar la llamada luego)
     function simulateAudio() {
         const time = Date.now() * 0.001;
         AudioState.bass = (Math.sin(time) + 1) / 2 * 0.15;
     }
 
-    // --- CLASES DEL TEMA 'deep_tech' ---
-    class Star {
-        constructor() { this.reset(true); }
-        reset(isInit = false) {
-            this.x = Math.random() * width;
-            this.y = Math.random() * height;
-            this.z = Math.random() * 3 + 0.5;
-            this.size = (Math.random() * 1.0 + 0.2);
-            const isBlue = Math.random() > 0.8;
-            this.color = isBlue ? 'rgba(180, 210, 255, ' : 'rgba(255, 255, 255, ';
-            this.baseAlpha = Math.random() * 0.8 + 0.2;
-            this.alpha = this.baseAlpha;
-            this.twinkleSpeed = Math.random() * 0.005 + 0.001;
-            this.speedX = -(0.05 / this.z); // Paneo lento
-        }
-        update() {
-            this.x += this.speedX;
-            this.alpha = this.baseAlpha + Math.sin(Date.now() * this.twinkleSpeed) * 0.2;
-            if (this.x < -10) {
-                this.x = width + 10;
-                this.y = Math.random() * height;
-            }
-        }
-        draw() {
-            ctx.fillStyle = this.color + Math.max(0, Math.min(1, this.alpha)) + ')';
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-            ctx.fill();
-        }
+    // --- GENERADOR DE TEXTURAS BOKEH (Cero lag en móviles) ---
+    function createBokehTexture(color, size, blur) {
+        const off = document.createElement('canvas');
+        const totalSize = size + blur * 4;
+        off.width = totalSize;
+        off.height = totalSize;
+        const oCtx = off.getContext('2d');
+
+        oCtx.shadowColor = color;
+        oCtx.shadowBlur = blur;
+        oCtx.fillStyle = color;
+        oCtx.beginPath();
+        oCtx.arc(totalSize/2, totalSize/2, size/2, 0, Math.PI * 2);
+        oCtx.fill();
+        return off;
     }
 
     function createNebulaTexture(colorCenter, colorEdge, radius) {
@@ -70,6 +53,55 @@ const PortadaVisualEngine = (() => {
         return offCanvas;
     }
 
+    // --- CLASES DEL TEMA ---
+    class Star {
+        constructor() { this.reset(true); }
+        reset(isInit = false) {
+            this.x = Math.random() * width;
+            this.y = Math.random() * height;
+            this.z = Math.random() * 4 + 0.2; // Profundidad de campo
+
+            // Decisión de Óptica (Nítida o Bokeh desenfocado)
+            this.isBokeh = Math.random() > 0.85;
+
+            if (this.isBokeh) {
+                this.size = (Math.random() * 4 + 2) / this.z;
+                const colors = ['#00F3FF', '#FF007F', '#8C00DC']; // Cyan, Magenta, Violeta
+                this.color = colors[Math.floor(Math.random() * colors.length)];
+                this.texture = createBokehTexture(this.color, this.size, this.size * 2);
+            } else {
+                this.size = (Math.random() * 1.2 + 0.2) / this.z;
+                this.color = Math.random() > 0.5 ? 'rgba(0, 243, 255, ' : 'rgba(255, 255, 255, '; // Puntos Cyan o Blancos
+            }
+
+            this.baseAlpha = Math.random() * 0.7 + 0.1;
+            this.alpha = this.baseAlpha;
+            this.twinkleSpeed = Math.random() * 0.005 + 0.001;
+            this.speedX = -(0.08 / this.z); // Paneo
+        }
+        update() {
+            this.x += this.speedX;
+            this.alpha = this.baseAlpha + Math.sin(Date.now() * this.twinkleSpeed) * 0.3;
+            if (this.x < -20) {
+                this.x = width + 20;
+                this.y = Math.random() * height;
+            }
+        }
+        draw() {
+            const currentAlpha = Math.max(0, Math.min(1, this.alpha));
+            if (this.isBokeh) {
+                ctx.globalAlpha = currentAlpha * 0.6;
+                ctx.drawImage(this.texture, this.x - this.texture.width/2, this.y - this.texture.height/2);
+            } else {
+                ctx.globalAlpha = 1;
+                ctx.fillStyle = this.color + currentAlpha + ')';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+    }
+
     class Nebula {
         constructor(x, y, radius, colorC, colorE) {
             this.x = x; this.y = y; this.baseRadius = radius;
@@ -79,58 +111,68 @@ const PortadaVisualEngine = (() => {
         }
         update() { this.angle += this.rotSpeed; }
         draw() {
-            const currentRadius = this.baseRadius + (AudioState.bass * 50);
+            const currentRadius = this.baseRadius + (AudioState.bass * 60);
             ctx.save();
             ctx.translate(this.x, this.y);
             ctx.rotate(this.angle);
             ctx.globalCompositeOperation = 'screen';
-            ctx.globalAlpha = 0.5 + (AudioState.bass * 0.2);
+            ctx.globalAlpha = 0.6 + (AudioState.bass * 0.3);
             ctx.scale(1, 0.7);
             ctx.drawImage(this.texture, -currentRadius, -currentRadius, currentRadius * 2, currentRadius * 2);
             ctx.restore();
         }
     }
 
-    // --- CORE DEL MOTOR ---
     const buildThemeDeepTech = () => {
         stars = []; nebulas = [];
-        for (let i = 0; i < 200; i++) stars.push(new Star());
+        for (let i = 0; i < 180; i++) stars.push(new Star());
+
+        // Paleta extraída de las gafas y casaca de tu foto de perfil
         nebulas = [
-            new Nebula(width * 0.3, height * 0.4, 250, 'rgba(180, 20, 100, 0.15)', 'rgba(80, 10, 120, 0.05)'),
-            new Nebula(width * 0.7, height * 0.7, 300, 'rgba(90, 15, 200, 0.15)', 'rgba(20, 5, 50, 0.05)'),
-            new Nebula(width * 0.8, height * 0.2, 200, 'rgba(200, 80, 20, 0.08)', 'rgba(50, 10, 20, 0.02)'),
-            new Nebula(width * 0.1, height * 0.8, 350, 'rgba(30, 10, 80, 0.12)', 'rgba(5, 2, 20, 0.03)')
+            new Nebula(width * 0.2, height * 0.3, 300, 'rgba(0, 243, 255, 0.12)', 'rgba(0, 100, 200, 0.03)'),   // Cyan Eléctrico
+            new Nebula(width * 0.8, height * 0.6, 350, 'rgba(255, 0, 127, 0.10)', 'rgba(120, 0, 80, 0.03)'),    // Magenta Neón
+            new Nebula(width * 0.5, height * 0.8, 400, 'rgba(140, 0, 220, 0.12)', 'rgba(40, 0, 80, 0.04)'),     // Violeta Profundo
+            new Nebula(width * 0.9, height * 0.2, 200, 'rgba(0, 200, 255, 0.08)', 'rgba(0, 50, 100, 0.02)')     // Acento Cyan secundario
         ];
     };
 
     const loop = () => {
         if (!isRunning || !isVisible) return;
+        simulateAudio();
 
-        simulateAudio(); // Simulación reactiva
-
-        // Borrar frame anterior (Fondo ultra oscuro)
+        // 1. Fondo base (Oscuro y sólido para anular el Lens)
         ctx.globalCompositeOperation = 'source-over';
         ctx.globalAlpha = 1;
-        ctx.fillStyle = '#030105';
+        ctx.fillStyle = '#05040a'; // Tono ultra oscuro que resalta el neón
         ctx.fillRect(0, 0, width, height);
 
+        // 2. Gas y Estrellas
         nebulas.forEach(n => { n.update(); n.draw(); });
         ctx.globalCompositeOperation = 'screen';
         stars.forEach(s => { s.update(); s.draw(); });
+
+        // 3. LA FUSIÓN (El parche para la línea naranja)
+        // Dibuja un gradiente exacto al color del fondo de tu web en la base del canvas
+        const grad = ctx.createLinearGradient(0, height - 90, 0, height);
+        grad.addColorStop(0, 'rgba(18, 18, 18, 0)');
+        grad.addColorStop(1, '#121212'); // El --dark-bg de tu CSS
+
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = grad;
+        // Dibujamos un poco más abajo (+2px) para matar cualquier línea de subpíxel
+        ctx.fillRect(0, height - 90, width, 92);
 
         animationId = requestAnimationFrame(loop);
     };
 
     const handleResize = () => {
         if (!canvas) return;
-        // Obtenemos las medidas del contenedor padre (.profile-banner)
         const rect = canvas.parentElement.getBoundingClientRect();
         width = rect.width;
         height = rect.height;
         canvas.width = width;
         canvas.height = height;
-
-        // Reconstruimos solo si cambiaron drásticamente las medidas
         if (isRunning) buildThemeDeepTech();
     };
 
@@ -139,7 +181,10 @@ const PortadaVisualEngine = (() => {
         const banner = document.querySelector('.profile-banner');
         if (!banner) return;
 
-        // INYECCIÓN QUIRÚRGICA: z-index 0 para quedar DEBAJO del AtmosphereController
+        // TÁCTICA ANTI-SANGRADO: Ocultamos temporalmente la imagen de las palmeras
+        banner.dataset.originalBg = banner.style.backgroundImage;
+        banner.style.backgroundImage = 'none';
+
         canvas = document.createElement('canvas');
         canvas.id = 'v-cosmic-canvas';
         Object.assign(canvas.style, {
@@ -148,10 +193,11 @@ const PortadaVisualEngine = (() => {
             width: '100%', height: '100%',
             pointerEvents: 'none',
             zIndex: 0,
-            filter: 'contrast(1.2) brightness(0.9)'
+            backgroundColor: '#05040a', // Muro sólido impenetrable
+            // Aumentamos contraste para que tu filtro soft-light no mate los colores
+            filter: 'contrast(1.3) brightness(1.1) saturate(1.2)'
         });
 
-        // Lo insertamos como primer hijo del banner
         banner.insertBefore(canvas, banner.firstChild);
         ctx = canvas.getContext('2d');
 
@@ -160,17 +206,11 @@ const PortadaVisualEngine = (() => {
 
         isRunning = true;
 
-        // Observer para pausar la animación cuando no se vea el banner (Batería 0%)
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 isVisible = entry.isIntersecting;
-                if (isVisible && isRunning) {
-                    console.log('%c[Visual Engine] Reanudando animación (Visible)', 'color:#00F3FF; font-size:10px;');
-                    loop();
-                } else {
-                    console.log('%c[Visual Engine] Pausando animación (Oculto)', 'color:#FF5555; font-size:10px;');
-                    cancelAnimationFrame(animationId);
-                }
+                if (isVisible && isRunning) loop();
+                else cancelAnimationFrame(animationId);
             });
         });
         observer.observe(banner);
@@ -181,43 +221,34 @@ const PortadaVisualEngine = (() => {
         isVisible = false;
         cancelAnimationFrame(animationId);
         window.removeEventListener('resize', handleResize);
+
+        const banner = document.querySelector('.profile-banner');
         if (canvas && canvas.parentElement) {
             canvas.parentElement.removeChild(canvas);
         }
         canvas = null;
-        console.log('%c[Visual Engine] Destruido/Apagado', 'color:#FF5555; font-weight:bold;');
+
+        // Restauramos tu imagen de atardecer original si volvemos a PC
+        if (banner && banner.dataset.originalBg) {
+            banner.style.backgroundImage = banner.dataset.originalBg;
+        }
     };
 
-    // EL CEREBRO DEL "SWITCH" (Reacciona en vivo)
     const evaluateEnvironment = () => {
         if (!currentConfig || !currentConfig.master_switch) {
             stopAndDestroy();
             return;
         }
-
         const isMobile = window.matchMedia('(max-width: 768px)').matches;
-
-        if (isMobile && currentConfig.enable_mobile) {
-            console.log('%c[Visual Engine] Entorno Móvil detectado -> START', 'color:#1DB954; font-weight:bold;');
-            start();
-        } else if (!isMobile && currentConfig.enable_desktop) {
-            console.log('%c[Visual Engine] Entorno PC detectado -> START', 'color:#1DB954; font-weight:bold;');
-            start();
-        } else {
-            // Si el usuario rota la tablet y pasa a "PC", se destruye en vivo
-            stopAndDestroy();
-        }
+        if (isMobile && currentConfig.enable_mobile) start();
+        else if (!isMobile && currentConfig.enable_desktop) start();
+        else stopAndDestroy();
     };
 
     return {
         init: (configObj) => {
             currentConfig = configObj;
-            console.log('%c[Visual Engine] Inicializando Panel Maestro...', 'color:#1DB954;');
-
-            // Evaluar al inicio
             evaluateEnvironment();
-
-            // Escuchar cambios de resolución (Paso de Móvil a PC en vivo)
             window.matchMedia('(max-width: 768px)').addEventListener('change', evaluateEnvironment);
         }
     };
