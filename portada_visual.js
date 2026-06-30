@@ -1,7 +1,7 @@
 /**
- * VLOITZ PORTADA VISUAL ENGINE (V4.0 - Premium Deep Tech 3D Edition)
+ * VLOITZ PORTADA VISUAL ENGINE (V4.1 - Pure Deep Tech Minimal)
  * Arquitectura modular agnóstica basada en presets.
- * FIX: Ciclo de vida de inicialización corregido y Observer blindado.
+ * Estética: Polvo estelar nítido, atmósfera densa y succión fluida (Humo pesado).
  */
 
 const PortadaVisualEngine = (() => {
@@ -47,27 +47,22 @@ const PortadaVisualEngine = (() => {
                 ['rgba(45, 25, 80, 0.20)', 'rgba(10, 5, 20, 0.02)'], // Violeta oscuro y profundo
                 ['rgba(15, 30, 60, 0.15)', 'rgba(5, 10, 15, 0.02)'] // Celeste frío muy atenuado
             ],
-            particles_count: 220, // Más partículas finas para efecto de polvo suspendido
-            particles_base_size: 0.9, // Puntos de luz minúsculos y nítidos (Adiós burbujas navideñas)
-            particles_colors: ['rgba(255,255,255,', 'rgba(180,210,255,', 'rgba(140,100,220,'], // Blancos, celestes fríos, violetas oscuros
+            particles_count: 220, // Densidad alta de polvo estelar
+            particles_base_size: 1.8, // Calibrado exacto: Nítido pero visible en pantallas móviles
+            particles_colors: ['rgba(255,255,255,', 'rgba(180,210,255,', 'rgba(140,100,220,'], // Celestes fríos, violetas oscuros
             speed_multiplier: 0.015, // Movimiento casi estático, flotación pura
             reactivity: {
-                bass_gas_opacity: 0.15, // Latido atmosférico casi imperceptible
+                bass_gas_opacity: 0.15, // Latido atmosférico sutil
                 bass_particle_glow: 0.2 // Destello finísimo
             },
             physics: {
                 gravity_center: {
                     x: 0.5,
                     y: 0.45
-                }, // Un poco más arriba, justo donde está tu cara
-                gravity_pull: 0.5, // Atracción muy suave y elegante hacia el centro
-                smoke_friction: 0.965, // Fricción altísima: fluido espeso y denso de máquina de humo
-                gas_breathing_speed: 0.00015 // Respiración orgánica extremadamente lenta
-            },
-            bokeh: {
-                enabled: false, // DESACTIVADO: Eliminamos la ilusión de esferas y festividad
-                big_particles_count: 0,
-                base_size: 0
+                }, // Centro de gravedad (tu foto)
+                gravity_pull: 0.5, // Atracción suave y elegante
+                smoke_friction: 0.965, // Fricción ALTA: fluido espeso y denso
+                gas_breathing_speed: 0.00015 // Respiración orgánica lentísima
             }
         }
     };
@@ -91,8 +86,7 @@ const PortadaVisualEngine = (() => {
 
     // --- ENTIDADES CÓSMICAS ---
     class Particle {
-        constructor(isBokeh = false) {
-            this.isBokeh = isBokeh; // Nueva propiedad para identificar la capa frontal
+        constructor() {
             this.reset(true);
         }
         reset(isInit = false) {
@@ -100,14 +94,8 @@ const PortadaVisualEngine = (() => {
             this.y = Math.random() * height;
             this.z = Math.random() * 4 + 1;
 
-            if (this.isBokeh && activePreset.bokeh && activePreset.bokeh.enabled) {
-                // Capa Bokeh: Partículas masivas pasando muy cerca del "lente"
-                this.size = Math.random() * activePreset.bokeh.base_size + (activePreset.bokeh.base_size / 2);
-                this.z = Math.random() * 0.5 + 0.1; // Z muy bajo = Parallax frontal pronunciado
-            } else {
-                // Capa Fondo: Estrellas nítidas
-                this.size = (Math.random() * activePreset.particles_base_size + 0.1) / this.z;
-            }
+            // Capa Fondo: Polvo estelar nítido y fino
+            this.size = (Math.random() * activePreset.particles_base_size + 0.5) / this.z;
 
             this.color = activePreset.particles_colors[Math.floor(Math.random() * activePreset.particles_colors.length)];
 
@@ -132,8 +120,8 @@ const PortadaVisualEngine = (() => {
 
                 // Horizonte de Sucesos: Desvanecimiento orgánico al acercarse al centro (Adiós "popeo" arcade)
                 let eventHorizonAlpha = 1;
-                if (dist < 180) {
-                    eventHorizonAlpha = Math.max(0, dist - 40) / 140; // Cae de 1 a 0 suavemente entre 180px y 40px
+                if (dist < 150) {
+                    eventHorizonAlpha = Math.max(0, dist - 40) / 110;
                 }
 
                 // Si la partícula llega a la foto (Agujero negro), desaparece y nace de la nada
@@ -146,16 +134,10 @@ const PortadaVisualEngine = (() => {
                 const reactivePull = activePreset.physics.gravity_pull * (0.4 + (AudioState.bass * 0.6));
                 const pull = reactivePull / this.z;
 
-                // La capa Bokeh casi no es afectada por la gravedad para mantener la ilusión de que está frente a la pantalla
-                if (this.isBokeh) {
-                    this.vx += (dx / dist) * (pull * 0.15);
-                    this.vy += (dy / dist) * (pull * 0.15);
-                } else {
-                    this.vx += (dx / dist) * pull;
-                    this.vy += (dy / dist) * pull;
-                }
+                this.vx += (dx / dist) * pull;
+                this.vy += (dy / dist) * pull;
 
-                // Fricción de humo denso (suaviza la velocidad para que no sean balas)
+                // Fricción de humo denso (suaviza la velocidad fuertemente)
                 this.vx *= activePreset.physics.smoke_friction;
                 this.vy *= activePreset.physics.smoke_friction;
 
@@ -171,11 +153,6 @@ const PortadaVisualEngine = (() => {
                 this.vy = 0;
                 this.x += this.speedX;
                 this.alpha = this.baseAlpha + Math.sin(Date.now() * this.twinkleSpeed) * 0.15;
-            }
-
-            // Reducimos radicalmente la opacidad de la capa Bokeh para lograr el efecto "difuminado/fuera de foco"
-            if (this.isBokeh) {
-                this.alpha *= 0.15;
             }
 
             // Reaparición si sale de la pantalla (modo normal)
@@ -236,13 +213,7 @@ const PortadaVisualEngine = (() => {
         const themeName = (currentConfig && currentConfig.mobile_theme) ? currentConfig.mobile_theme : 'deep_tech_minimal';
         activePreset = VISUAL_PRESETS[themeName] || VISUAL_PRESETS['deep_tech_minimal'];
 
-        // 1. Estrellas de fondo nítidas
-        for (let i = 0; i < activePreset.particles_count; i++) stars.push(new Particle(false));
-
-        // 2. Inyección de capa 3D frontal (Cinematic Bokeh)
-        if (activePreset.bokeh && activePreset.bokeh.enabled) {
-            for (let i = 0; i < activePreset.bokeh.big_particles_count; i++) stars.push(new Particle(true));
-        }
+        for (let i = 0; i < activePreset.particles_count; i++) stars.push(new Particle());
 
         if (activePreset.gas_enabled) {
             const gC = activePreset.gas_colors;
