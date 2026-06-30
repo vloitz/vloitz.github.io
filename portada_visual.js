@@ -10,14 +10,18 @@ const PortadaVisualEngine = (() => {
     let animationId = null;
     let isRunning = false;
     let isVisible = false;
-    let width = 0, height = 0;
+    let width = 0,
+        height = 0;
 
     let stars = [];
     let nebulas = [];
     let currentConfig = null;
 
     // 🔗 CABLES LISTOS PARA TU AUDIO EN EL FUTURO (0.0 a 1.0)
-    const AudioState = { bass: 0, overall: 0 };
+    const AudioState = {
+        bass: 0,
+        overall: 0
+    };
     let isMusicPlaying = false; // <-- El interruptor real del reproductor
 
     function simulateAudio() {
@@ -35,32 +39,35 @@ const PortadaVisualEngine = (() => {
     // ========================================================================
     // 🎛️ PRESET MATEMÁTICO ÚNICO
     // ========================================================================
-   const VISUAL_PRESETS = {
+    const VISUAL_PRESETS = {
         'deep_tech_minimal': {
-            bg_color: '#06050a',             // Abismo muy sutil, no negro puro
+            bg_color: '#040308', // Abismo aún más oscuro y sobrio
             gas_enabled: true,
             gas_colors: [
-                ['rgba(70, 40, 120, 0.35)', 'rgba(15, 5, 25, 0.05)'], // Púrpura oscuro, pero VISIBLE
-                ['rgba(30, 60, 100, 0.25)', 'rgba(5, 10, 20, 0.05)']  // Azul acero profundo
+                ['rgba(45, 25, 80, 0.20)', 'rgba(10, 5, 20, 0.02)'], // Violeta oscuro y profundo
+                ['rgba(15, 30, 60, 0.15)', 'rgba(5, 10, 15, 0.02)'] // Celeste frío muy atenuado
             ],
-            particles_count: 150,            // Densidad elegante
-            particles_base_size: 2.5,        // FIX CRÍTICO: 2.5px permite que el canvas las dibuje nítidas
-            particles_colors: ['rgba(255,255,255,', 'rgba(170,200,255,'],
-            speed_multiplier: 0.05,          // Movimiento cinemático pero perceptible a la vista
+            particles_count: 220, // Más partículas finas para efecto de polvo suspendido
+            particles_base_size: 0.9, // Puntos de luz minúsculos y nítidos (Adiós burbujas navideñas)
+            particles_colors: ['rgba(255,255,255,', 'rgba(180,210,255,', 'rgba(140,100,220,'], // Blancos, celestes fríos, violetas oscuros
+            speed_multiplier: 0.015, // Movimiento casi estático, flotación pura
             reactivity: {
-                bass_gas_opacity: 0.2,       // Reducido: Latido sutil y viscoso (Anti-Strobe)
-                bass_particle_glow: 0.3      // Reducido: Destello controlado y elegante
+                bass_gas_opacity: 0.15, // Latido atmosférico casi imperceptible
+                bass_particle_glow: 0.2 // Destello finísimo
             },
             physics: {
-                gravity_center: { x: 0.5, y: 0.45 }, // Un poco más arriba, justo donde está tu cara
-                gravity_pull: 1.2,                   // Atracción densa, no violenta
-                smoke_friction: 0.92,                // Fricción alta: movimiento viscoso como bajo el agua o humo espeso
-                gas_breathing_speed: 0.0003          // Respiración de la nebulosa aún más lenta y orgánica
+                gravity_center: {
+                    x: 0.5,
+                    y: 0.45
+                }, // Un poco más arriba, justo donde está tu cara
+                gravity_pull: 0.5, // Atracción muy suave y elegante hacia el centro
+                smoke_friction: 0.965, // Fricción altísima: fluido espeso y denso de máquina de humo
+                gas_breathing_speed: 0.00015 // Respiración orgánica extremadamente lenta
             },
             bokeh: {
-                enabled: true,
-                big_particles_count: 12,     // Partículas gigantes desenfocadas en primer plano
-                base_size: 18                // Tamaño masivo para simular cercanía al lente
+                enabled: false, // DESACTIVADO: Eliminamos la ilusión de esferas y festividad
+                big_particles_count: 0,
+                base_size: 0
             }
         }
     };
@@ -70,7 +77,8 @@ const PortadaVisualEngine = (() => {
     // --- CACHÉ DE TEXTURAS ---
     function createNebulaTexture(colorCenter, colorEdge, radius) {
         const offCanvas = document.createElement('canvas');
-        offCanvas.width = radius * 2; offCanvas.height = radius * 2;
+        offCanvas.width = radius * 2;
+        offCanvas.height = radius * 2;
         const offCtx = offCanvas.getContext('2d');
         const gradient = offCtx.createRadialGradient(radius, radius, 0, radius, radius, radius);
         gradient.addColorStop(0, colorCenter);
@@ -188,22 +196,26 @@ const PortadaVisualEngine = (() => {
 
     class GasCloud {
         constructor(x, y, radius, colorC, colorE) {
-            this.x = x; this.y = y; this.baseRadius = radius;
+            this.x = x;
+            this.y = y;
+            this.baseRadius = radius;
             this.texture = createNebulaTexture(colorC, colorE, radius);
             this.angle = Math.random() * Math.PI * 2;
             this.rotSpeed = (Math.random() - 0.5) * 0.0002;
         }
-        update() { this.angle += this.rotSpeed; }
+        update() {
+            this.angle += this.rotSpeed;
+        }
         draw() {
             // Respiración orgánica temporal (Pulso de nebulosa)
             const breathing = activePreset.physics ? Math.sin(Date.now() * activePreset.physics.gas_breathing_speed) : 0;
-            const organicAlpha = 0.5 + (breathing * 0.15); // Cambio sutil de opacidad
+            const organicAlpha = 0.35 + (breathing * 0.1); // Opacidad reducida para no robar protagonismo a la foto
 
             // Destello controlado y elegante vinculado al Sub-Bass
             const reactiveAlpha = Math.max(0, Math.min(1, organicAlpha + (AudioState.bass * activePreset.reactivity.bass_gas_opacity)));
 
             // Impacto físico: El humo se expande muy suavemente con el Sub-Bass
-            const scalePulse = activePreset.physics ? 1 + (breathing * 0.05) + (AudioState.bass * 0.05) : 1;
+            const scalePulse = activePreset.physics ? 1 + (breathing * 0.03) + (AudioState.bass * 0.03) : 1;
 
             ctx.save();
             ctx.translate(this.x, this.y);
@@ -218,7 +230,8 @@ const PortadaVisualEngine = (() => {
 
     // --- CONSTRUCTOR DE ESCENAS ---
     const buildScene = () => {
-        stars = []; nebulas = [];
+        stars = [];
+        nebulas = [];
 
         const themeName = (currentConfig && currentConfig.mobile_theme) ? currentConfig.mobile_theme : 'deep_tech_minimal';
         activePreset = VISUAL_PRESETS[themeName] || VISUAL_PRESETS['deep_tech_minimal'];
@@ -255,9 +268,15 @@ const PortadaVisualEngine = (() => {
         ctx.fillStyle = activePreset.bg_color;
         ctx.fillRect(0, 0, width, height);
 
-        nebulas.forEach(n => { n.update(); n.draw(); });
+        nebulas.forEach(n => {
+            n.update();
+            n.draw();
+        });
         ctx.globalCompositeOperation = 'screen';
-        stars.forEach(s => { s.update(); s.draw(); });
+        stars.forEach(s => {
+            s.update();
+            s.draw();
+        });
 
         const grad = ctx.createLinearGradient(0, height - 95, 0, height);
         grad.addColorStop(0, 'rgba(18, 18, 18, 0)');
@@ -295,8 +314,10 @@ const PortadaVisualEngine = (() => {
         canvas.id = 'v-cosmic-canvas';
         Object.assign(canvas.style, {
             position: 'absolute',
-            top: 0, left: 0,
-            width: '100%', height: '100%',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
             pointerEvents: 'none',
             zIndex: 0,
             backgroundColor: activePreset.bg_color,
