@@ -1,166 +1,148 @@
-/**
- * VLOITZ PORTADA VISUAL ENGINE (V2 - Neon Depth Edition)
- * Integración óptica con fotografía de perfil, efecto Bokeh y parche de sangrado.
- */
-
-const PortadaVisualEngine = (() => {
-    let canvas = null;
-    let ctx = null;
-    let animationId = null;
-    let isRunning = false;
-    let isVisible = false;
-    let width, height;
-
-    let stars = [];
-    let nebulas = [];
-    let currentConfig = null;
-
-    const AudioState = { bass: 0, overall: 0 };
+const AudioState = { bass: 0, overall: 0 };
 
     function simulateAudio() {
         const time = Date.now() * 0.001;
-        AudioState.bass = (Math.sin(time) + 1) / 2 * 0.15;
+        // Latido súper sutil, listo para cuando conectemos los cables reales
+        AudioState.bass = (Math.sin(time) + 1) / 2 * 0.1;
     }
 
-    // --- GENERADOR DE TEXTURAS BOKEH (Cero lag en móviles) ---
-    function createBokehTexture(color, size, blur) {
-        const off = document.createElement('canvas');
-        const totalSize = size + blur * 4;
-        off.width = totalSize;
-        off.height = totalSize;
-        const oCtx = off.getContext('2d');
+    // ========================================================================
+    // 🎛️ SISTEMA DE PRESETS (Arquitectura Modular Visual)
+    // ========================================================================
+    const VISUAL_PRESETS = {
+        'deep_tech_minimal': {
+            bg_color: '#030305', // Fondo abisal
+            gas_enabled: true,
+            gas_colors: [
+                ['rgba(15, 20, 35, 0.15)', 'rgba(5, 8, 15, 0.05)'], // Niebla fría, oscura y elegante
+                ['rgba(10, 15, 25, 0.10)', 'rgba(2, 4, 8, 0.02)']
+            ],
+            particles_count: 250,
+            particles_base_size: 0.7, // Puntos milimétricos, cero burbujas
+            particles_colors: ['rgba(255,255,255,', 'rgba(180,200,230,'], // Blanco puro y cian muy lavado
+            speed_multiplier: 0.02,   // Paneo hiper-lento (cinemático)
+            reactivity: {
+                bass_gas_opacity: 0.15, // Cuánto palpita el gas con el bajo
+                bass_particle_glow: 0.4 // Cuánto brillan los puntos con el bajo
+            }
+        }
+    };
 
-        oCtx.shadowColor = color;
-        oCtx.shadowBlur = blur;
-        oCtx.fillStyle = color;
-        oCtx.beginPath();
-        oCtx.arc(totalSize/2, totalSize/2, size/2, 0, Math.PI * 2);
-        oCtx.fill();
-        return off;
-    }
+    let activePreset = VISUAL_PRESETS['deep_tech_minimal'];
 
+    // --- GENERADOR DE TEXTURAS (Caché en memoria) ---
     function createNebulaTexture(colorCenter, colorEdge, radius) {
         const offCanvas = document.createElement('canvas');
-        offCanvas.width = radius * 2;
-        offCanvas.height = radius * 2;
+        offCanvas.width = radius * 2; offCanvas.height = radius * 2;
         const offCtx = offCanvas.getContext('2d');
         const gradient = offCtx.createRadialGradient(radius, radius, 0, radius, radius, radius);
         gradient.addColorStop(0, colorCenter);
-        gradient.addColorStop(0.4, colorEdge);
+        gradient.addColorStop(0.5, colorEdge);
         gradient.addColorStop(1, 'transparent');
         offCtx.fillStyle = gradient;
         offCtx.fillRect(0, 0, radius * 2, radius * 2);
         return offCanvas;
     }
 
-    // --- CLASES DEL TEMA ---
-    class Star {
+    // --- ENTIDADES GENÉRICAS (Controladas estrictamente por el Preset) ---
+    class Particle {
         constructor() { this.reset(true); }
         reset(isInit = false) {
             this.x = Math.random() * width;
             this.y = Math.random() * height;
-            this.z = Math.random() * 4 + 0.2; // Profundidad de campo
+            this.z = Math.random() * 4 + 1;
 
-            // Decisión de Óptica (Nítida o Bokeh desenfocado)
-            this.isBokeh = Math.random() > 0.85;
+            // Tamaño exacto dictado por el preset
+            this.size = (Math.random() * activePreset.particles_base_size + 0.2) / this.z;
+            this.color = activePreset.particles_colors[Math.floor(Math.random() * activePreset.particles_colors.length)];
 
-            if (this.isBokeh) {
-                this.size = (Math.random() * 4 + 2) / this.z;
-                const colors = ['#00F3FF', '#FF007F', '#8C00DC']; // Cyan, Magenta, Violeta
-                this.color = colors[Math.floor(Math.random() * colors.length)];
-                this.texture = createBokehTexture(this.color, this.size, this.size * 2);
-            } else {
-                this.size = (Math.random() * 1.2 + 0.2) / this.z;
-                this.color = Math.random() > 0.5 ? 'rgba(0, 243, 255, ' : 'rgba(255, 255, 255, '; // Puntos Cyan o Blancos
-            }
-
-            this.baseAlpha = Math.random() * 0.7 + 0.1;
+            this.baseAlpha = Math.random() * 0.5 + 0.1;
             this.alpha = this.baseAlpha;
-            this.twinkleSpeed = Math.random() * 0.005 + 0.001;
-            this.speedX = -(0.08 / this.z); // Paneo
+            this.twinkleSpeed = Math.random() * 0.003 + 0.001;
+            this.speedX = -(activePreset.speed_multiplier / this.z);
         }
         update() {
             this.x += this.speedX;
-            this.alpha = this.baseAlpha + Math.sin(Date.now() * this.twinkleSpeed) * 0.3;
-            if (this.x < -20) {
-                this.x = width + 20;
+            this.alpha = this.baseAlpha + Math.sin(Date.now() * this.twinkleSpeed) * 0.2;
+            if (this.x < -10) {
+                this.x = width + 10;
                 this.y = Math.random() * height;
             }
         }
         draw() {
-            const currentAlpha = Math.max(0, Math.min(1, this.alpha));
-            if (this.isBokeh) {
-                ctx.globalAlpha = currentAlpha * 0.6;
-                ctx.drawImage(this.texture, this.x - this.texture.width/2, this.y - this.texture.height/2);
-            } else {
-                ctx.globalAlpha = 1;
-                ctx.fillStyle = this.color + currentAlpha + ')';
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
-            }
+            // Lógica reactiva matemática aislada
+            const reactiveAlpha = Math.max(0, Math.min(1, this.alpha + (AudioState.bass * activePreset.reactivity.bass_particle_glow)));
+            ctx.globalAlpha = reactiveAlpha;
+            ctx.fillStyle = this.color + reactiveAlpha + ')';
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fill();
         }
     }
 
-    class Nebula {
+    class GasCloud {
         constructor(x, y, radius, colorC, colorE) {
             this.x = x; this.y = y; this.baseRadius = radius;
             this.texture = createNebulaTexture(colorC, colorE, radius);
             this.angle = Math.random() * Math.PI * 2;
-            this.rotSpeed = (Math.random() - 0.5) * 0.0005;
+            this.rotSpeed = (Math.random() - 0.5) * 0.0003;
         }
         update() { this.angle += this.rotSpeed; }
         draw() {
-            const currentRadius = this.baseRadius + (AudioState.bass * 60);
+            const reactiveAlpha = 0.4 + (AudioState.bass * activePreset.reactivity.bass_gas_opacity);
             ctx.save();
             ctx.translate(this.x, this.y);
             ctx.rotate(this.angle);
             ctx.globalCompositeOperation = 'screen';
-            ctx.globalAlpha = 0.6 + (AudioState.bass * 0.3);
-            ctx.scale(1, 0.7);
-            ctx.drawImage(this.texture, -currentRadius, -currentRadius, currentRadius * 2, currentRadius * 2);
+            ctx.globalAlpha = reactiveAlpha;
+            ctx.scale(1, 0.6);
+            ctx.drawImage(this.texture, -this.baseRadius, -this.baseRadius, this.baseRadius * 2, this.baseRadius * 2);
             ctx.restore();
         }
     }
 
-    const buildThemeDeepTech = () => {
+    // --- CORE DEL MOTOR ---
+    const buildScene = () => {
         stars = []; nebulas = [];
-        for (let i = 0; i < 180; i++) stars.push(new Star());
 
-        // Paleta extraída de las gafas y casaca de tu foto de perfil
-        nebulas = [
-            new Nebula(width * 0.2, height * 0.3, 300, 'rgba(0, 243, 255, 0.12)', 'rgba(0, 100, 200, 0.03)'),   // Cyan Eléctrico
-            new Nebula(width * 0.8, height * 0.6, 350, 'rgba(255, 0, 127, 0.10)', 'rgba(120, 0, 80, 0.03)'),    // Magenta Neón
-            new Nebula(width * 0.5, height * 0.8, 400, 'rgba(140, 0, 220, 0.12)', 'rgba(40, 0, 80, 0.04)'),     // Violeta Profundo
-            new Nebula(width * 0.9, height * 0.2, 200, 'rgba(0, 200, 255, 0.08)', 'rgba(0, 50, 100, 0.02)')     // Acento Cyan secundario
-        ];
+        // El motor lee la variable maestra que definimos en app.js
+        const themeName = (currentConfig && currentConfig.mobile_theme) ? currentConfig.mobile_theme : 'deep_tech_minimal';
+        activePreset = VISUAL_PRESETS[themeName] || VISUAL_PRESETS['deep_tech_minimal'];
+
+        for (let i = 0; i < activePreset.particles_count; i++) stars.push(new Particle());
+
+        if (activePreset.gas_enabled) {
+            const gC = activePreset.gas_colors;
+            nebulas = [
+                new GasCloud(width * 0.3, height * 0.4, 300, gC[0][0], gC[0][1]),
+                new GasCloud(width * 0.7, height * 0.7, 400, gC[1][0], gC[1][1]),
+                new GasCloud(width * 0.8, height * 0.2, 250, gC[0][0], gC[0][1])
+            ];
+        }
     };
 
     const loop = () => {
         if (!isRunning || !isVisible) return;
         simulateAudio();
 
-        // 1. Fondo base (Oscuro y sólido para anular el Lens)
+        // 1. Fondo base (Dictado por el preset)
         ctx.globalCompositeOperation = 'source-over';
         ctx.globalAlpha = 1;
-        ctx.fillStyle = '#05040a'; // Tono ultra oscuro que resalta el neón
+        ctx.fillStyle = activePreset.bg_color;
         ctx.fillRect(0, 0, width, height);
 
-        // 2. Gas y Estrellas
+        // 2. Render de Entidades
         nebulas.forEach(n => { n.update(); n.draw(); });
         ctx.globalCompositeOperation = 'screen';
         stars.forEach(s => { s.update(); s.draw(); });
 
-        // 3. LA FUSIÓN (El parche para la línea naranja)
-        // Dibuja un gradiente exacto al color del fondo de tu web en la base del canvas
+        // 3. LA FUSIÓN INVISIBLE (Parche Anti-Sangrado Naranja)
         const grad = ctx.createLinearGradient(0, height - 90, 0, height);
         grad.addColorStop(0, 'rgba(18, 18, 18, 0)');
-        grad.addColorStop(1, '#121212'); // El --dark-bg de tu CSS
-
+        grad.addColorStop(1, '#121212');
         ctx.globalCompositeOperation = 'source-over';
         ctx.globalAlpha = 1;
         ctx.fillStyle = grad;
-        // Dibujamos un poco más abajo (+2px) para matar cualquier línea de subpíxel
         ctx.fillRect(0, height - 90, width, 92);
 
         animationId = requestAnimationFrame(loop);
@@ -173,83 +155,5 @@ const PortadaVisualEngine = (() => {
         height = rect.height;
         canvas.width = width;
         canvas.height = height;
-        if (isRunning) buildThemeDeepTech();
+        if (isRunning) buildScene(); // Llama a la nueva función agnóstica
     };
-
-    const start = () => {
-        if (isRunning) return;
-        const banner = document.querySelector('.profile-banner');
-        if (!banner) return;
-
-        // TÁCTICA ANTI-SANGRADO: Ocultamos temporalmente la imagen de las palmeras
-        banner.dataset.originalBg = banner.style.backgroundImage;
-        banner.style.backgroundImage = 'none';
-
-        canvas = document.createElement('canvas');
-        canvas.id = 'v-cosmic-canvas';
-        Object.assign(canvas.style, {
-            position: 'absolute',
-            top: 0, left: 0,
-            width: '100%', height: '100%',
-            pointerEvents: 'none',
-            zIndex: 0,
-            backgroundColor: '#05040a', // Muro sólido impenetrable
-            // Aumentamos contraste para que tu filtro soft-light no mate los colores
-            filter: 'contrast(1.3) brightness(1.1) saturate(1.2)'
-        });
-
-        banner.insertBefore(canvas, banner.firstChild);
-        ctx = canvas.getContext('2d');
-
-        handleResize();
-        window.addEventListener('resize', handleResize);
-
-        isRunning = true;
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                isVisible = entry.isIntersecting;
-                if (isVisible && isRunning) loop();
-                else cancelAnimationFrame(animationId);
-            });
-        });
-        observer.observe(banner);
-    };
-
-    const stopAndDestroy = () => {
-        isRunning = false;
-        isVisible = false;
-        cancelAnimationFrame(animationId);
-        window.removeEventListener('resize', handleResize);
-
-        const banner = document.querySelector('.profile-banner');
-        if (canvas && canvas.parentElement) {
-            canvas.parentElement.removeChild(canvas);
-        }
-        canvas = null;
-
-        // Restauramos tu imagen de atardecer original si volvemos a PC
-        if (banner && banner.dataset.originalBg) {
-            banner.style.backgroundImage = banner.dataset.originalBg;
-        }
-    };
-
-    const evaluateEnvironment = () => {
-        if (!currentConfig || !currentConfig.master_switch) {
-            stopAndDestroy();
-            return;
-        }
-        const isMobile = window.matchMedia('(max-width: 768px)').matches;
-        if (isMobile && currentConfig.enable_mobile) start();
-        else if (!isMobile && currentConfig.enable_desktop) start();
-        else stopAndDestroy();
-    };
-
-    return {
-        init: (configObj) => {
-            currentConfig = configObj;
-            evaluateEnvironment();
-            window.matchMedia('(max-width: 768px)').addEventListener('change', evaluateEnvironment);
-        }
-    };
-})();
