@@ -2119,21 +2119,5 @@ img,
     }
 }
 
-/* ==========================================================================
-   VLOITZ UI UX FIX: Safe Scrolling Zones (Móvil)
-   ========================================================================== */
-@media (max-width: 768px) {
-    .tracklist-wrapper {
-        width: 85% !important;
-        /* La Zona Verde (Táctil) para navegar la lista */
-        margin: 0 auto !important;
-        /* Centra el bloque. El espacio a los lados es la Zona Roja (Scroll Global) */
-    }
-
-    /* Pequeño ajuste para que el texto largo no se desborde al reducir el ancho */
-    .track-item {
-        padding: 12px 10px;
-    }
-}
 
 /* --- FIN DEL ARCHIVO --- */
