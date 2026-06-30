@@ -2225,4 +2225,30 @@ span#totalDuration {
     transform: translate(4.5px, 0px);
 }
 
+/* ==========================================================================
+   VLOITZ UI UX FIX: Simetría Absoluta en Player Controls (Patrón Grid)
+   ========================================================================== */
+.player-controls {
+    /* Pasamos de Flex a Grid para control absoluto y simétrico */
+    display: grid !important;
+    grid-template-columns: 1fr auto 1fr !important;
+    align-items: center;
+    width: 100%;
+}
+
+.controls-center-group {
+    /* Obligamos a la botonera a adueñarse de la columna central matemática */
+    grid-column: 2;
+    /* Su distribución interna (Flex y gap) queda intacta */
+}
+
+.player-controls>div:last-child {
+    /* Mandamos el bloque del tiempo a la última columna de la derecha */
+    grid-column: 3;
+    justify-self: end;
+    /* Lo anclamos al extremo derecho */
+    margin-left: 0 !important;
+    /* Neutralizamos el 'margin-left: auto' de tu HTML */
+}
+
 /* --- FIN DEL ARCHIVO --- */
