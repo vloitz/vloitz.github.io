@@ -2028,18 +2028,32 @@ body {
     top: 30%;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.85);
-    color: #1DB954;
-    padding: 20px;
-    border-radius: 15px;
-    font-family: 'Roboto Mono', monospace, sans-serif;
-    font-size: 32px;
-    font-weight: bold;
+    background: rgba(18, 18, 18, 0.7);
+    /* Fondo oscuro semitransparente (Glassmorphism) */
+    backdrop-filter: blur(10px);
+    /* Efecto de cristal esmerilado nativo */
+    -webkit-backdrop-filter: blur(10px);
+    color: #ffffff;
+    /* Texto blanco puro y limpio */
+    padding: 12px 24px;
+    /* Más ancho que alto para darle forma de píldora */
+    border-radius: 30px;
+    /* Bordes totalmente redondeados */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    /* Tipografía nativa más limpia */
+    font-size: 22px;
+    /* Tamaño menos agresivo */
+    font-weight: 600;
+    /* Semi-bold para legibilidad */
+    letter-spacing: 1px;
+    /* Un poco de aire entre números */
     display: none;
     z-index: 999999;
-    border: 2px solid #1DB954;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    /* Borde súper sutil casi invisible */
     pointer-events: none;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    /* Sombra elegante */
 }
 
 #vloitz-ghost-pointer {
