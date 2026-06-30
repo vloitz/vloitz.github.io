@@ -374,19 +374,24 @@ const PortadaVisualEngine = (() => {
 
         banner.insertBefore(canvas, banner.firstChild);
 
+        // 1. Consultamos al DOM el valor real de la variable CSS
+        const computedStyles = getComputedStyle(document.documentElement);
+        // 2. Extraemos el color exacto (con un cinturón de seguridad a negro puro por si la variable es borrada en un futuro)
+        const cssBaseColor = computedStyles.getPropertyValue('--dark-bg').trim() || '#000000';
+
         const gradient = document.createElement('div');
         gradient.id = 'vloitz-webgl-gradient';
         Object.assign(gradient.style, {
             position: 'absolute',
-            bottom: 0,
+            bottom: -1,
             left: 0,
             width: '100%',
-            height: '95px',
-            background: 'linear-gradient(to bottom, rgba(18,18,18,0) 0%, #121212 100%)',
+            height: '140px',
+            // 3. Inyectamos la variable de JS directamente en el string CSS
+            background: `linear-gradient(to bottom, transparent 0%, ${cssBaseColor} 100%)`,
             pointerEvents: 'none',
             zIndex: 1
         });
-        banner.appendChild(gradient);
 
         gl = canvas.getContext('webgl', {
             alpha: false
