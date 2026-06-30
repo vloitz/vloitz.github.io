@@ -1,7 +1,7 @@
 /**
- * VLOITZ PORTADA VISUAL ENGINE (V6.3 - THE TRUE CHAOS & SPAWN FIX)
+ * VLOITZ PORTADA VISUAL ENGINE (V6.4 - THE FINAL GOLDEN MASTER)
  * Arquitectura WebGL pura.
- * FIX: Partículas visibles desde el segundo 0 y caos orgánico individual (Adiós a los arcos matemáticos).
+ * FIX: Salvavidas de dimensiones para evitar el "Efecto Algodón" al recargar.
  */
 
 const PortadaVisualEngine = (() => {
@@ -63,23 +63,28 @@ const PortadaVisualEngine = (() => {
     // ========================================================================
     class Particle {
         constructor() {
-            this.seed = Math.random() * 1000; // FIX: Semilla única para caos individual (Adiós a los arcos)
+            this.seed = Math.random() * 1000;
             this.reset(true);
         }
 
         reset(isInit = false) {
+            // FIX: Salvavidas de dimensiones. Si el CSS aún no pinta el alto/ancho al milisegundo de cargar,
+            // forzamos dimensiones seguras para evitar que nazcan todas en el pixel 0,0 (El Efecto Algodón).
+            const sw = width > 10 ? width : (window.innerWidth || 400);
+            const sh = height > 10 ? height : 245; // 245px es la altura real de tu .profile-banner en CSS
+
             if (!isInit && isMusicPlaying) {
                 if (Math.random() > 0.5) {
-                    this.x = Math.random() > 0.5 ? -10 : width + 10;
-                    this.y = Math.random() * height;
+                    this.x = Math.random() > 0.5 ? -10 : sw + 10;
+                    this.y = Math.random() * sh;
                 } else {
-                    this.x = Math.random() * width;
+                    this.x = Math.random() * sw;
                     this.y = -10;
                 }
             } else {
-                // Al cargar la página (isInit = true), llenan la pantalla entera
-                this.x = Math.random() * width;
-                this.y = Math.random() * height;
+                // Al cargar la página (isInit = true), llenan la pantalla entera basándose en el salvavidas
+                this.x = Math.random() * sw;
+                this.y = Math.random() * sh;
             }
 
             this.z = Math.random() * 3 + 1;
@@ -107,24 +112,19 @@ const PortadaVisualEngine = (() => {
                 const dy = targetY - this.y;
                 const dist = Math.sqrt(dx * dx + dy * dy);
 
-                // Si son absorbidas, renacen
                 if (dist < 40) {
                     this.reset();
                     return;
                 }
 
-                // Fuerza de gravedad acelerada
                 const pull = (CONFIG.gravity_pull * (1.0 + AudioState.bass * 2.5)) / Math.max(dist, 10.0);
 
-                // Vectores tangenciales para el giro del Vórtice
                 const tx = -dy;
                 const ty = dx;
 
-                // FIX: Turbulencia individualizada sumando "this.seed"
                 const turbX = Math.sin(this.y * 0.02 + Date.now() * 0.002 + this.seed) * 0.8;
                 const turbY = Math.cos(this.x * 0.02 + Date.now() * 0.002 + this.seed) * 0.8;
 
-                // Combinamos Gravedad + Giro + Turbulencia Caótica
                 this.vx += (dx * pull) + (tx / dist * CONFIG.vortex_strength * pull) + turbX;
                 this.vy += (dy * pull) + (ty / dist * CONFIG.vortex_strength * pull) + turbY;
 
@@ -132,16 +132,17 @@ const PortadaVisualEngine = (() => {
                 // MODO PAUSA: Suspensión Cinemática
                 const timeStr = Date.now() * 0.0005;
 
-                // Turbulencia individual (this.seed evita que se agrupen)
                 this.vx += Math.sin(this.y * 0.01 + timeStr + this.seed) * 0.05;
                 this.vy += Math.cos(this.x * 0.01 + timeStr + this.seed) * 0.05;
 
-                // CAMPOS DE REPULSIÓN (Caja de cristal)
+                // CAMPOS DE REPULSIÓN (Caja de cristal segura usando anchos reales)
                 const margin = 40;
-                if (this.x < margin) this.vx += 0.015;
-                if (this.x > width - margin) this.vx -= 0.015;
-                if (this.y < margin) this.vy += 0.015;
-                if (this.y > height - margin) this.vy -= 0.015;
+                if (width > 0 && height > 0) {
+                    if (this.x < margin) this.vx += 0.015;
+                    if (this.x > width - margin) this.vx -= 0.015;
+                    if (this.y < margin) this.vy += 0.015;
+                    if (this.y > height - margin) this.vy -= 0.015;
+                }
             }
 
             this.vx *= CONFIG.friction;
@@ -152,12 +153,15 @@ const PortadaVisualEngine = (() => {
 
             // SISTEMA DE RECICLAJE INFINITO
             if (!isMusicPlaying) {
-                // Efecto "Pac-Man" en pausa
-                if (this.x < -20) this.x = width + 20;
-                else if (this.x > width + 20) this.x = -20;
+                // Efecto "Pac-Man" en pausa usando límites dinámicos
+                const sw = width > 10 ? width : window.innerWidth;
+                const sh = height > 10 ? height : 245;
 
-                if (this.y < -20) this.y = height + 20;
-                else if (this.y > height + 20) this.y = -20;
+                if (this.x < -20) this.x = sw + 20;
+                else if (this.x > sw + 20) this.x = -20;
+
+                if (this.y < -20) this.y = sh + 20;
+                else if (this.y > sh + 20) this.y = -20;
             } else {
                 if (this.x < -50 || this.x > width + 50 || this.y < -50 || this.y > height + 50) {
                     this.reset();
@@ -386,9 +390,14 @@ const PortadaVisualEngine = (() => {
 
         gl = canvas.getContext('webgl', {
             alpha: false
+        }) || canvas.getContext('experimental-webgl', {
+            alpha: false
         });
+        if (!gl) {
+            console.error("WebGL no soportado.");
+            return;
+        }
 
-        // FIX CRÍTICO: Primero calculamos el ancho/alto de la pantalla, LUEGO inicializamos las partículas
         updateDimensions();
         initEngine();
 
