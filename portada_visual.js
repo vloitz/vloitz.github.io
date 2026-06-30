@@ -16,8 +16,9 @@ const PortadaVisualEngine = (() => {
     let nebulas = [];
     let currentConfig = null;
 
-    // 🔗 CABLES LISTOS PARA TU AUDIO EN EL FUTURO (0.0 a 1.0)
+   // 🔗 CABLES LISTOS PARA TU AUDIO EN EL FUTURO (0.0 a 1.0)
     const AudioState = { bass: 0, overall: 0 };
+    let isMusicPlaying = false; // <-- El interruptor real del reproductor
 
     function simulateAudio() {
         const time = Date.now() * 0.001;
@@ -44,10 +45,10 @@ const PortadaVisualEngine = (() => {
                 bass_particle_glow: 0.6      // Destello más notable
             },
             physics: {
-                gravity_center: { x: 0.5, y: 0.5 }, // Coordenada central (Tu foto)
-                gravity_pull: 0.08,          // Fuerza de succión hacia el agujero negro
-                smoke_friction: 0.94,        // Resistencia del humo denso
-                gas_breathing_speed: 0.0005  // Velocidad de la respiración orgánica de nebulosas
+                gravity_center: { x: 0.5, y: 0.45 }, // Un poco más arriba, justo donde está tu cara
+                gravity_pull: 2.5,                   // FUERZA MULTIPLICADA X30 (Succión real)
+                smoke_friction: 0.88,                // Fricción ajustada para que aceleren rápido y se frenen de golpe
+                gas_breathing_speed: 0.0005
             }
         }
     };
@@ -89,8 +90,8 @@ const PortadaVisualEngine = (() => {
             this.vy = 0;
         }
         update() {
-            // Si hay música (bass detectable), activamos la gravedad hacia tu foto
-            if (AudioState.bass > 0.01 && activePreset.physics) {
+           // Si el REPRODUCTOR está en PLAY, activamos el Agujero Negro
+            if (isMusicPlaying && activePreset.physics) {
                 const targetX = width * activePreset.physics.gravity_center.x;
                 const targetY = height * activePreset.physics.gravity_center.y;
 
@@ -98,18 +99,18 @@ const PortadaVisualEngine = (() => {
                 const dy = targetY - this.y;
                 const dist = Math.sqrt(dx * dx + dy * dy);
 
-                // Si la partícula toca el agujero negro (tu foto), es absorbida y nace otra
-                if (dist < 30) {
-                    this.reset();
+                // ¡TU PROPUESTA!: Si la partícula llega a la foto (Agujero negro), desaparece y nace de la nada
+                if (dist < 40) {
+                    this.reset(true); // Renace aleatoriamente en el espacio
                     return;
                 }
 
-                // Vector de atracción matemática pura
-                const pull = (activePreset.physics.gravity_pull * AudioState.bass) / this.z;
+                // Atracción innegable
+                const pull = (activePreset.physics.gravity_pull) / this.z;
                 this.vx += (dx / dist) * pull;
                 this.vy += (dy / dist) * pull;
 
-                // Fricción de humo denso (suaviza la velocidad para que no sean balas)
+                // Fricción de humo denso
                 this.vx *= activePreset.physics.smoke_friction;
                 this.vy *= activePreset.physics.smoke_friction;
 
@@ -302,11 +303,15 @@ const PortadaVisualEngine = (() => {
         else stopAndDestroy();
     };
 
-    return {
+   return {
         init: (configObj) => {
             currentConfig = configObj;
             evaluateEnvironment();
             window.matchMedia('(max-width: 768px)').addEventListener('change', evaluateEnvironment);
+        },
+        // EL ENCHUFE PARA TU app.js
+        setPlayState: (isPlaying) => {
+            isMusicPlaying = isPlaying;
         }
     };
 })();
