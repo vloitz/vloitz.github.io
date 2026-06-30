@@ -44,11 +44,11 @@ const PortadaVisualEngine = (() => {
     // 🎛️ CONFIGURACIÓN MAESTRA (Fácil de ajustar)
     // ========================================================================
     const CONFIG = {
-        particles_count: 300, // Densidad segura
+        particles_count: 350, // Densidad segura
         particle_size: 3.5, // TAMAÑO AUMENTADO PARA QUE SE VEAN CLARAMENTE
         speed: 0.02, // Velocidad de flotación
-        gravity_pull: 0.8, // Fuerza hacia el centro
-        friction: 0.92, // Viscosidad del humo
+        gravity_pull: 18.0, // Fuerza gravitacional potenciada (Cae más rápido)
+        friction: 0.93, // Fricción alta para inercia fluida al pausar
         colors: [
             [255, 255, 255], // Blanco
             [100, 200, 255], // Celeste
@@ -96,43 +96,44 @@ const PortadaVisualEngine = (() => {
 
         update() {
             if (isMusicPlaying) {
-                // El centro gravitacional es tu foto (Abajo al centro)
                 const targetX = width * 0.5;
-                const targetY = height * 1.0; // Borde inferior exacto
+                const targetY = height * 1.0;
 
                 const dx = targetX - this.x;
                 const dy = targetY - this.y;
                 const dist = Math.sqrt(dx * dx + dy * dy);
 
-                // Si entran a la foto, renacen
-                if (dist < 50) {
+                if (dist < 40) {
                     this.reset();
                     return;
                 }
 
-                // Atracción gravitacional
-                const pull = (CONFIG.gravity_pull * (1.0 + AudioState.bass * 2.0)) / dist;
+                // Atracción gravitacional (Inversamente proporcional a la distancia)
+                const pull = (CONFIG.gravity_pull * (1.0 + AudioState.bass * 2.5)) / Math.max(dist, 10.0);
 
-                // Turbulencia para que no vayan en línea recta
-                const turbX = Math.sin(this.y * 0.02 + Date.now() * 0.001) * 0.2;
+                // Turbulencia intensa para simular humo caótico
+                const turbX = Math.sin(this.y * 0.02 + Date.now() * 0.002) * 0.6;
+                const turbY = Math.cos(this.x * 0.02 + Date.now() * 0.002) * 0.2;
 
                 this.vx += (dx * pull) + turbX;
-                this.vy += (dy * pull);
+                this.vy += (dy * pull) + turbY;
 
-                // Fricción (Humo)
-                this.vx *= CONFIG.friction;
-                this.vy *= CONFIG.friction;
             } else {
-                // Flotación inerte
-                this.vx = Math.sin(Date.now() * this.twinkle + this.y * 0.01) * 0.2;
-                this.vy = -0.5; // Suben lentamente
+                // Modo Pausa (Cinemático): Conservan su inercia anterior y derivan como polvo orgánico
+                const timeStr = Date.now() * 0.0005;
+                this.vx += Math.sin(this.y * 0.01 + timeStr) * 0.06;
+                this.vy += Math.cos(this.x * 0.01 + timeStr) * 0.06;
+                // Eliminamos la subida forzada. Ahora la fricción hará el trabajo de frenarlas.
             }
+
+            // FRICCIÓN CONSTANTE (Aplica a ambos estados para un frenado suave al pausar)
+            this.vx *= CONFIG.friction;
+            this.vy *= CONFIG.friction;
 
             this.x += this.vx;
             this.y += this.vy;
 
-            // Reciclaje si escapan
-            if (this.x < -20 || this.x > width + 20 || this.y < -20 || this.y > height + 20) {
+            if (this.x < -30 || this.x > width + 30 || this.y < -30 || this.y > height + 30) {
                 this.reset();
             }
         }
@@ -155,34 +156,35 @@ const PortadaVisualEngine = (() => {
                 vec2 i = floor(p); vec2 f = fract(p);
                 vec2 u = f*f*(3.0-2.0*f);
                 return mix(mix(hash(i), hash(i + vec2(1.0,0.0)), u.x),
-                           mix(hash(i + vec2(0.0,1.0)), hash(i + vec2(1.0,1.0)), u.x), u.y);
+                mix(hash(i + vec2(0.0,1.0)), hash(i + vec2(1.0,1.0)), u.x), u.y);
             }
             float fbm(vec2 p) {
                 float v = 0.0; float a = 0.5;
-                for (int i=0; i<3; i++) { v+=a*noise(p); p*=2.0; a*=0.5; }
+                for (int i=0; i<4; i++) { v+=a*noise(p); p*=2.0; a*=0.5; }
                 return v;
             }
 
             void main() {
                 vec2 uv = gl_FragCoord.xy / u_resolution;
 
-                // Movimiento del humo
-                vec2 pos = uv * 3.0 + vec2(u_time * 0.02, u_time * 0.05);
+                // Movimiento del humo (Más detalle con 4 octavas de ruido)
+                vec2 pos = uv * 2.0 + vec2(u_time * 0.03, u_time * 0.05);
                 float smoke = fbm(pos);
 
-                // Color base ultra oscuro
-                vec3 color = vec3(0.02, 0.01, 0.04);
+                // Color base (Abismo un poco más cálido)
+                vec3 color = vec3(0.03, 0.02, 0.05);
 
-                // Color de la nebulosa claramente visible
-                vec3 nebula = vec3(0.25, 0.10, 0.50);
+                // Color del gas (Violeta eléctrico y brillante para que resalte)
+                vec3 nebula = vec3(0.45, 0.15, 0.80);
 
-                // El humo se ilumina con el bajo
-                float intensity = smoke * (0.3 + u_bass * 1.5);
+                // Máscara: Centro inferior (0.5, 0.0 en WebGL)
+                float distCenter = length(uv - vec2(0.5, 0.0));
+                float mask = smoothstep(1.5, 0.1, distCenter); // Expansión masiva en la pantalla
 
-                // Sombra en los bordes superiores, brillo en el centro inferior
-                float mask = 1.0 - length(uv - vec2(0.5, 0.0)); // 0.0 es el fondo en WebGL
+                // Intensidad: Base alta + reactividad al bajo
+                float intensity = smoke * mask * (0.6 + u_bass * 1.5);
 
-                color = mix(color, nebula, intensity * mask);
+                color = mix(color, nebula, intensity);
                 gl_FragColor = vec4(color, 1.0);
             }
         `,
