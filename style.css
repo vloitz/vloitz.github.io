@@ -2064,15 +2064,27 @@ body {
    VLOITZ UI UX FIX: Bloqueo del menú nativo en móviles ("Descargar Imagen")
    ========================================================================== */
 .player-card,
-.player-card img,
-.player-details img,
 #waveform,
 .waveform-container {
     -webkit-touch-callout: none !important;
-    /* Bloquea el popup en iOS/Chrome */
     -webkit-user-select: none !important;
-    /* Bloquea la selección de texto */
     user-select: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+    /* Elimina el parpadeo azul/gris nativo de Android al tocar */
+}
+
+/* EL CANDADO DEFINITIVO PARA IMÁGENES (Anti-Descarga Android/iOS) */
+img,
+.player-card img,
+.player-details img {
+    -webkit-user-drag: none !important;
+    /* PC: Bloquea el arrastre de la imagen */
+    -webkit-touch-callout: none !important;
+    /* iOS: Bloquea el menú contextual */
+    -webkit-user-select: none !important;
+    user-select: none !important;
+    pointer-events: none !important;
+    /* ANDROID CHROME: El toque traspasa la imagen, anulando la descarga */
 }
 
 @media (max-width: 768px) {
