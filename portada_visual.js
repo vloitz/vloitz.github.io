@@ -43,11 +43,12 @@ const PortadaVisualEngine = (() => {
                 bass_gas_opacity: 0.4,       // Latido más notable
                 bass_particle_glow: 0.6      // Destello más notable
             },
-            // --- FÍSICA VLOITZ: Gravedad y Humo Rave ---
-            gravity_center: { x: 0.5, y: 0.5 }, // Centro exacto (foto de perfil)
-            gravity_pull: 0.08,                 // Fuerza de succión hacia el centro con el bass
-            smoke_friction: 0.95,               // Fricción densa (suaviza el tirón)
-            gas_breathing_speed: 0.0004         // Velocidad de respiración orgánica
+            physics: {
+                gravity_center: { x: 0.5, y: 0.5 }, // Coordenada central (Tu foto)
+                gravity_pull: 0.08,          // Fuerza de succión hacia el agujero negro
+                smoke_friction: 0.94,        // Resistencia del humo denso
+                gas_breathing_speed: 0.0005  // Velocidad de la respiración orgánica de nebulosas
+            }
         }
     };
 
@@ -82,24 +83,48 @@ const PortadaVisualEngine = (() => {
             this.alpha = this.baseAlpha;
             this.twinkleSpeed = Math.random() * 0.003 + 0.001;
             this.speedX = -(activePreset.speed_multiplier / this.z);
+
+            // Vectores 2D inyectados para el modo gravedad/humo
+            this.vx = this.speedX;
+            this.vy = 0;
         }
         update() {
-            this.x += this.speedX;
+            // Si hay música (bass detectable), activamos la gravedad hacia tu foto
+            if (AudioState.bass > 0.01 && activePreset.physics) {
+                const targetX = width * activePreset.physics.gravity_center.x;
+                const targetY = height * activePreset.physics.gravity_center.y;
 
-            // --- INYECCIÓN VLOITZ: Física de Gravedad y Humo Rave ---
-            if (activePreset.gravity_pull && AudioState.bass > 0) {
-                const centerX = width * activePreset.gravity_center.x;
-                const centerY = height * activePreset.gravity_center.y;
-                const dx = centerX - this.x;
-                const dy = centerY - this.y;
+                const dx = targetX - this.x;
+                const dy = targetY - this.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
 
-                // Las partículas son atraídas al centro (agujero negro) con fricción de humo
-                this.x += dx * activePreset.gravity_pull * AudioState.bass * activePreset.smoke_friction;
-                this.y += dy * activePreset.gravity_pull * AudioState.bass * activePreset.smoke_friction;
+                // Si la partícula toca el agujero negro (tu foto), es absorbida y nace otra
+                if (dist < 30) {
+                    this.reset();
+                    return;
+                }
+
+                // Vector de atracción matemática pura
+                const pull = (activePreset.physics.gravity_pull * AudioState.bass) / this.z;
+                this.vx += (dx / dist) * pull;
+                this.vy += (dy / dist) * pull;
+
+                // Fricción de humo denso (suaviza la velocidad para que no sean balas)
+                this.vx *= activePreset.physics.smoke_friction;
+                this.vy *= activePreset.physics.smoke_friction;
+
+                this.x += this.vx;
+                this.y += this.vy;
+            } else {
+                // Modo reposo: Movimiento cinemático normal estático
+                this.vx = this.speedX;
+                this.vy = 0;
+                this.x += this.speedX;
             }
-            // --------------------------------------------------------
 
             this.alpha = this.baseAlpha + Math.sin(Date.now() * this.twinkleSpeed) * 0.15;
+
+            // Reaparición si sale de la pantalla (modo normal)
             if (this.x < -10) {
                 this.x = width + 10;
                 this.y = Math.random() * height;
@@ -124,21 +149,19 @@ const PortadaVisualEngine = (() => {
         }
         update() { this.angle += this.rotSpeed; }
         draw() {
-            // --- INYECCIÓN VLOITZ: Respiración Orgánica ---
-            const breathing = activePreset.gas_breathing_speed ? Math.sin(Date.now() * activePreset.gas_breathing_speed) : 0;
-            const reactiveAlpha = Math.max(0, Math.min(1, 0.5 + (AudioState.bass * activePreset.reactivity.bass_gas_opacity) + (breathing * 0.15)));
+            // Respiración orgánica temporal (Pulso de nebulosa)
+            const breathing = activePreset.physics ? Math.sin(Date.now() * activePreset.physics.gas_breathing_speed) : 0;
+            const organicAlpha = 0.5 + (breathing * 0.15); // Cambio sutil de opacidad
+
+            const reactiveAlpha = Math.max(0, Math.min(1, organicAlpha + (AudioState.bass * activePreset.reactivity.bass_gas_opacity)));
+            const scalePulse = activePreset.physics ? 1 + (breathing * 0.05) : 1; // Expansión física lenta del humo
 
             ctx.save();
             ctx.translate(this.x, this.y);
             ctx.rotate(this.angle);
             ctx.globalCompositeOperation = 'screen';
             ctx.globalAlpha = reactiveAlpha;
-
-            // Efecto 3D pulsante (Humo vivo expandiéndose)
-            const breathScale = 1 + (breathing * 0.08);
-            ctx.scale(breathScale, 0.55 * breathScale);
-            // ----------------------------------------------
-
+            ctx.scale(scalePulse, 0.55 * scalePulse);
             ctx.drawImage(this.texture, -this.baseRadius, -this.baseRadius, this.baseRadius * 2, this.baseRadius * 2);
             ctx.restore();
         }
