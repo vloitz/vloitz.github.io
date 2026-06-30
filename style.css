@@ -2119,7 +2119,6 @@ img,
     }
 }
 
-
 /* ==========================================================================
    VLOITZ UI UX FIX: Touch Shields Avanzados (Safe Scrolling Zones)
    ========================================================================== */
@@ -2129,6 +2128,12 @@ img,
     .current-tracklist-container,
     .tracklist-container {
         position: relative;
+    }
+
+    /* 1.5. FIX: Aislamiento del scroll interno para evitar que la inercia secuestre el táctil global */
+    .current-tracklist,
+    .tracklist {
+        overscroll-behavior: contain;
     }
 
     /* 2. ESCUDOS PARA "Tracklist del Set" (Favoritos)
