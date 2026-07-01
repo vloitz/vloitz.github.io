@@ -16,7 +16,7 @@
     <link rel="preconnect" href="https://pub-1bd5ca00f737488cae44be74016d8499.r2.dev">
     <link rel="preconnect" href="https://unpkg.com">
 
-    <link rel="stylesheet" href="style.css?v=3.0">
+    <link rel="stylesheet" href="style.css?v=3.1">
 
 
     <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
@@ -387,7 +387,7 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest" defer></script>
     <script src="portada_visual.js"></script>
-    <script src="app.js?v=4.6"></script>
+    <script src="app.js?v=4.7"></script>
     <script src="calibradores.js"></script>
 
     <div id="storyOverlay">
@@ -567,16 +567,38 @@
                 // Aplicar armadura tras inyectar el tema
                 aplicarArmadura();
 
+                // 💾 MEMORIA: Guardar el tema actual para no repetirlo
+                localStorage.setItem('vloitz_last_theme', index);
+
             }
 
             if (CONFIG.MODO_ACTUAL === 'FIJO') {
                 inyectarTema(CONFIG.TEMA_FIJO);
             } else if (CONFIG.MODO_ACTUAL === 'ALEATORIO_FAVORITOS') {
-                const randomFav = Math.floor(Math.random() * CONFIG.FAVORITOS.length);
-                inyectarTema(CONFIG.FAVORITOS[randomFav]);
+                // Obtenemos el último ID guardado
+                const ultimo = parseInt(localStorage.getItem('vloitz_last_theme'));
+
+                // Filtramos la lista de favoritos para excluir el último (si existe)
+                let candidatos = CONFIG.FAVORITOS.filter(id => id !== ultimo);
+
+                // Si por alguna razón (o porque solo tienes 1 favorito) la lista queda vacía, reseteamos a todos
+                if (candidatos.length === 0) candidatos = CONFIG.FAVORITOS;
+
+                // Elegimos aleatoriamente de los candidatos filtrados
+                const randomFav = Math.floor(Math.random() * candidatos.length);
+                inyectarTema(candidatos[randomFav]);
             } else {
-                const randomTotal = Math.floor(Math.random() * TEMPLATES.length);
-                inyectarTema(randomTotal);
+                // Memoria para el modo ALEATORIO_TOTAL
+                const ultimo = parseInt(localStorage.getItem('vloitz_last_theme'));
+                // Creamos un array con todos los IDs de los templates
+                let todos = TEMPLATES.map(t => t.id);
+                // Filtramos excluyendo el anterior
+                let candidatos = todos.filter(id => id !== ultimo);
+
+                if (candidatos.length === 0) candidatos = todos;
+
+                const randomTotal = Math.floor(Math.random() * candidatos.length);
+                inyectarTema(candidatos[randomTotal]);
             }
 
             // 👻 FUNCIÓN FANTASMA DEVTOOLS (DETALLADA)
