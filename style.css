@@ -196,6 +196,8 @@ html {
     overflow: hidden;
     position: relative;
     transition: background-color 0.8s ease;
+    /* EL ANCLAJE PERFECTO */
+    scroll-margin-top: 20px;
 }
 
 .player-cover-art {

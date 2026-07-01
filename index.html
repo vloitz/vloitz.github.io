@@ -624,7 +624,8 @@
                 if (!avatar || !target) return;
 
                 avatar.addEventListener('click', () => {
-                    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // Cambiado a 'start' para anclarse arriba (respetando el scroll-margin-top)
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
                     // Efecto visual de llegada
                     target.classList.add('player-arrival-effect');
@@ -632,16 +633,12 @@
                 });
             }
 
-            // Llamada al final de la carga (¡Importante!)
+            // Llamada al final de la carga
             initAvatarNavigation('.player-card');
 
 
         })();
     </script>
-</body>
-
-</html>
-
 </body>
 
 </html>
