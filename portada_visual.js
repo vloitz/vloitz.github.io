@@ -367,7 +367,7 @@ const PortadaVisualEngine = (() => {
             top: 0,
             left: 0,
             width: '100%',
-            height: '100%',
+            height: 'calc(100% + 2px)', // <-- LA MAGIA ANTI-FILTRACIONES
             pointerEvents: 'none',
             zIndex: 0
         });
