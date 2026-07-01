@@ -16,7 +16,7 @@
     <link rel="preconnect" href="https://pub-1bd5ca00f737488cae44be74016d8499.r2.dev">
     <link rel="preconnect" href="https://unpkg.com">
 
-    <link rel="stylesheet" href="style.css?v=2.8">
+    <link rel="stylesheet" href="style.css?v=3.0">
 
 
     <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
@@ -387,7 +387,7 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest" defer></script>
     <script src="portada_visual.js"></script>
-    <script src="app.js?v=4.4"></script>
+    <script src="app.js?v=4.6"></script>
     <script src="calibradores.js"></script>
 
     <div id="storyOverlay">
@@ -508,6 +508,18 @@
             // Solo actuar en móviles
             if (window.innerWidth > 768) return;
 
+            // --- ⚡ MÓDULO: ARMADURA NEÓN SENIOR ---
+            function aplicarArmadura() {
+                const img = document.querySelector('.profile-pic');
+                if (!img || img.parentElement.classList.contains('neon-marco-senior')) return;
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'neon-marco-senior';
+                img.parentNode.insertBefore(wrapper, img);
+                wrapper.appendChild(img);
+                console.log("✅ Armadura Neón Senior integrada.");
+            }
+
             // --- 🎛️ PANEL DE CONTROL VLOITZ ---
             const CONFIG = {
                 // MODOS: 'ALEATORIO_TOTAL', 'ALEATORIO_FAVORITOS', 'FIJO'
@@ -546,6 +558,10 @@
                 root.style.setProperty('--o-cta', tema.oC);
                 root.style.setProperty('--c-cta', tema.cC);
                 root.style.setProperty('--c-cta-shadow', tema.cC + '40');
+
+                // Aplicar armadura tras inyectar el tema
+                aplicarArmadura();
+
             }
 
             if (CONFIG.MODO_ACTUAL === 'FIJO') {
@@ -558,12 +574,20 @@
                 inyectarTema(randomTotal);
             }
 
-            // 👻 FUNCIÓN FANTASMA DEVTOOLS
+            // 👻 FUNCIÓN FANTASMA DEVTOOLS (DETALLADA)
             window.vTheme = function () {
                 let nextIdx = (indiceActual + 1) % TEMPLATES.length;
+
+                // Ejecutamos la inyección del tema
                 inyectarTema(nextIdx);
-                console.log(`%c🦎 [Vloitz Camaleón] Template ID: ${TEMPLATES[nextIdx].id} - ${TEMPLATES[nextIdx].nombre}`, "color: #1DB954; font-weight: bold; font-size: 14px;");
-                return "Cambiado al siguiente diseño...";
+
+                // Restauramos el log detallado que querías ver
+                console.log(`%c🦎 [Vloitz Camaleón]`, "color: #1DB954; font-weight: bold; font-size: 14px;");
+                console.log(`%c  ID: ${TEMPLATES[nextIdx].id}`, "color: #ffffff;");
+                console.log(`%c  Nombre: ${TEMPLATES[nextIdx].nombre}`, "color: #b3b3b3;");
+                console.log(`%c  Colores: House:${TEMPLATES[nextIdx].cH} | Deep:${TEMPLATES[nextIdx].cD} | Tech:${TEMPLATES[nextIdx].cT}`, "color: #b3b3b3; font-family: monospace;");
+
+                return "Configuración detallada aplicada.";
             };
         })();
     </script>

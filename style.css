@@ -2354,10 +2354,47 @@ a anclarse en el centro matemático absoluto de la pantalla móvil, aislando los
         opacity: var(--o-cta, 0.85);
         text-shadow: 0 0 8px var(--c-cta-shadow, rgba(29, 185, 84, 0.4));
     }
+
+    /* ==========================================================================
+    [ MÓDULO NEON-MARCO: ARO ADAPTATIVO V6 (SENIOR DESIGN) ]
+       ========================================================================== */
+    .neon-marco-senior {
+        position: relative;
+        display: inline-block;
+        padding: 3px;
+        border-radius: 50%;
+        /* El "Espejo Cromático": toma el color del tema activo */
+        background: linear-gradient(135deg, var(--c-house), var(--c-cta));
+        box-shadow: 0 0 15px var(--c-cta-shadow);
+        z-index: 10;
+        transition: all 0.5s ease;
+    }
+
+    /* El Buffer (Rosquilla oscura) que separa la luz de la foto */
+    .neon-marco-senior::before {
+        content: '';
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        right: 3px;
+        bottom: 3px;
+        border-radius: 50%;
+        background: var(--dark-bg);
+        z-index: -1;
+    }
+
+    .profile-pic {
+        display: block;
+        border-radius: 50%;
+        margin: 0 !important;
+    }
+
+
+
 }
 
 /* ==========================================================================
-   [ FIN: VLOITZ ELITE BIO ]
+[ FIN: VLOITZ ELITE BIO ]
    ========================================================================== */
 
 /* --- FIN DEL ARCHIVO --- */
