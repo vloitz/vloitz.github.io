@@ -510,6 +510,9 @@
 
             // --- ⚡ MÓDULO: ARMADURA NEÓN SENIOR ---
             function aplicarArmadura() {
+                // Validación del interruptor maestro
+                if (CONFIG.DISABLE_NEON) return;
+
                 const img = document.querySelector('.profile-pic');
                 if (!img || img.parentElement.classList.contains('neon-marco-senior')) return;
 
@@ -527,7 +530,9 @@
                 // Si el modo es 'ALEATORIO_FAVORITOS', elegirá entre estos IDs
                 FAVORITOS: [9, 2, 4, 6, 9],
                 // Si el modo es 'FIJO', cargará este ID exacto
-                TEMA_FIJO: 0
+                TEMA_FIJO: 0,
+
+                DISABLE_NEON: false
             };
 
             const TEMPLATES = [
