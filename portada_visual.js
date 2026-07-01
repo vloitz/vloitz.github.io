@@ -393,6 +393,8 @@ const PortadaVisualEngine = (() => {
             zIndex: 1
         });
 
+        banner.appendChild(gradient);
+
         gl = canvas.getContext('webgl', {
             alpha: false
         }) || canvas.getContext('experimental-webgl', {
