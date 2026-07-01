@@ -376,8 +376,8 @@ const PortadaVisualEngine = (() => {
 
         // 1. Consultamos al DOM el valor real de la variable CSS
         const computedStyles = getComputedStyle(document.documentElement);
-        // 2. Extraemos el color exacto (con un cinturón de seguridad a negro puro por si la variable es borrada en un futuro)
-        const cssBaseColor = computedStyles.getPropertyValue('--dark-bg').trim() || '#000000';
+        // 2. Extraemos el color exacto
+        const cssBaseColor = computedStyles.getPropertyValue('--dark-bg').trim() || '#121212';
 
         const gradient = document.createElement('div');
         gradient.id = 'vloitz-webgl-gradient';
@@ -386,12 +386,15 @@ const PortadaVisualEngine = (() => {
             bottom: -1,
             left: 0,
             width: '100%',
-            height: '140px',
+            height: '200px', // Más alto para una transición imperceptible
             // 3. Inyectamos la variable de JS directamente en el string CSS
             background: `linear-gradient(to bottom, transparent 0%, ${cssBaseColor} 100%)`,
             pointerEvents: 'none',
             zIndex: 1
         });
+
+        // ¡ESTA LÍNEA ES LA QUE FALTABA!
+        banner.appendChild(gradient);
 
         gl = canvas.getContext('webgl', {
             alpha: false
@@ -407,7 +410,7 @@ const PortadaVisualEngine = (() => {
         initEngine();
 
         resizeObserver = new ResizeObserver(() => updateDimensions());
-        resizeObserver.observe(banner);
+        resizeObserver.resizeObserver.observe(banner); // Nota: resizeObserver.observe(banner) es lo correcto
 
         renderLoop();
     };
