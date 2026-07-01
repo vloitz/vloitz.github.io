@@ -2393,22 +2393,25 @@ a anclarse en el centro matemático absoluto de la pantalla móvil, aislando los
     }
 
     /* --- 🎨 MÓDULO: FEEDBACK VISUAL DE NAVEGACIÓN (UI) --- */
-    /* Efecto de brillo sutil para indicar la llegada al reproductor */
+    /* Efecto de brillo blanco humo para indicar la llegada al reproductor */
     .player-arrival-effect {
         animation: glow-pulse 1.5s ease;
     }
 
     @keyframes glow-pulse {
+
+        /* 0% y 100% (Inicio y Fin): Transparente */
         0% {
-            box-shadow: 0 0 0px rgba(29, 185, 84, 0);
+            box-shadow: 0 0 0px rgba(245, 245, 245, 0);
         }
 
+        /* 50% (Punto máximo): Blanco humo (245,245,245) con 60% de opacidad */
         50% {
-            box-shadow: 0 0 20px rgba(29, 185, 84, 0.6);
+            box-shadow: 0 0 20px rgba(245, 245, 245, 0.6);
         }
 
         100% {
-            box-shadow: 0 0 0px rgba(29, 185, 84, 0);
+            box-shadow: 0 0 0px rgba(245, 245, 245, 0);
         }
     }
 
