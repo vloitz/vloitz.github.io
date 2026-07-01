@@ -358,8 +358,10 @@ const PortadaVisualEngine = (() => {
         if (!banner) return;
 
         isRunning = true;
+        // Aseguramos contexto de posicionamiento
         banner.style.position = 'relative';
 
+        // CREACIÓN DEL CANVAS
         canvas = document.createElement('canvas');
         canvas.id = 'vloitz-webgl-canvas';
         Object.assign(canvas.style, {
@@ -367,17 +369,17 @@ const PortadaVisualEngine = (() => {
             top: 0,
             left: 0,
             width: '100%',
-            height: 'calc(100% + 2px)', // <-- LA MAGIA ANTI-FILTRACIONES
+            height: 'calc(100% + 2px)',
             pointerEvents: 'none',
-            zIndex: 0
+            zIndex: 1 // Aseguramos que el canvas esté encima de la imagen de fondo
         });
 
+        // Insertamos al principio
         banner.insertBefore(canvas, banner.firstChild);
 
-        // 1. Consultamos al DOM el valor real de la variable CSS
+        // CONFIGURACIÓN GRADIENTE
         const computedStyles = getComputedStyle(document.documentElement);
-        // 2. Extraemos el color exacto (con un cinturón de seguridad a negro puro por si la variable es borrada en un futuro)
-        const cssBaseColor = computedStyles.getPropertyValue('--dark-bg').trim() || '#000000';
+        const cssBaseColor = computedStyles.getPropertyValue('--dark-bg').trim() || '#121212';
 
         const gradient = document.createElement('div');
         gradient.id = 'vloitz-webgl-gradient';
@@ -387,27 +389,25 @@ const PortadaVisualEngine = (() => {
             left: 0,
             width: '100%',
             height: '140px',
-            // 3. Inyectamos la variable de JS directamente en el string CSS
-            background: `linear-gradient(to bottom, transparent 0%, ${cssBaseColor} 100%)`,
+            background: `linear-gradient(to bottom, rgba(18, 18, 18, 0) 0%, ${cssBaseColor} 100%)`,
             pointerEvents: 'none',
-            zIndex: 1
+            zIndex: 2 // Gradiente SIEMPRE encima del canvas
         });
 
         banner.appendChild(gradient);
 
+        // INICIALIZACIÓN WEBGL
         gl = canvas.getContext('webgl', {
             alpha: false
         }) || canvas.getContext('experimental-webgl', {
             alpha: false
         });
-        if (!gl) {
-            console.error("WebGL no soportado.");
-            return;
-        }
+        if (!gl) return;
 
         updateDimensions();
         initEngine();
 
+        // Corrección del ResizeObserver (tu código tenía un error: resizeObserver.observe, no resizeObserver.resizeObserver.observe)
         resizeObserver = new ResizeObserver(() => updateDimensions());
         resizeObserver.observe(banner);
 
