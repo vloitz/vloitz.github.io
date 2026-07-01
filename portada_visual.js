@@ -358,56 +358,50 @@ const PortadaVisualEngine = (() => {
         if (!banner) return;
 
         isRunning = true;
-        // Aseguramos contexto de posicionamiento
         banner.style.position = 'relative';
 
-        // CREACIÓN DEL CANVAS
         canvas = document.createElement('canvas');
         canvas.id = 'vloitz-webgl-canvas';
         Object.assign(canvas.style, {
+            // FIX: Sobre-escalamos la altura 2px para aplastar la foto original y evitar fugas de sub-píxeles
             position: 'absolute',
             top: 0,
             left: 0,
             width: '100%',
             height: 'calc(100% + 2px)',
             pointerEvents: 'none',
-            zIndex: 1 // Aseguramos que el canvas esté encima de la imagen de fondo
+            zIndex: 0
         });
 
-        // Insertamos al principio
         banner.insertBefore(canvas, banner.firstChild);
-
-        // CONFIGURACIÓN GRADIENTE
-        const computedStyles = getComputedStyle(document.documentElement);
-        const cssBaseColor = computedStyles.getPropertyValue('--dark-bg').trim() || '#121212';
 
         const gradient = document.createElement('div');
         gradient.id = 'vloitz-webgl-gradient';
         Object.assign(gradient.style, {
             position: 'absolute',
-            bottom: -1,
+            bottom: 0,
             left: 0,
             width: '100%',
-            height: '140px',
-            background: `linear-gradient(to bottom, rgba(18, 18, 18, 0) 0%, ${cssBaseColor} 100%)`,
+            height: '95px',
+            background: 'linear-gradient(to bottom, rgba(18,18,18,0) 0%, #121212 100%)',
             pointerEvents: 'none',
-            zIndex: 2 // Gradiente SIEMPRE encima del canvas
+            zIndex: 1
         });
-
         banner.appendChild(gradient);
 
-        // INICIALIZACIÓN WEBGL
         gl = canvas.getContext('webgl', {
             alpha: false
         }) || canvas.getContext('experimental-webgl', {
             alpha: false
         });
-        if (!gl) return;
+        if (!gl) {
+            console.error("WebGL no soportado.");
+            return;
+        }
 
         updateDimensions();
         initEngine();
 
-        // Corrección del ResizeObserver (tu código tenía un error: resizeObserver.observe, no resizeObserver.resizeObserver.observe)
         resizeObserver = new ResizeObserver(() => updateDimensions());
         resizeObserver.observe(banner);
 
