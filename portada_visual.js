@@ -379,11 +379,11 @@ const PortadaVisualEngine = (() => {
         gradient.id = 'vloitz-webgl-gradient';
         Object.assign(gradient.style, {
             position: 'absolute',
-            bottom: 0,
+            bottom: '-2px', // 🛠️ FIX 1: Bajamos el anclaje para devorar los 2px desbordados del canvas.
             left: 0,
             width: '100%',
-            height: '95px',
-            background: 'linear-gradient(to bottom, rgba(18,18,18,0) 0%, #121212 100%)',
+            height: '140px', // 🛠️ FIX 2: Aumentamos la altura (de 95px a 140px) para una transición más orgánica.
+            background: 'linear-gradient(to bottom, rgba(18,18,18,0) 0%, #121212 95%, #121212 100%)', // 🛠️ FIX 3: Garantizamos opacidad absoluta en los últimos píxeles.
             pointerEvents: 'none',
             zIndex: 1
         });
