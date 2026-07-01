@@ -2236,10 +2236,10 @@ span#totalDuration {
 }
 
 /* --- 2. Simetría Absoluta en Controles (Patrón Holy Grail Grid) ---
-       Justificación: En layout Flexbox original, el margin-left: auto del contador de tiempo
-       empujaba todo el grupo de botones hacia la izquierda, creando un "falso centro".
-       Solución: Se inyecta un Grid temporal de 3 columnas (1fr auto 1fr) forzando a la botonera
-       a anclarse en el centro matemático absoluto de la pantalla móvil, aislando los tiempos
+Justificación: En layout Flexbox original, el margin-left: auto del contador de tiempo
+empujaba todo el grupo de botones hacia la izquierda, creando un "falso centro".
+Solución: Se inyecta un Grid temporal de 3 columnas (1fr auto 1fr) forzando a la botonera
+a anclarse en el centro matemático absoluto de la pantalla móvil, aislando los tiempos
        en la última columna sin afectar la versión de PC. */
 .player-controls {
     display: grid !important;
