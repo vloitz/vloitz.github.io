@@ -2,7 +2,8 @@
 :root {
     --brand-color: #1DB954;
     /* Un acento verde */
-    --dark-bg: #121212;
+    /*--dark-bg: #121212; ANTERIOR*/
+    --dark-bg: #080A12;
     --light-bg: #1e1e1e;
     --text-primary: #ffffff;
     --text-secondary: #b3b3b3;
