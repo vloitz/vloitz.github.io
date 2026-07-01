@@ -2195,6 +2195,7 @@ img,
 /* ==========================================================================
    VLOITZ UI UX FIX: SIMETRÍA Y CALIBRACIÓN ÓPTICA (Solo Móviles)
    ========================================================================== */
+/* ---ESTO ES NUEVO SSE NECESITO UN AJUSTE MANUAL ---
 @media (max-width: 768px) {
 
     /* --- 1. Calibración Óptica Micrométrica (God Mode Script) ---
@@ -2204,59 +2205,59 @@ img,
        Regla: Se traslada solo el <svg> interno, NO el <button>, para evitar desfasar
        el área táctil ('hitbox') y para que la animación 'transform: scale' del estado
        :active no sufra glitches visuales al colisionar transformaciones. */
-    button#prevBtn.skip-btn svg {
-        transform: translate(-10px, 0px);
-    }
+button#prevBtn.skip-btn svg {
+    transform: translate(-10px, 0px);
+}
 
-    button#seekBackBtn.seek-btn svg {
-        transform: translate(-5px, 0px);
-    }
+button#seekBackBtn.seek-btn svg {
+    transform: translate(-5px, 0px);
+}
 
-    button#seekFwdBtn.seek-btn svg {
-        transform: translate(5.5px, 0px);
-    }
+button#seekFwdBtn.seek-btn svg {
+    transform: translate(5.5px, 0px);
+}
 
-    button#nextBtn.skip-btn svg {
-        transform: translate(10px, 0px);
-    }
+button#nextBtn.skip-btn svg {
+    transform: translate(10px, 0px);
+}
 
-    /* Ajustes ópticos para alinear los pesos tipográficos de los tiempos */
-    div.time-display {
-        transform: translate(5px, 0px);
-    }
+/* Ajustes ópticos para alinear los pesos tipográficos de los tiempos */
+div.time-display {
+    transform: translate(5px, 0px);
+}
 
-    span#currentTime {
-        transform: translate(15px, 0px);
-    }
+span#currentTime {
+    transform: translate(15px, 0px);
+}
 
-    span#totalDuration {
-        transform: translate(4.5px, 0px);
-    }
+span#totalDuration {
+    transform: translate(4.5px, 0px);
+}
 
-    /* --- 2. Simetría Absoluta en Controles (Patrón Holy Grail Grid) ---
+/* --- 2. Simetría Absoluta en Controles (Patrón Holy Grail Grid) ---
        Justificación: En layout Flexbox original, el margin-left: auto del contador de tiempo
        empujaba todo el grupo de botones hacia la izquierda, creando un "falso centro".
        Solución: Se inyecta un Grid temporal de 3 columnas (1fr auto 1fr) forzando a la botonera
        a anclarse en el centro matemático absoluto de la pantalla móvil, aislando los tiempos
        en la última columna sin afectar la versión de PC. */
-    .player-controls {
-        display: grid !important;
-        grid-template-columns: 1fr auto 1fr !important;
-        align-items: center;
-        width: 100%;
-    }
+.player-controls {
+    display: grid !important;
+    grid-template-columns: 1fr auto 1fr !important;
+    align-items: center;
+    width: 100%;
+}
 
-    .controls-center-group {
-        grid-column: 2;
-        /* Su distribución interna (Flex y gap) queda intacta */
-    }
+.controls-center-group {
+    grid-column: 2;
+    /* Su distribución interna (Flex y gap) queda intacta */
+}
 
-    .player-controls>div:last-child {
-        grid-column: 3;
-        justify-self: end;
-        margin-left: 0 !important;
-        /* Neutralizamos el margin-left flexbox original */
-    }
+.player-controls>div:last-child {
+    grid-column: 3;
+    justify-self: end;
+    margin-left: 0 !important;
+    /* Neutralizamos el margin-left flexbox original */
+}
 }
 
 /* --- FIN DEL ARCHIVO --- */
