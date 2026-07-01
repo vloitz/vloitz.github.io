@@ -360,34 +360,54 @@ const PortadaVisualEngine = (() => {
         isRunning = true;
         banner.style.position = 'relative';
 
+        // 1. EL CANON (Reducimos el canvas para que NUNCA toque el borde inferior real)
         canvas = document.createElement('canvas');
         canvas.id = 'vloitz-webgl-canvas';
         Object.assign(canvas.style, {
-            // FIX: Sobre-escalamos la altura 2px para aplastar la foto original y evitar fugas de sub-píxeles
             position: 'absolute',
             top: 0,
             left: 0,
             width: '100%',
-            height: 'calc(100% + 2px)',
+            height: '100%', // 🛠️ VOLVEMOS AL 100%. El +2px causaba el sangrado.
             pointerEvents: 'none',
             zIndex: 0
         });
 
         banner.insertBefore(canvas, banner.firstChild);
 
+        // 2. EL GRADIENTE (Transición suave)
         const gradient = document.createElement('div');
         gradient.id = 'vloitz-webgl-gradient';
         Object.assign(gradient.style, {
             position: 'absolute',
-            bottom: '-2px', // 🛠️ FIX 1: Bajamos el anclaje para devorar los 2px desbordados del canvas.
+            bottom: 0,
             left: 0,
             width: '100%',
-            height: '140px', // 🛠️ FIX 2: Aumentamos la altura (de 95px a 140px) para una transición más orgánica.
-            background: 'linear-gradient(to bottom, rgba(18,18,18,0) 0%, #121212 95%, #121212 100%)', // 🛠️ FIX 3: Garantizamos opacidad absoluta en los últimos píxeles.
+            height: '140px',
+            background: 'linear-gradient(to bottom, rgba(18,18,18,0) 0%, #121212 90%, #121212 100%)',
             pointerEvents: 'none',
             zIndex: 1
         });
         banner.appendChild(gradient);
+
+        // 3. EL SELLO FÍSICO ABSOLUTO (La guillotina para el sub-píxel)
+        // Este elemento es una pared negra sólida que se coloca justo en el límite inferior.
+        // Como sobresale 1px hacia arriba y 1px hacia abajo, aniquila cualquier fuga.
+        if (!document.getElementById('vloitz-webgl-seal')) {
+            const seal = document.createElement('div');
+            seal.id = 'vloitz-webgl-seal';
+            Object.assign(seal.style, {
+                position: 'absolute',
+                bottom: '-1px', // Lo enterramos un píxel por debajo del borde
+                left: 0,
+                width: '100%',
+                height: '4px', // Lo hacemos lo suficientemente gordo para matar la fuga
+                backgroundColor: '#121212', // Color puro, sin transparencias
+                pointerEvents: 'none',
+                zIndex: 2 // Por encima del canvas y del gradiente
+            });
+            banner.appendChild(seal);
+        }
 
         gl = canvas.getContext('webgl', {
             alpha: false
@@ -413,10 +433,17 @@ const PortadaVisualEngine = (() => {
         if (animationId) cancelAnimationFrame(animationId);
         if (resizeObserver) resizeObserver.disconnect();
 
-        const banner = document.querySelector('.profile-banner');
+        // Limpieza de elementos inyectados en el DOM
         if (canvas) canvas.remove();
+
         const grad = document.getElementById('vloitz-webgl-gradient');
         if (grad) grad.remove();
+
+        // 🕵️ INVESTIGADOR FIX: Desmantelar el sello físico del sub-píxel
+        const seal = document.getElementById('vloitz-webgl-seal');
+        if (seal) seal.remove();
+
+        // Reset de contextos
         canvas = null;
         gl = null;
     };
