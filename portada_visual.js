@@ -360,6 +360,16 @@ const PortadaVisualEngine = (() => {
         isRunning = true;
         banner.style.position = 'relative';
 
+        // 🕵️ INVESTIGADOR FIX: El Escudo Nuke
+        // Obligamos al navegador a destruir la foto del sunset inyectada por app.js
+        // para que no se filtre luz por debajo del borde sub-píxel.
+        if (!document.getElementById('vloitz-webgl-nuke')) {
+            const style = document.createElement('style');
+            style.id = 'vloitz-webgl-nuke';
+            style.innerHTML = '.profile-banner { background-image: none !important; background-color: #121212 !important; }';
+            document.head.appendChild(style);
+        }
+
         // 1. EL CANON (Reducimos el canvas para que NUNCA toque el borde inferior real)
         canvas = document.createElement('canvas');
         canvas.id = 'vloitz-webgl-canvas';
@@ -442,6 +452,10 @@ const PortadaVisualEngine = (() => {
         // 🕵️ INVESTIGADOR FIX: Desmantelar el sello físico del sub-píxel
         const seal = document.getElementById('vloitz-webgl-seal');
         if (seal) seal.remove();
+
+        // 🕵️ INVESTIGADOR FIX: Retiramos el escudo y revivimos la imagen
+        const nuke = document.getElementById('vloitz-webgl-nuke');
+        if (nuke) nuke.remove();
 
         // Reset de contextos
         canvas = null;
