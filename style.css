@@ -2392,9 +2392,9 @@ a anclarse en el centro matemático absoluto de la pantalla móvil, aislando los
         margin: 0 !important;
     }
 
-    /* --- 🎨 MÓDULO: FEEDBACK PREMIUM (ELITE GLOW) --- */
+    /* --- 🎨 MÓDULO: FEEDBACK PREMIUM (ELITE PRESS EFFECT) --- */
     .player-arrival-effect {
-        /* Usamos una curva de aceleración personalizada para que se sienta orgánica */
+        /* Mantenemos la curva suave, pero ahora el efecto es de presión */
         animation: premium-pulse 2.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
 
@@ -2405,11 +2405,11 @@ a anclarse en el centro matemático absoluto de la pantalla móvil, aislando los
         }
 
         20% {
-            /* La tarjeta se eleva un 2% - ¡Efecto Wow! */
-            transform: scale(1.02);
-            /* Dos capas de sombra: una interna corta y una externa difusa */
-            box-shadow: 0 0 20px rgba(245, 245, 245, 0.4),
-                0 0 50px rgba(245, 245, 245, 0.2);
+            /* En lugar de crecer (1.02), encogemos ligeramente (0.97) */
+            transform: scale(0.97);
+            /* Al encoger, la sombra se concentra para dar efecto de "presión" */
+            box-shadow: 0 0 15px rgba(245, 245, 245, 0.3),
+                0 0 30px rgba(245, 245, 245, 0.1);
         }
 
         100% {
