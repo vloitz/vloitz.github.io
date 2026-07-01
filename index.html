@@ -16,7 +16,7 @@
     <link rel="preconnect" href="https://pub-1bd5ca00f737488cae44be74016d8499.r2.dev">
     <link rel="preconnect" href="https://unpkg.com">
 
-    <link rel="stylesheet" href="style.css?v=2.7">
+    <link rel="stylesheet" href="style.css?v=2.8">
 
 
     <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
@@ -52,16 +52,28 @@
 
             <div class="profile-details-container">
                 <h1 class="profile-name">Vloitz</h1>
-                <p class="profile-location">Lima, Peru</p>
+                <p class="profile-location">
+                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"
+                        stroke-linecap="round" stroke-linejoin="round" class="location-pin">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                        <circle cx="12" cy="10" r="3"></circle>
+                    </svg>
+                    Lima, Peru
+                </p>
 
                 <div class="profile-bio" id="profile-bio-container">
                     <span id="bio-short">
-                        <strong style="font-weight: 800; color: #fff;">Desarrollador y Curador Musical (House / Deep /
-                            Tech) 🗜️</strong><br>
-                        Aislar lo esencial. Explorar lo auténtico.<br>
-                        Audio <span style="color: var(--brand-color); font-weight: 700;">FLAC</span>, ritmos envolventes
-                        y mezclas que te sacan del presente.<br>
-                        Nada aquí es casual. <b>Profundiza en el viaje.</b>
+                        <span class="bio-role">Desarrollador & Curador Musical</span>
+                        <div class="bio-genres">
+                            <span class="genre-house">House</span> <span class="genre-dot">•</span>
+                            <span class="genre-deep">Deep</span> <span class="genre-dot">•</span>
+                            <span class="genre-tech">Tech</span>
+                        </div>
+                        <span class="bio-text">
+                            Aislar lo esencial. Explorar lo auténtico. Audio <span class="flac-text">FLAC</span>, ritmos
+                            envolventes y mezclas que te sacan del presente. Nada aquí es casual.
+                        </span>
+                        <span class="bio-cta">Profundiza en el viaje.</span>
                     </span>
 
                     <span id="bio-extended" style="display: none;">
@@ -375,7 +387,7 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest" defer></script>
     <script src="portada_visual.js"></script>
-    <script src="app.js?v=4.3"></script>
+    <script src="app.js?v=4.4"></script>
     <script src="calibradores.js"></script>
 
     <div id="storyOverlay">
@@ -492,43 +504,72 @@
     </script>
 
     <script>
-        /*
-        // ==========================================================================
-        // [VLOITZ SMART SCROLL] Auto-ajuste de vista inicial en móviles //DEPRECADED
-        // ==========================================================================
-        window.addEventListener('load', () => {
-            // 1. ¿Es pantalla móvil? Si es PC, no hacemos nada.
+        (function () {
+            // Solo actuar en móviles
             if (window.innerWidth > 768) return;
 
-            // 2. ¿Es un enlace compartido? Si tiene "/share/" o "?t=", lo abortamos para no pisar el otro scroll.
-            if (window.location.href.includes('/share/') || window.location.href.includes('?t=')) return;
+            // --- 🎛️ PANEL DE CONTROL VLOITZ ---
+            const CONFIG = {
+                // MODOS: 'ALEATORIO_TOTAL', 'ALEATORIO_FAVORITOS', 'FIJO'
+                MODO_ACTUAL: 'ALEATORIO_TOTAL',
+                // Si el modo es 'ALEATORIO_FAVORITOS', elegirá entre estos IDs
+                FAVORITOS: [0, 3, 4, 7],
+                // Si el modo es 'FIJO', cargará este ID exacto
+                TEMA_FIJO: 2
+            };
 
-            // 3. Damos 1 segundo para que la carátula y fuentes carguen bien y tomen su tamaño real
-            setTimeout(() => {
-                const controls = document.querySelector('.player-controls'); // El objetivo final
+            const TEMPLATES = [
+                { id: 0, nombre: "Original Neon", oG: 0.55, cH: "#00E5FF", cD: "#0070FF", cT: "#1DB954", oC: 0.4, cC: "#00F3FF" },
+                { id: 1, nombre: "Minimalista", oG: 0.5, cH: "#CCFF00", cD: "#39FF14", cT: "#00FF66", oC: 0.9, cC: "#FFFFFF" },
+                { id: 2, nombre: "Puros Verdes", oG: 0.5, cH: "#CCFF00", cD: "#39FF14", cT: "#00FF66", oC: 0.8, cC: "#1DE9B6" },
+                { id: 3, nombre: "Multi 1 (Cyan)", oG: 0.5, cH: "#4A90E2", cD: "#50E3C2", cT: "#B8E986", oC: 0.8, cC: "#1DE9B6" },
+                { id: 4, nombre: "Multi 2 (Magenta)", oG: 0.5, cH: "#4A90E2", cD: "#50E3C2", cT: "#B8E986", oC: 0.8, cC: "#FF007F" },
+                { id: 5, nombre: "Multi 3 (Indigo)", oG: 0.5, cH: "#4A90E2", cD: "#50E3C2", cT: "#B8E986", oC: 0.8, cC: "#651FFF" },
+                { id: 6, nombre: "Multi 4 (Gold)", oG: 0.5, cH: "#4A90E2", cD: "#50E3C2", cT: "#B8E986", oC: 0.8, cC: "#D4AF37" },
+                { id: 7, nombre: "Multi 5 (Sunset)", oG: 0.5, cH: "#4A90E2", cD: "#50E3C2", cT: "#B8E986", oC: 0.8, cC: "#FF6D00" },
+                { id: 8, nombre: "Multi 6 (Silver)", oG: 0.5, cH: "#4A90E2", cD: "#50E3C2", cT: "#B8E986", oC: 0.8, cC: "#9E9E9E" },
+                { id: 9, nombre: "Multi 7 (Vloitz Green)", oG: 0.5, cH: "#4A90E2", cD: "#50E3C2", cT: "#B8E986", oC: 0.8, cC: "#1DB954" }
+            ];
 
-                if (controls) {
-                    // Matemática de colisión: Calculamos dónde está la caja de botones vs el alto de la pantalla
-                    const rect = controls.getBoundingClientRect();
+            let indiceActual = 0;
 
-                    // 🎛️ TU VARIABLE DE AJUSTE: (Auméntala si quieres ver más espacio debajo de los botones)
-                    const aireInferior = 15;
+            function inyectarTema(index) {
+                const tema = TEMPLATES[index];
+                indiceActual = index;
+                const root = document.documentElement;
 
-                    // Cuánto sobra hacia abajo
-                    const scrollAmount = rect.bottom - window.innerHeight + aireInferior;
+                root.style.setProperty('--o-genres', tema.oG);
+                root.style.setProperty('--c-house', tema.cH);
+                root.style.setProperty('--c-deep', tema.cD);
+                root.style.setProperty('--c-tech', tema.cT);
 
-                    // Si el valor es positivo, significa que los botones están ocultos abajo. ¡Hacemos scroll!
-                    if (scrollAmount > 0) {
-                        window.scrollBy({ top: scrollAmount, behavior: 'smooth' });
-                        console.log(`[Vloitz Smart Scroll] Ajuste perfecto aplicado: ${Math.round(scrollAmount)}px`);
-                    }
-                }
-            }, 1000);
-        });
-*/
+                root.style.setProperty('--o-cta', tema.oC);
+                root.style.setProperty('--c-cta', tema.cC);
+                root.style.setProperty('--c-cta-shadow', tema.cC + '40');
+            }
+
+            if (CONFIG.MODO_ACTUAL === 'FIJO') {
+                inyectarTema(CONFIG.TEMA_FIJO);
+            } else if (CONFIG.MODO_ACTUAL === 'ALEATORIO_FAVORITOS') {
+                const randomFav = Math.floor(Math.random() * CONFIG.FAVORITOS.length);
+                inyectarTema(CONFIG.FAVORITOS[randomFav]);
+            } else {
+                const randomTotal = Math.floor(Math.random() * TEMPLATES.length);
+                inyectarTema(randomTotal);
+            }
+
+            // 👻 FUNCIÓN FANTASMA DEVTOOLS
+            window.vTheme = function () {
+                let nextIdx = (indiceActual + 1) % TEMPLATES.length;
+                inyectarTema(nextIdx);
+                console.log(`%c🦎 [Vloitz Camaleón] Template ID: ${TEMPLATES[nextIdx].id} - ${TEMPLATES[nextIdx].nombre}`, "color: #1DB954; font-weight: bold; font-size: 14px;");
+                return "Cambiado al siguiente diseño...";
+            };
+        })();
     </script>
+</body>
 
-
+</html>
 
 </body>
 
