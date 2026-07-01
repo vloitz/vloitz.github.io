@@ -2392,25 +2392,28 @@ a anclarse en el centro matemático absoluto de la pantalla móvil, aislando los
         margin: 0 !important;
     }
 
-    /* --- 🎨 MÓDULO: FEEDBACK VISUAL DE NAVEGACIÓN (UI) --- */
-    /* Efecto de brillo blanco humo para indicar la llegada al reproductor */
+    /* --- 🎨 MÓDULO: FEEDBACK PREMIUM (ELITE GLOW) --- */
     .player-arrival-effect {
-        animation: glow-pulse 1.5s ease;
+        /* Usamos una curva de aceleración personalizada para que se sienta orgánica */
+        animation: premium-pulse 2.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
 
-    @keyframes glow-pulse {
-
-        /* 0% y 100% (Inicio y Fin): Transparente */
+    @keyframes premium-pulse {
         0% {
+            transform: scale(1);
             box-shadow: 0 0 0px rgba(245, 245, 245, 0);
         }
 
-        /* 50% (Punto máximo): Blanco humo (245,245,245) con 60% de opacidad */
-        50% {
-            box-shadow: 0 0 20px rgba(245, 245, 245, 0.6);
+        20% {
+            /* La tarjeta se eleva un 2% - ¡Efecto Wow! */
+            transform: scale(1.02);
+            /* Dos capas de sombra: una interna corta y una externa difusa */
+            box-shadow: 0 0 20px rgba(245, 245, 245, 0.4),
+                0 0 50px rgba(245, 245, 245, 0.2);
         }
 
         100% {
+            transform: scale(1);
             box-shadow: 0 0 0px rgba(245, 245, 245, 0);
         }
     }
