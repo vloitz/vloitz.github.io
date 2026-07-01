@@ -360,17 +360,16 @@ const PortadaVisualEngine = (() => {
         isRunning = true;
         banner.style.position = 'relative';
 
-        // 🕵️ INVESTIGADOR FIX: El Escudo Nuke
-        // Obligamos al navegador a destruir la foto del sunset inyectada por app.js
-        // para que no se filtre luz por debajo del borde sub-píxel.
+        // 🕵️ INVESTIGADOR FIX: El Escudo Nuke dinámico (A prueba de futuro)
+        // Usa la variable CSS del tema en lugar de un color fijo.
         if (!document.getElementById('vloitz-webgl-nuke')) {
             const style = document.createElement('style');
             style.id = 'vloitz-webgl-nuke';
-            style.innerHTML = '.profile-banner { background-image: none !important; background-color: #121212 !important; }';
+            style.innerHTML = '.profile-banner { background-image: none !important; background-color: var(--dark-bg) !important; }';
             document.head.appendChild(style);
         }
 
-        // 1. EL CANON (Reducimos el canvas para que NUNCA toque el borde inferior real)
+        // 1. EL CANON (100% exacto)
         canvas = document.createElement('canvas');
         canvas.id = 'vloitz-webgl-canvas';
         Object.assign(canvas.style, {
@@ -378,14 +377,14 @@ const PortadaVisualEngine = (() => {
             top: 0,
             left: 0,
             width: '100%',
-            height: '100%', // 🛠️ VOLVEMOS AL 100%. El +2px causaba el sangrado.
+            height: '100%',
             pointerEvents: 'none',
             zIndex: 0
         });
 
         banner.insertBefore(canvas, banner.firstChild);
 
-        // 2. EL GRADIENTE (Transición suave)
+        // 2. EL GRADIENTE (Conectado a la variable CSS maestra)
         const gradient = document.createElement('div');
         gradient.id = 'vloitz-webgl-gradient';
         Object.assign(gradient.style, {
@@ -394,27 +393,25 @@ const PortadaVisualEngine = (() => {
             left: 0,
             width: '100%',
             height: '140px',
-            background: 'linear-gradient(to bottom, rgba(18,18,18,0) 0%, #121212 90%, #121212 100%)',
+            background: 'linear-gradient(to bottom, transparent 0%, var(--dark-bg) 90%, var(--dark-bg) 100%)',
             pointerEvents: 'none',
             zIndex: 1
         });
         banner.appendChild(gradient);
 
-        // 3. EL SELLO FÍSICO ABSOLUTO (La guillotina para el sub-píxel)
-        // Este elemento es una pared negra sólida que se coloca justo en el límite inferior.
-        // Como sobresale 1px hacia arriba y 1px hacia abajo, aniquila cualquier fuga.
+        // 3. EL SELLO FÍSICO ABSOLUTO (Conectado a la variable CSS maestra)
         if (!document.getElementById('vloitz-webgl-seal')) {
             const seal = document.createElement('div');
             seal.id = 'vloitz-webgl-seal';
             Object.assign(seal.style, {
                 position: 'absolute',
-                bottom: '-1px', // Lo enterramos un píxel por debajo del borde
+                bottom: '-1px',
                 left: 0,
                 width: '100%',
-                height: '4px', // Lo hacemos lo suficientemente gordo para matar la fuga
-                backgroundColor: '#121212', // Color puro, sin transparencias
+                height: '4px',
+                backgroundColor: 'var(--dark-bg)', // Lee el color desde style.css
                 pointerEvents: 'none',
-                zIndex: 2 // Por encima del canvas y del gradiente
+                zIndex: 2
             });
             banner.appendChild(seal);
         }
