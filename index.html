@@ -48,7 +48,8 @@
     <header class="profile-header">
         <div class="profile-banner"></div>
         <div class="profile-info">
-            <img src="" alt="Vloitz Profile" class="profile-pic" id="profile-pic-img">
+            <img src="perfil/logo_og.webp" alt="Vloitz Profile" class="profile-pic" id="profile-pic-img"
+                fetchpriority="high">
 
             <div class="profile-details-container">
                 <h1 class="profile-name">Vloitz</h1>
@@ -617,23 +618,24 @@
                 return "Configuración detallada aplicada.";
             };
 
-            // --- 🖱️ MÓDULO: NAVEGACIÓN POR GESTOS ---
+            // --- 🖱️ MÓDULO: NAVEGACIÓN NATIVA ACELERADA POR HARDWARE ---
+
             function initAvatarNavigation(targetSelector) {
                 const avatar = document.querySelector('.neon-marco-senior');
                 const target = document.querySelector(targetSelector);
                 if (!avatar || !target) return;
 
                 avatar.addEventListener('click', () => {
-                    // Cambiado a 'start' para anclarse arriba (respetando el scroll-margin-top)
+                    // Usamos el motor nativo del móvil: Cero lag, 100% fluidez
                     target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-                    // Efecto visual de llegada
+                    // Efecto visual de "presión" al aterrizar
                     target.classList.add('player-arrival-effect');
-                    setTimeout(() => target.classList.remove('player-arrival-effect'), 1500);
+                    setTimeout(() => target.classList.remove('player-arrival-effect'), 2200);
                 });
             }
 
-            // Llamada al final de la carga
+            // Llamada al iniciar
             initAvatarNavigation('.player-card');
 
 

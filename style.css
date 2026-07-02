@@ -2371,6 +2371,16 @@ a anclarse en el centro matemático absoluto de la pantalla móvil, aislando los
         box-shadow: 0 0 15px var(--c-cta-shadow);
         z-index: 10;
         transition: all 0.5s ease;
+
+        /* ELIMINA EL CUADRO AZUL DEL CONTENEDOR */
+        -webkit-tap-highlight-color: transparent !important;
+        outline: none !important;
+    }
+
+    /* ELIMINA EL CUADRO AZUL DE LA IMAGEN INTERNA */
+    .neon-marco-senior * {
+        -webkit-tap-highlight-color: transparent !important;
+        outline: none !important;
     }
 
     /* El Buffer (Rosquilla oscura) que separa la luz de la foto */
