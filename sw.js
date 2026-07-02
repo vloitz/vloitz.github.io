@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vloitz-app-v13.6';
+const CACHE_NAME = 'vloitz-app-v13.7';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache'; // Bóveda de 2s para Latencia Cero
 const ASSETS_TO_CACHE = [
     './',
@@ -386,7 +386,12 @@ self.addEventListener('fetch', (e) => {
     }
 
     e.respondWith(
-        caches.match(e.request).then((response) => {
+        caches.match(e.request, {
+            ignoreSearch: true
+        }).then((response) => {
+            if (!response) {
+                console.warn(`[Service Worker] ⚠️ Miss Caché (undefined) en recarga: ${e.request.url}`);
+            }
             // Si está en caché, lo devolvemos (Carga Instantánea)
             // Si no, lo pedimos a internet
             return response || fetch(e.request);
