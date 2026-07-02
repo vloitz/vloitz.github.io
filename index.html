@@ -388,7 +388,7 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest" defer></script>
     <script src="portada_visual.js"></script>
-    <script src="app.js?v=5.3"></script>
+    <script src="app.js?v=5.4"></script>
     <script src="calibradores.js"></script>
 
     <div id="storyOverlay">
@@ -618,7 +618,31 @@
                 return "Configuración detallada aplicada.";
             };
 
-            // --- 🖱️ MÓDULO: NAVEGACIÓN NATIVA ACELERADA POR HARDWARE ---
+            // --- 🖱️ MÓDULO: NAVEGACIÓN INERCIAL (EASING FÍSICO) ---
+
+            function smoothScrollTo(targetElement, duration) {
+                const offset = 20; // Espacio de respiro visual arriba del reproductor
+                const targetPosition = targetElement.getBoundingClientRect().top + window.scrollY - offset;
+                const startPosition = window.scrollY;
+                const distance = targetPosition - startPosition;
+                let startTime = null;
+
+                // Curva de frenado exponencial (easeOutQuart) para inercia orgánica humana
+                const easeOutQuart = (t) => 1 - Math.pow(1 - t, 4);
+
+                function animation(currentTime) {
+                    if (startTime === null) startTime = currentTime;
+                    const timeElapsed = currentTime - startTime;
+                    const progress = Math.min(timeElapsed / duration, 1);
+
+                    window.scrollTo(0, startPosition + distance * easeOutQuart(progress));
+
+                    if (timeElapsed < duration) {
+                        requestAnimationFrame(animation);
+                    }
+                }
+                requestAnimationFrame(animation);
+            }
 
             function initAvatarNavigation(targetSelector) {
                 const avatar = document.querySelector('.neon-marco-senior');
@@ -626,8 +650,8 @@
                 if (!avatar || !target) return;
 
                 avatar.addEventListener('click', () => {
-                    // Usamos el motor nativo del móvil: Cero lag, 100% fluidez
-                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    // Reemplazo del motor nativo por el algoritmo inercial (800ms de fluidez)
+                    smoothScrollTo(target, 800);
 
                     // Efecto visual de "presión" al aterrizar
                     target.classList.add('player-arrival-effect');
