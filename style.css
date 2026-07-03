@@ -680,18 +680,23 @@ html {
     overflow-x: hidden;
 }
 
+
 /* --- INICIO DE REEMPLAZO (style.css - PC) --- */
+
+/* ==========================================================================
+   [ V-MATRIX BASE ] Arquitectura Plana de Tracklist (ESCRITORIO / PC)
+   ========================================================================== */
 .current-tracklist-item {
     display: flex;
     align-items: center;
-    padding: 8px 5px;
+    padding: 10px 15px;
     border-bottom: 1px solid #333;
     cursor: pointer;
     transition: background-color 0.2s;
     user-select: none;
     -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
+    gap: 15px;
+    /* Distancia uniforme entre los bloques principales */
 }
 
 .current-tracklist-item:last-child {
@@ -706,15 +711,15 @@ html {
     color: var(--text-secondary);
     font-size: 0.9em;
     min-width: 45px;
-    margin-right: 10px;
     font-variant-numeric: tabular-nums;
+    margin: 0;
 }
 
 .track-time:hover {
     color: var(--brand-color);
 }
 
-/* Contenedor central fluye en horizontal para PC */
+/* El contenedor central de Título y Artista fluye horizontalmente en PC */
 .track-info-wrapper {
     display: flex;
     align-items: center;
@@ -730,15 +735,19 @@ html {
 }
 
 .track-emoji {
-    margin-right: 10px;
+    font-size: 1.1em;
+    color: #ffffff;
+    margin-right: 8px;
     flex-shrink: 0;
 }
 
 .track-title {
+    font-weight: 500;
+    font-size: 1.05em;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    font-weight: 500;
+    color: inherit;
 }
 
 .track-title.track-title-playing {
@@ -747,11 +756,53 @@ html {
 }
 
 .track-artist {
-    color: #888;
     font-size: 0.85em;
+    color: #888;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+/* Botones de accion a la derecha en PC */
+.action-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.track-action-btn {
+    background: none;
+    border: none;
+    color: #777;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.track-action-btn svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+}
+
+.btn-copy:hover {
+    color: #fff;
+    transform: scale(1.1);
+}
+
+.btn-search:hover {
+    color: #1DB954;
+    transform: scale(1.1);
 }
 
 .favorite-btn {
@@ -761,8 +812,9 @@ html {
     font-size: 1.3em;
     cursor: pointer;
     padding: 0 5px;
-    margin-left: 10px;
+    margin: 0;
     transition: color 0.2s, transform 0.1s;
+    flex-shrink: 0;
 }
 
 .favorite-btn:hover {
@@ -772,14 +824,6 @@ html {
 .favorite-btn.favorited {
     color: #ffc107;
     transform: scale(1.1);
-}
-
-/* --- NUEVOS BOTONES DE ACCIÓN (FASE BEATPORT) --- */
-.action-group {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-left: 10px;
 }
 
 /* --- FIN DE REEMPLAZO (style.css - PC) --- */
@@ -985,9 +1029,11 @@ html {
     }
 
     /* --- INICIO DE REEMPLAZO (style.css - MOVIL) --- */
-    /* LA MATRIZ GRID (Se activa solo en celulares) */
+    /* ==========================================================================
+       [ V-MATRIX GRID ] Matriz Compacta Exacta (SOLO MÓVIL)
+       ========================================================================== */
     .current-tracklist-item {
-        display: grid;
+        display: grid !important;
         grid-template-columns: max-content minmax(0, 1fr) max-content;
         grid-template-rows: auto auto;
         row-gap: 6px;
@@ -998,6 +1044,7 @@ html {
         box-sizing: border-box;
     }
 
+    /* Fila 1, Columna 1: Tiempo */
     .track-time {
         grid-column: 1;
         grid-row: 1;
@@ -1007,42 +1054,63 @@ html {
         min-width: 40px;
     }
 
+    /* Fila 2, Columna 1: Botones simétricamente abajo del tiempo */
     .action-group {
         grid-column: 1;
         grid-row: 2;
+        /* Teletransporta los botones abajo del tiempo */
         justify-self: center;
         margin: 0;
-        gap: 6px;
+        gap: 4px;
     }
 
+    /* Fila 1 y 2, Columna 2: Título y Artista (Lienzo Central) */
     .track-info-wrapper {
         grid-column: 2;
         grid-row: 1 / 3;
+        /* Abarca ambas filas */
         display: flex;
         flex-direction: column;
+        /* Apila Título arriba y Artista abajo */
         align-items: flex-start;
         min-width: 0;
         gap: 2px;
     }
 
     .track-title-row {
+        display: flex;
+        align-items: center;
+        min-width: 0;
         width: 100%;
+    }
+
+    .track-emoji {
+        margin-right: 6px;
     }
 
     .track-title {
         font-size: 0.95em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
     }
 
     .track-artist {
         white-space: normal;
+        /* El artista fluye sin romper la cuadrícula */
         line-height: 1.3;
+        font-size: 0.85em;
+        width: 100%;
     }
 
+    /* Fila 1 y 2, Columna 3: Estrella anclada a la derecha */
     .favorite-btn {
         grid-column: 3;
         grid-row: 1 / 3;
         margin: 0;
         font-size: 1.2em;
+        justify-self: center;
     }
 
     /* --- FIN DE REEMPLAZO (style.css - MOVIL) --- */
