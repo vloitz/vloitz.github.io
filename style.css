@@ -1073,6 +1073,8 @@ html {
         /* ARMOR PIERCING */
         z-index: 60;
         /* Atraviesa el muro invisible de 50px */
+        touch-action: none;
+        /* KINETIC BYPASS: Ciega al Compositor de la GPU */
     }
 
     /* Fila 1 y 2, Columna 2: Título y Artista (Lienzo Central) */
