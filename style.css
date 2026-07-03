@@ -1128,10 +1128,6 @@ html {
         margin: 0;
         font-size: 1.2em;
         justify-self: center;
-        position: relative;
-        /* ARMOR PIERCING */
-        z-index: 60;
-        /* Atraviesa el muro invisible derecho */
     }
 
     /* --- FIN DE REEMPLAZO (style.css - MOVIL) --- */
