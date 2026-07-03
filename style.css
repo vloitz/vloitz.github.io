@@ -1,4 +1,4 @@
-/* --- Reseteo Basico y Tema Oscuro OK --- */
+/* --- Reseteo Basico y Tema Oscuro --- */
 :root {
     --brand-color: #1DB954;
     /* Un acento verde */
@@ -659,21 +659,39 @@ html {
     box-shadow: 0 0 8px rgba(29, 185, 84, 0.4);
 }
 
-/* ==========================================================================
-   [ V-MATRIX BASE ] Arquitectura de Tracklist (ESCRITORIO / PC)
-   ========================================================================== */
+/* Ajustes Extra */
+.favorites-filter .star-icon {
+    font-size: 1.1em;
+    color: inherit;
+}
+
+.favorites-filter input[type="checkbox"] {
+    display: none;
+}
+
+/* ---------------------------------------------------- */
+
+.current-tracklist {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* --- INICIO DE REEMPLAZO (style.css - PC) --- */
 .current-tracklist-item {
     display: flex;
     align-items: center;
-    padding: 10px 15px;
-    /* Más espacio horizontal en PC */
+    padding: 8px 5px;
     border-bottom: 1px solid #333;
     cursor: pointer;
     transition: background-color 0.2s;
     user-select: none;
     -webkit-user-select: none;
-    gap: 20px;
-    /* Separación amplia entre bloques en PC */
+    -moz-user-select: none;
+    -ms-user-select: none;
 }
 
 .current-tracklist-item:last-child {
@@ -684,86 +702,56 @@ html {
     background-color: rgba(255, 255, 255, 0.05);
 }
 
-/* --- COLUMNA A (PC): Todo en una línea --- */
-.v-grid-col-a {
-    display: flex;
-    align-items: center;
-    flex-direction: row;
-    /* En PC, el tiempo y botones van lado a lado */
-    gap: 15px;
-}
-
 .track-time {
     color: var(--text-secondary);
     font-size: 0.9em;
     min-width: 45px;
+    margin-right: 10px;
     font-variant-numeric: tabular-nums;
-    margin: 0;
-    transition: color 0.2s;
 }
 
 .track-time:hover {
     color: var(--brand-color);
 }
 
-.action-group-grid {
+/* Contenedor central fluye en horizontal para PC */
+.track-info-wrapper {
     display: flex;
     align-items: center;
-    gap: 10px;
-    /* Más relajado en PC */
-}
-
-/* --- COLUMNA B (PC): Título y Artista fluyen horizontalmente --- */
-.v-grid-col-b {
-    display: flex;
-    align-items: center;
-    flex-direction: row;
-    /* En PC, Track y Artista pueden ir en la misma línea */
     flex-grow: 1;
     min-width: 0;
-    gap: 15px;
+    gap: 10px;
 }
 
-.v-track-header {
+.track-title-row {
     display: flex;
     align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
-    /* Evita que el título se aplaste si hay espacio */
+    min-width: 0;
 }
 
 .track-emoji {
-    font-size: 1.1em;
-    color: #ffffff;
-    margin: 0;
+    margin-right: 10px;
+    flex-shrink: 0;
 }
 
-.v-track-name {
-    font-weight: 700;
-    font-size: 1.05em;
-    color: inherit;
-    white-space: nowrap;
-}
-
-.v-track-artist {
-    font-size: 0.9em;
-    color: #888;
+.track-title {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    /* En PC se corta con ... si es ridículamente largo */
+    font-weight: 500;
 }
 
 .track-title.track-title-playing {
     color: var(--brand-color);
+    font-weight: 600;
 }
 
-/* --- COLUMNA C (PC): Estrella --- */
-.v-grid-col-c {
-    display: flex;
-    align-items: center;
-    margin-left: auto;
-    /* Empuja la estrella al fondo derecho en PC */
+.track-artist {
+    color: #888;
+    font-size: 0.85em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .favorite-btn {
@@ -773,7 +761,7 @@ html {
     font-size: 1.3em;
     cursor: pointer;
     padding: 0 5px;
-    margin: 0;
+    margin-left: 10px;
     transition: color 0.2s, transform 0.1s;
 }
 
@@ -786,7 +774,16 @@ html {
     transform: scale(1.1);
 }
 
-/* --- Botones Técnicos --- */
+/* --- NUEVOS BOTONES DE ACCIÓN (FASE BEATPORT) --- */
+.action-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: 10px;
+}
+
+/* --- FIN DE REEMPLAZO (style.css - PC) --- */
+
 .track-action-btn {
     background: none;
     border: none;
@@ -819,8 +816,6 @@ html {
     color: #1DB954;
     transform: scale(1.1);
 }
-
-/* END  [ V-MATRIX BASE ] Arquitectura de Tracklist (ESCRITORIO / PC) */
 
 /* --- Responsive --- */
 @media (max-width: 992px) {
@@ -989,65 +984,68 @@ html {
         max-height: 300px;
     }
 
-    /* ==========================================================================
-       [ V-MATRIX GRID ] Mutación a Matriz Compacta (SOLO MÓVIL)
-       ========================================================================== */
+    /* --- INICIO DE REEMPLAZO (style.css - MOVIL) --- */
+    /* LA MATRIZ GRID (Se activa solo en celulares) */
     .current-tracklist-item {
-        display: grid !important;
-        /* Forzamos el cambio de flex a grid */
-        grid-template-columns: max-content 1fr max-content;
-        column-gap: 15px;
+        display: grid;
+        grid-template-columns: max-content minmax(0, 1fr) max-content;
+        grid-template-rows: auto auto;
         row-gap: 6px;
+        column-gap: 12px;
         align-items: center;
         padding: 12px 5px;
-        gap: initial;
-        /* Resetea el gap de PC */
+        width: 100%;
+        box-sizing: border-box;
     }
 
-    /* Mutación Columna A: Apilamiento vertical y centrado */
-    .v-grid-col-a {
-        flex-direction: column;
-        align-items: center;
+    .track-time {
+        grid-column: 1;
+        grid-row: 1;
+        justify-self: center;
+        margin: 0;
+        font-size: 0.85em;
+        min-width: 40px;
+    }
+
+    .action-group {
+        grid-column: 1;
+        grid-row: 2;
+        justify-self: center;
+        margin: 0;
         gap: 6px;
     }
 
-    .action-group-grid {
-        gap: 4px;
-        /* Pegamos los botones hermanos */
-        position: relative;
-        z-index: 60;
-        /* ARMOR PIERCING Izquierdo */
-    }
-
-    /* Mutación Columna B: Apilamiento vertical para liberar ancho */
-    .v-grid-col-b {
+    .track-info-wrapper {
+        grid-column: 2;
+        grid-row: 1 / 3;
+        display: flex;
         flex-direction: column;
         align-items: flex-start;
+        min-width: 0;
         gap: 2px;
     }
 
-    .v-track-name {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 100%;
+    .track-title-row {
+        width: 100%;
+    }
+
+    .track-title {
         font-size: 0.95em;
-        /* Recuperamos el tamaño original de tu diseño móvil */
     }
 
-    .v-track-artist {
+    .track-artist {
         white-space: normal;
-        /* Permite fluir a múltiples líneas en móvil */
         line-height: 1.3;
-        font-size: 0.85em;
     }
 
-    /* Mutación Columna C: ARMOR PIERCING Derecho */
-    .v-grid-col-c {
-        position: relative;
-        z-index: 60;
+    .favorite-btn {
+        grid-column: 3;
+        grid-row: 1 / 3;
+        margin: 0;
+        font-size: 1.2em;
     }
 
-    /* END  [ V-MATRIX GRID ] Mutación a Matriz Compacta (SOLO MÓVIL) */
+    /* --- FIN DE REEMPLAZO (style.css - MOVIL) --- */
 
     /* Scroll Horizontal en Móvil */
     .controls-wrapper {
