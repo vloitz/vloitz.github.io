@@ -1515,26 +1515,14 @@ html {
     gap: 12px;
 }
 
-.brand-icon {
-    width: 40px;
-    height: 40px;
-    background-color: var(--dark-bg);
+.brand-icon-img {
+    width: 42px;
+    height: 42px;
     border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    object-fit: cover;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.1);
     flex-shrink: 0;
-}
-
-.brand-icon-v {
-    font-weight: 800;
-    font-size: 18px;
-    background: linear-gradient(135deg, #00F2FE 0%, #4FACFE 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    /* <-- Añade esta línea estándar */
-    -webkit-text-fill-color: transparent;
 }
 
 .toast-text {
