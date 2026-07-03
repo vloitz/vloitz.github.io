@@ -68,7 +68,7 @@ window.CalibrarEscudos = function() {
     // 6. CERRAR Y RESTAURAR
     document.getElementById('btn-cerrar-escudos').onclick = () => {
         // Al cerrar, eliminamos el panel, los escudos rojos y el estilo que bloqueaba tu CSS original.
-        document.querySelectorAll('.v-shield-left, .v-shield-right, #v-calibrator, #v-override-css').forEach(e=>e.remove());
+        document.querySelectorAll('.v-shield-left, .v-shield-right, #v-calibrator, #v-override-css').forEach(e => e.remove());
         console.log("[Calibrador] Cerrado. CSS original restaurado.");
     };
 };
@@ -98,12 +98,12 @@ window.CalibrarBotones = function() {
     document.getElementById('r-prev').oninput = (e) => {
         const val = e.target.value;
         document.getElementById('v-prev').innerText = val;
-        if(prevSvg) prevSvg.style.transform = `translateX(${val}px)`;
+        if (prevSvg) prevSvg.style.transform = `translateX(${val}px)`;
     };
     document.getElementById('r-next').oninput = (e) => {
         const val = e.target.value;
         document.getElementById('v-next').innerText = val;
-        if(nextSvg) nextSvg.style.transform = `translateX(${val}px)`;
+        if (nextSvg) nextSvg.style.transform = `translateX(${val}px)`;
     };
 
     document.getElementById('btn-cerrar-botones').onclick = () => {
