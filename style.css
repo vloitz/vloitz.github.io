@@ -1061,7 +1061,10 @@ html {
         /* Teletransporta los botones abajo del tiempo */
         justify-self: center;
         margin: 0;
-        gap: 4px;
+        gap: 0px;
+        /* Calibración óptica Vloitz */
+        transform: translateX(-7px);
+        /* Centrado visual perfecto */
     }
 
     /* Fila 1 y 2, Columna 2: Título y Artista (Lienzo Central) */
