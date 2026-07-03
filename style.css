@@ -1018,6 +1018,10 @@ html {
         flex-direction: column;
         align-items: flex-start;
         gap: 5px;
+        position: relative;
+        /* ARMOR PIERCING: Eleva todo el encabezado */
+        z-index: 60;
+        /* Atraviesa los muros laterales */
     }
 
     .current-tracklist-header h4 {
@@ -1049,6 +1053,8 @@ html {
         grid-column: 1;
         grid-row: 1;
         justify-self: center;
+        align-self: end;
+        /* FIX 1: Ancla el tiempo rígidamente hacia abajo */
         margin: 0;
         font-size: 0.85em;
         min-width: 40px;
@@ -1060,11 +1066,17 @@ html {
         grid-row: 2;
         /* Teletransporta los botones abajo del tiempo */
         justify-self: center;
+        align-self: start;
+        /* FIX 2: Ancla los botones rígidamente hacia arriba */
         margin: 0;
         gap: 0px;
         /* Calibración óptica Vloitz */
         transform: translateX(-7px);
         /* Centrado visual perfecto */
+        position: relative;
+        /* ARMOR PIERCING */
+        z-index: 60;
+        /* Atraviesa el muro invisible de 50px */
     }
 
     /* Fila 1 y 2, Columna 2: Título y Artista (Lienzo Central) */
@@ -1074,6 +1086,8 @@ html {
         /* Abarca ambas filas */
         display: flex;
         flex-direction: column;
+        justify-content: center;
+        /* FIX 3: Mantiene el texto equilibrado verticalmente aunque crezca */
         /* Apila Título arriba y Artista abajo */
         align-items: flex-start;
         min-width: 0;
@@ -1089,6 +1103,8 @@ html {
 
     .track-emoji {
         margin-right: 6px;
+        flex-shrink: 0;
+        /* FIX 4: Protege el emoji para que no se aplaste si el texto es muy largo */
     }
 
     .track-title {
@@ -1114,6 +1130,10 @@ html {
         margin: 0;
         font-size: 1.2em;
         justify-self: center;
+        position: relative;
+        /* ARMOR PIERCING */
+        z-index: 60;
+        /* Atraviesa el muro invisible derecho */
     }
 
     /* --- FIN DE REEMPLAZO (style.css - MOVIL) --- */
@@ -2296,7 +2316,7 @@ img,
         top: 80px;
         left: 0;
         bottom: 0;
-        width: 50px;
+        width: 60px;
         /* Borde izquierdo */
         z-index: 50;
         touch-action: pan-y;
@@ -2309,7 +2329,7 @@ img,
         top: 80px;
         right: 0;
         bottom: 0;
-        width: 50px;
+        width: 22px;
         /* Borde derecho */
         z-index: 50;
         touch-action: pan-y;
