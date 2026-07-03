@@ -1515,20 +1515,26 @@ html {
     gap: 12px;
 }
 
-.brand-icon-img {
-    width: 42px;
-    height: 42px;
-    border-radius: 10px;
-    object-fit: cover;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    flex-shrink: 0;
+/* El candado definitivo para el logo del Toast PWA */
+.toast-header img.brand-icon-img {
+    width: 54px !important;
+    height: 54px !important;
+    min-width: 54px !important;
+    max-width: 54px !important;
+    border-radius: 12px !important;
+    object-fit: cover !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    flex-shrink: 0 !important;
+    display: block;
 }
 
-.toast-text {
+/* Aseguramos que el texto se alinee bien junto al nuevo logo */
+.toast-header .toast-text {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 4px;
+    justify-content: center;
 }
 
 .toast-title {
