@@ -1073,8 +1073,6 @@ html {
         /* ARMOR PIERCING */
         z-index: 60;
         /* Atraviesa el muro invisible de 50px */
-        touch-action: pan-y;
-        /* FIX UX: Permite scroll vertical de la página/lista, bloquea el resto */
     }
 
     /* Fila 1 y 2, Columna 2: Título y Artista (Lienzo Central) */
@@ -1132,8 +1130,6 @@ html {
         /* ARMOR PIERCING */
         z-index: 60;
         /* Atraviesa el muro invisible derecho */
-        touch-action: pan-y;
-        /* FIX UX: Permite scroll vertical de la página/lista, bloquea el resto */
     }
 
     /* --- FIN DE REEMPLAZO (style.css - MOVIL) --- */
