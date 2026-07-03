@@ -1465,108 +1465,202 @@ html {
     z-index: 4 !important;
 }
 
-/* --- FASE 11: TOAST PWA --- */
-.pwa-toast {
+/* ==========================================================================
+   [INICIO] TOAST PREMIUM PWA (VLOITZ STYLE)
+   ========================================================================== */
+.vloitz-pwa-toast {
     position: fixed;
-    bottom: 20px;
+    bottom: 24px;
     left: 50%;
-    transform: translateX(-50%);
-    width: 90%;
-    max-width: 400px;
-    background-color: #282828;
-    border: 1px solid #333;
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
-    z-index: 2000;
-    /* Encima de todo */
-    padding: 15px;
-    animation: slideUp 0.5s ease-out;
+    transform: translateX(-50%) translateY(100px);
+    width: calc(100% - 32px);
+    max-width: 420px;
+    background: rgba(22, 31, 40, 0.95);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 16px;
+    padding-bottom: 0;
+    /* Ajuste para la barra de progreso */
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    visibility: hidden;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+        opacity 0.3s ease,
+        visibility 0.3s;
+    z-index: 9999;
+    overflow: hidden;
+    /* Corta la barra en los bordes curvos */
 }
 
-.pwa-content {
+/* Esta clase se añade por JS para mostrar el Toast */
+.vloitz-pwa-toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+    visibility: visible;
+}
+
+.toast-content {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 14px;
+    padding-bottom: 16px;
+    /* Recupera el padding inferior de la tarjeta */
 }
 
-.pwa-text strong {
-    display: block;
-    color: #fff;
-    margin-bottom: 4px;
-}
-
-.pwa-text span {
-    font-size: 0.9em;
-    color: #b3b3b3;
-}
-
-.pwa-actions {
+.toast-header {
     display: flex;
-    justify-content: flex-end;
-    gap: 10px;
+    align-items: center;
+    gap: 12px;
 }
 
-#pwaDismissBtn {
-    background: none;
-    border: none;
-    color: #b3b3b3;
+.brand-icon {
+    width: 40px;
+    height: 40px;
+    background-color: var(--dark-bg);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    flex-shrink: 0;
+}
+
+.brand-icon-v {
+    font-weight: 800;
+    font-size: 18px;
+    background: linear-gradient(135deg, #00F2FE 0%, #4FACFE 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    /* <-- Añade esta línea estándar */
+    -webkit-text-fill-color: transparent;
+}
+
+.toast-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.toast-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #FFFFFF;
+}
+
+.toast-desc {
+    font-size: 13px;
+    color: #94A3B8;
+    line-height: 1.4;
+}
+
+/* UI de Pasos para iOS */
+.ios-steps {
+    display: none;
+    background: rgba(13, 19, 26, 0.6);
+    border-radius: 10px;
+    padding: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    margin-top: 2px;
+}
+
+.step-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 13px;
+    color: #CBD5E1;
+    line-height: 1.5;
+    margin-bottom: 10px;
+}
+
+.step-item:last-child {
+    margin-bottom: 0;
+}
+
+.step-number {
+    background: rgba(255, 255, 255, 0.1);
+    color: #FFFFFF;
+    font-size: 11px;
+    font-weight: 700;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.icon-inline {
+    display: inline-block;
+    background: #233242;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    margin: 0 2px;
+    color: #FFF;
+}
+
+.toast-actions {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+
+.btn-action {
+    flex: 1;
+    padding: 11px;
+    border-radius: 8px;
+    font-size: 13px;
     font-weight: 600;
     cursor: pointer;
-    padding: 8px 12px;
-}
-
-#pwaInstallBtn {
-    background-color: var(--brand-color);
-    color: var(--dark-bg);
     border: none;
-    border-radius: 20px;
-    padding: 8px 20px;
-    font-weight: 700;
-    cursor: pointer;
+    transition: background 0.2s;
+    text-align: center;
 }
 
-@keyframes slideUp {
-    from {
-        transform: translate(-50%, 100%);
-        opacity: 0;
-    }
-
-    to {
-        transform: translate(-50%, 0);
-        opacity: 1;
-    }
+.btn-primary {
+    background-color: #FFFFFF;
+    color: #0D131A;
 }
 
-/* --- FASE 13: BARRA DE TIEMPO PWA --- */
-.pwa-toast {
-    padding-bottom: 0;
-    /* Quitamos padding abajo para que la barra toque el borde */
-    overflow: hidden;
-    /* Para que la barra respete los bordes redondeados */
-    display: flex;
-    flex-direction: column;
+.btn-primary:hover {
+    background-color: #E2E8F0;
 }
 
-.pwa-content {
-    padding: 15px;
-    /* Movemos el padding aquí */
+.btn-secondary {
+    background-color: transparent;
+    color: #94A3B8;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.btn-secondary:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #FFFFFF;
+}
+
+/* La Barra de Ansiedad Vloitz */
 .pwa-progress-container {
     width: 100%;
     height: 4px;
-    /* Grosor de la barra */
     background-color: transparent;
+    position: absolute;
+    bottom: 0;
+    left: 0;
 }
 
 .pwa-progress-fill {
     height: 100%;
-    background-color: var(--brand-color);
-    /* Verde Vloitz */
+    background: linear-gradient(90deg, #00F2FE 0%, #4FACFE 100%);
     width: 0%;
-    /* Empieza vacía por defecto */
-    /* La animación se controlará vía JS */
 }
+
+/* ==========================================================================
+   [FIN] TOAST PREMIUM PWA (VLOITZ STYLE)
+   ========================================================================== */
 
 /* ==========================================================================
    [MODULE START] VLOITZ STORY GENERATOR & ADVANCED CONTROLS
