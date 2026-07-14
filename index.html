@@ -654,31 +654,7 @@
                 return "Configuración detallada aplicada.";
             };
 
-            // --- 🖱️ MÓDULO: NAVEGACIÓN INERCIAL (EASING FÍSICO) ---
-
-            function smoothScrollTo(targetElement, duration) {
-                const offset = 20; // Espacio de respiro visual arriba del reproductor
-                const targetPosition = targetElement.getBoundingClientRect().top + window.scrollY - offset;
-                const startPosition = window.scrollY;
-                const distance = targetPosition - startPosition;
-                let startTime = null;
-
-                // Curva de frenado exponencial (easeOutQuart) para inercia orgánica humana
-                const easeOutQuart = (t) => 1 - Math.pow(1 - t, 4);
-
-                function animation(currentTime) {
-                    if (startTime === null) startTime = currentTime;
-                    const timeElapsed = currentTime - startTime;
-                    const progress = Math.min(timeElapsed / duration, 1);
-
-                    window.scrollTo(0, startPosition + distance * easeOutQuart(progress));
-
-                    if (timeElapsed < duration) {
-                        requestAnimationFrame(animation);
-                    }
-                }
-                requestAnimationFrame(animation);
-            }
+            // --- 🖱️ MÓDULO: NAVEGACIÓN INERCIAL (NATIVA & SECUENCIADA) ---
 
             function initAvatarNavigation(targetSelector) {
                 const avatar = document.querySelector('.neon-marco-senior');
@@ -686,12 +662,25 @@
                 if (!avatar || !target) return;
 
                 avatar.addEventListener('click', () => {
-                    // Reemplazo del motor nativo por el algoritmo inercial (800ms de fluidez)
-                    smoothScrollTo(target, 800);
+                    // 1. Cálculo de distancia (mantenemos tu offset visual)
+                    const offset = 20;
+                    const targetPosition = target.getBoundingClientRect().top + window.scrollY - offset;
 
-                    // Efecto visual de "presión" al aterrizar
-                    target.classList.add('player-arrival-effect');
-                    setTimeout(() => target.classList.remove('player-arrival-effect'), 2200);
+                    // 2. Scroll 100% Nativo (GPU) - Cero tirones
+                    window.scrollTo({
+                        top: targetPosition,
+                        behavior: 'smooth'
+                    });
+
+                    // 3. Efecto diferido: La presión ocurre AL ATERRIZAR (450ms después)
+                    setTimeout(() => {
+                        target.classList.add('player-arrival-effect');
+
+                        setTimeout(() => {
+                            target.classList.remove('player-arrival-effect');
+                        }, 2200);
+
+                    }, 450);
                 });
             }
 
