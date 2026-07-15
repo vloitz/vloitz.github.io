@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vloitz-app-v22.3';
+const CACHE_NAME = 'vloitz-app-v22.6';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache'; // Bóveda de 2s para Latencia Cero
 const ASSETS_TO_CACHE = [
     './',
@@ -20,6 +20,21 @@ const ASSETS_TO_CACHE = [
 const DB_NAME = 'vloitz_vault_db';
 const STORE_NAME = 'audio_fragments';
 const DB_VERSION = 2;
+
+// --- VLOITZ CRYPTO ENGINE (Caja Negra JS) ---
+const SECRET_KEY = "vloitz_key_2026";
+const KEY_BUFFER = new TextEncoder().encode(SECRET_KEY);
+
+// Función Helper: Desencriptar ArrayBuffer con XOR
+function decryptBuffer(buffer) {
+    const data = new Uint8Array(buffer);
+    const limit = Math.min(100, data.length);
+    for (let i = 0; i < limit; i++) {
+        data[i] ^= KEY_BUFFER[i % KEY_BUFFER.length];
+    }
+    return data.buffer;
+}
+// --------------------------------------------
 
 let performanceTier = 'ALTA/PC';
 let isIOSDevice = false; // <--- AÑADIDO
@@ -310,33 +325,54 @@ self.addEventListener('fetch', (e) => {
     }
     // --- FIN: DETECCIÓN DE CAMBIOS CRÍTICOS ---
 
-    // --- INICIO: INTERCEPTOR DE BÓVEDA TÁCTICA (Cloudflare 2s) ---
-    // --- VERSIÓN CORREGIDA (PASO 1) ---
+    // --- INICIO: INTERCEPTOR DE BÓVEDA TÁCTICA (Caja Negra Vloitz) ---
     if (e.request.url.includes('.m4s') && e.request.url.includes('pub-1bd5ca00f737488cae44be74016d8499.r2.dev')) {
         e.respondWith(
-            caches.open(PRELOAD_CACHE_NAME).then((cache) => {
-                return cache.match(e.request).then((cachedResponse) => {
+            async function() {
+                try {
+                    // 1. Buscamos en caché primero (Pre-carga Phantom)
+                    const cache = await caches.open(PRELOAD_CACHE_NAME);
+                    const cachedResponse = await cache.match(e.request);
 
-                    // Si existe en caché y la respuesta es válida...
+                    // REGLA DE ORO: Si está en caché, ya está limpio y listo. Se entrega INTACTO.
                     if (cachedResponse && cachedResponse.ok) {
-                        // Verificamos el tamaño real del archivo (Blob)
-                        return cachedResponse.clone().blob().then(blob => {
-                            // Si el archivo es mayor a 500 bytes, es audio real.
-                            if (blob.size > 500) {
-                                console.log(`%c[Service Worker] 🧲 Hit Válido (0ms): ${e.request.url.split('/').pop()}`, "color: #39FF14; font-weight: bold;");
-                                return cachedResponse;
-                            }
-                            // Si es basura técnica (0 bytes), lo borramos y vamos a red
-                            console.warn(`[Service Worker] 🗑️ Fragmento corrupto detectado. Saltando a red.`);
-                            cache.delete(e.request);
-                            return fetch(e.request);
-                        }).catch(() => fetch(e.request));
+                        const blob = await cachedResponse.clone().blob();
+                        if (blob.size > 500) {
+                            console.log(`%c[Service Worker] 🧲 Hit Caché Limpio (0ms): ${e.request.url.split('/').pop()}`, "color: #39FF14; font-weight: bold;");
+                            return cachedResponse;
+                        }
+                        cache.delete(e.request); // Limpiar basura técnica
                     }
 
-                    // Si no está en caché, descarga normal de internet
+                    // 2. Si no está en caché, construimos la ruta blindada (.enc)
+                    const fileName = e.request.url.split('/').pop();
+                    const encUrl = e.request.url.replace(/\/([^\/]+\.m4s)$/, '/v-enc/$1.enc');
+
+                    // Intentamos obtener el archivo encriptado
+                    const encResponse = await fetch(encUrl);
+
+                    if (encResponse.ok) {
+                        // 3. Éxito: Desencriptamos el buffer al vuelo
+                        const buffer = await encResponse.clone().arrayBuffer();
+                        const decryptedBuffer = decryptBuffer(buffer);
+                        console.log(`%c[Vloitz Crypto] 🔓 Desencriptado desde R2: ${fileName}`, "color: #bb86fc; font-weight: bold;");
+
+                        return new Response(decryptedBuffer, {
+                            status: 200,
+                            headers: {
+                                'Content-Type': 'video/iso.segment'
+                            }
+                        });
+                    } else {
+                        // 4. Fallback de Seguridad: Si da 404 el .enc, pedimos el original y lo devolvemos INTACTO
+                        console.warn(`%c[Vloitz Crypto] ⚠️ Archivo blindado no encontrado. Usando original: ${fileName}`, "color: #ffb703; font-weight: bold;");
+                        return fetch(e.request);
+                    }
+                } catch (err) {
+                    console.error("[Vloitz Crypto] Fallo crítico de red. Activando puente de emergencia al original.", err);
                     return fetch(e.request);
-                });
-            })
+                }
+            }()
         );
         return;
     }
@@ -344,37 +380,64 @@ self.addEventListener('fetch', (e) => {
 
     // --- INICIO: INTERCEPTOR DE BÓVEDA HF (Fragmentos .m4s) ---
     // Solo interceptamos si es un pedacito de audio y viene de nuestros Workers (Túneles HF)
-    if (e.request.url.includes('.m4s') && e.request.url.includes('workers.dev')) {
+    if (e.request.url.includes('workers.dev') && e.request.url.includes('.m4s')) {
         e.respondWith(
             async function() {
-                // 1. Buscamos en el disco duro del teléfono (IndexedDB)
-                const cachedResponse = await getFragmentFromDB(e.request.url);
-                if (cachedResponse) {
-                    return cachedResponse; // ¡Hit instantáneo! Ahorro de red al 100%
-                }
-
-                // 2. Si no está en el disco, lo descargamos de internet (Túnel Worker)
                 try {
-                    const networkResponse = await fetch(e.request);
-
-                    // Solo guardamos si la descarga fue exitosa (Estado 200)
-                    if (networkResponse.ok) {
-                        // Clonamos la respuesta porque el archivo binario solo se puede leer una vez
-                        const responseClone = networkResponse.clone();
-                        const blob = await responseClone.blob();
-
-                        // Guardamos en segundo plano (no detiene la música)
-                        saveFragmentToDB(e.request.url, blob);
+                    // 1. Buscar en la bóveda local (IndexedDB) para latencia cero
+                    const cachedResponse = await getFragmentFromDB(e.request.url);
+                    if (cachedResponse) {
+                        return cachedResponse; // ¡Hit instantáneo! Ahorro de red al 100%
                     }
 
-                    return networkResponse; // Entregamos la música al reproductor
+                    // 2. Construir la ruta hacia la bóveda encriptada
+                    // De: .../JRG004/seg-1.m4s  ->  A: .../JRG004/v-enc/seg-1.m4s.enc
+                    const originalUrl = new URL(e.request.url);
+                    const pathParts = originalUrl.pathname.split('/');
+                    const fileName = pathParts.pop(); // ej. "seg-1.m4s"
+                    const setId = pathParts.pop(); // ej. "JRG004"
+
+                    const encUrl = `${originalUrl.origin}/${setId}/v-enc/${fileName}.enc`;
+
+                    // 3. Descargar el fragmento blindado a través del Proxy
+                    const encResponse = await fetch(encUrl);
+
+                    // Salvavidas: Si el .enc no existe (migración incompleta), usamos el original
+                    if (!encResponse.ok) {
+                        console.warn(`[HF Blindaje] ⚠️ Archivo blindado no encontrado, usando original: ${fileName}`);
+                        const fallbackResponse = await fetch(e.request.url);
+                        if (fallbackResponse.ok) {
+                            const fallbackBlob = await fallbackResponse.clone().blob();
+                            saveFragmentToDB(e.request.url, fallbackBlob); // Guardamos en DB
+                        }
+                        return fallbackResponse;
+                    }
+
+                    // 4. Desencriptar al vuelo en la memoria del dispositivo (La Caja Negra)
+                    const encryptedBuffer = await encResponse.arrayBuffer();
+                    const decryptedBuffer = decryptBuffer(encryptedBuffer);
+                    const rawBlob = new Blob([decryptedBuffer], {
+                        type: 'video/iso.segment'
+                    });
+
+                    // 5. Guardar el archivo LIMPIO en IndexedDB para futuras reproducciones
+                    saveFragmentToDB(e.request.url, rawBlob);
+
+                    // 6. Inyectar el audio puro al reproductor HLS
+                    return new Response(rawBlob, {
+                        headers: {
+                            'Content-Type': 'video/iso.segment'
+                        }
+                    });
+
                 } catch (error) {
-                    console.error('[Vloitz Cache] ❌ Error de red al buscar fragmento:', error);
-                    throw error;
+                    console.error('[HF Vault] ❌ Error crítico de red o desencriptación:', error);
+                    // Último recurso: intentar el original si todo falla
+                    return fetch(e.request);
                 }
             }()
         );
-        return; // Salimos aquí para que no se ejecute tu caché de interfaz (código de abajo)
+        return;
     }
     // --- FIN: INTERCEPTOR DE BÓVEDA HF ---
 
