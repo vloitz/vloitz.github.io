@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vloitz-app-v22.6';
+const CACHE_NAME = 'vloitz-app-v22.7';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache'; // Bóveda de 2s para Latencia Cero
 const ASSETS_TO_CACHE = [
     './',
@@ -238,14 +238,6 @@ self.addEventListener('activate', (e) => {
 // 3. INTERCEPTACIÓN: Si piden algo, miramos el caché primero
 self.addEventListener('fetch', (e) => {
 
-    // --- AÑADIDO: SALVOCONDUCTO iOS ---
-    // Si es iPhone/iPad, dejamos pasar los fragmentos de audio nativo sin tocar IndexedDB
-    // para evitar que iOS asfixie el audio en segundo plano.
-    if (isIOSDevice && (e.request.url.includes('.m4s') || e.request.url.includes('.m3u8'))) {
-        return; // Deja que Safari/Chrome-iOS gestione la red nativamente
-    }
-    // --- FIN SALVOCONDUCTO ---
-
     // 🛰️ ESTRATEGIA VLOITZ ULTRA-FRESH: Carga 0ms + Verificación Real Forzada
     if (e.request.url.includes('sets.json')) {
         e.respondWith(
@@ -384,10 +376,12 @@ self.addEventListener('fetch', (e) => {
         e.respondWith(
             async function() {
                 try {
-                    // 1. Buscar en la bóveda local (IndexedDB) para latencia cero
-                    const cachedResponse = await getFragmentFromDB(e.request.url);
-                    if (cachedResponse) {
-                        return cachedResponse; // ¡Hit instantáneo! Ahorro de red al 100%
+                    // EVOLUCIÓN iOS: Si es iPhone, NO leemos el disco para evitar asfixia en 2do plano
+                    if (!isIOSDevice) {
+                        const cachedResponse = await getFragmentFromDB(e.request.url);
+                        if (cachedResponse) {
+                            return cachedResponse; // ¡Hit instantáneo! Ahorro de red al 100%
+                        }
                     }
 
                     // 2. Construir la ruta hacia la bóveda encriptada
@@ -406,7 +400,7 @@ self.addEventListener('fetch', (e) => {
                     if (!encResponse.ok) {
                         console.warn(`[HF Blindaje] ⚠️ Archivo blindado no encontrado, usando original: ${fileName}`);
                         const fallbackResponse = await fetch(e.request.url);
-                        if (fallbackResponse.ok) {
+                        if (fallbackResponse.ok && !isIOSDevice) {
                             const fallbackBlob = await fallbackResponse.clone().blob();
                             saveFragmentToDB(e.request.url, fallbackBlob); // Guardamos en DB
                         }
@@ -420,8 +414,10 @@ self.addEventListener('fetch', (e) => {
                         type: 'video/iso.segment'
                     });
 
-                    // 5. Guardar el archivo LIMPIO en IndexedDB para futuras reproducciones
-                    saveFragmentToDB(e.request.url, rawBlob);
+                    // 5. Guardar el archivo LIMPIO en IndexedDB para futuras reproducciones (Excepto en iOS)
+                    if (!isIOSDevice) {
+                        saveFragmentToDB(e.request.url, rawBlob);
+                    }
 
                     // 6. Inyectar el audio puro al reproductor HLS
                     return new Response(rawBlob, {
