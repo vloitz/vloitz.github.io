@@ -2812,4 +2812,267 @@ span#currentTime {
    END - VLOITZ SABER-LASER
 ==========================================================================
 
+/* ==========================================================================
+   [ VLOITZ OPT-OUT ] Estilos para pistas en Lista Negra (Ghosting)
+   ========================================================================== */
+.track-blacklisted {
+    opacity: 0.4 !important;
+    filter: grayscale(100%);
+    pointer-events: none !important;
+    /* El escudo definitivo: anula todo clic y hover */
+    user-select: none !important;
+    /* Evita que copien el texto */
+}
+
+.track-blacklisted .track-title {
+    text-decoration: line-through;
+    color: #888 !important;
+}
+
+.track-blacklisted .track-emoji {
+    opacity: 0.5;
+}
+
+.track-blacklisted .favorite-btn,
+.track-blacklisted .action-group {
+    display: none !important;
+    /* Ocultamos los botones de acción para limpiar la vista */
+}
+
+/* ==========================================================================
+   [ VLOITZ OPT-OUT ] Estilos del Formulario Refinado
+   ========================================================================== */
+.optout-modal {
+    max-width: 550px;
+    /* Más ancho para texto legal */
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.optout-body {
+    text-align: left;
+    font-family: 'IBM Plex Mono', monospace;
+}
+
+.optout-text {
+    font-size: 12px;
+    color: #b3b3b3;
+    line-height: 1.5;
+    margin-bottom: 15px;
+}
+
+/* --- Caja de Advertencia y Persuasión --- */
+.optout-warning-box {
+    background: rgba(255, 60, 60, 0.05);
+    border: 1px solid rgba(255, 60, 60, 0.2);
+    border-radius: 6px;
+    padding: 18px;
+    margin-bottom: 20px;
+}
+
+.optout-warning-box h4 {
+    color: #ff5252;
+    margin: 0 0 12px 0;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.optout-warning-box p {
+    font-size: 11.5px;
+    color: #b3b3b3;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Hacemos que las negritas resalten fuertemente para lectura rápida */
+.optout-warning-box strong {
+    color: #ffffff;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0 2px;
+    border-radius: 2px;
+}
+
+.optout-bullets {
+    margin: 10px 0 0 0;
+    padding-left: 18px;
+    font-size: 11.5px;
+    color: #b3b3b3;
+    line-height: 1.6;
+}
+
+.optout-bullets li {
+    margin-bottom: 8px;
+}
+
+/* --- Separadores y Grupos --- */
+.optout-divider {
+    font-size: 11px;
+    color: #1DB954;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-top: 1px dashed #333;
+    border-bottom: 1px dashed #333;
+    padding: 8px 0;
+    margin: 20px 0;
+    text-align: center;
+    background: rgba(29, 185, 84, 0.05);
+}
+
+.optout-group {
+    margin-bottom: 15px;
+}
+
+.optout-label {
+    font-size: 12px;
+    color: #ddd;
+    margin-bottom: 6px;
+}
+
+.optout-highlight {
+    color: #1DB954;
+    font-weight: bold;
+}
+
+/* --- Radio Buttons --- */
+.optout-radio-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 12px;
+    color: #aaa;
+}
+
+.optout-radio-list label {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    cursor: pointer;
+    line-height: 1.4;
+}
+
+.optout-radio-list input[type="radio"] {
+    accent-color: #1DB954;
+    margin-top: 2px;
+}
+
+/* --- Inputs y Formularios --- */
+.optout-input-text {
+    width: 100%;
+    background: #121212;
+    border: 1px solid #333;
+    color: #fff;
+    padding: 10px 12px;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.optout-input-text:focus {
+    border-color: #1DB954;
+    box-shadow: 0 0 0 1px #1DB954;
+}
+
+/* --- Zona de Evidencia (Ctrl+V) --- */
+.proof-dropzone {
+    width: 100%;
+    min-height: 60px;
+    border: 1px dashed #555;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11.5px;
+    color: #888;
+    text-align: center;
+    padding: 15px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    line-height: 1.5;
+}
+
+.proof-dropzone:hover {
+    border-color: #1DB954;
+    color: #aaa;
+    background: rgba(29, 185, 84, 0.05);
+}
+
+/* --- Botón de Envío Legal --- */
+.optout-submit-btn {
+    width: 100%;
+    background: transparent;
+    border: 1px solid #555;
+    color: #ccc;
+    padding: 12px;
+    margin-top: 10px;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.optout-submit-btn:hover {
+    background: #fff;
+    color: #000;
+    border-color: #fff;
+}
+
+/* ==========================================================================
+   [ VLOITZ LEGAL FOOTER ] Estilos del Pie de Página Profesional
+   ========================================================================== */
+.vloitz-legal-footer {
+    text-align: center;
+    padding: 35px 20px;
+    margin-top: 50px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    font-family: 'IBM Plex Mono', monospace, sans-serif;
+    color: #777;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.footer-copy {
+    margin: 0 0 8px 0;
+    font-size: 11.5px;
+    letter-spacing: 0.3px;
+}
+
+.footer-links {
+    margin: 0;
+}
+
+.legal-link {
+    color: #999;
+    font-size: 11px;
+    text-decoration: none;
+    transition: color 0.2s ease, text-shadow 0.2s ease;
+}
+
+.legal-link:hover {
+    color: #1DB954;
+    text-shadow: 0 0 8px rgba(29, 185, 84, 0.4);
+    text-decoration: underline;
+}
+
+/* --- Enlace DMCA Cabecera Tracklist --- */
+.dmca-header-link {
+    color: #888;
+    font-size: 11px;
+    text-decoration: none;
+    margin-left: 8px;
+    display: inline-flex;
+    align-items: center;
+    transition: color 0.2s ease;
+}
+
+.dmca-header-link:hover {
+    color: #1DB954;
+}
+
 /* --- FIN DEL ARCHIVO --- */

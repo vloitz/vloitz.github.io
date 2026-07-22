@@ -23,7 +23,7 @@
         href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Roboto+Mono:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap"
         rel="stylesheet">
 
-    <link rel="stylesheet" href="style.css?v=10.3">
+    <link rel="stylesheet" href="style.css?v=10.4">
 
 
     <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
@@ -296,6 +296,9 @@
                         <span>Espectro</span>
                     </button>
 
+                    <!-- NUEVO: Enlace sutil y legal DMCA -->
+                    <a href="#" id="navOptOutBtn" class="dmca-header-link">⚖️ DMCA (Opt-Out)</a>
+
                 </div>
             </div>
             <ul id="current-tracklist" class="current-tracklist">
@@ -380,7 +383,6 @@
         </div>
     </div>
 
-
     <!-- ==========================================================================
          [INICIO] TOAST INTELIGENTE PWA (VLOITZ STYLE)
          ========================================================================== -->
@@ -425,6 +427,133 @@
          [FIN] TOAST INTELIGENTE PWA (VLOITZ STYLE)
          ========================================================================== -->
 
+    <!-- ==========================================================================
+         [INICIO] MODAL OPT-OUT / COPYRIGHT MANAGEMENT (REFINADO)
+         ========================================================================== -->
+    <div id="optout-modal-overlay" class="share-modal-overlay" style="display: none;">
+        <div class="share-modal-content optout-modal">
+            <div class="share-modal-header">
+                <h3 style="color: #fff; font-size: 15px;">⚖️ Gestión de Catálogo y Derechos (Opt-Out)</h3>
+                <button id="closeOptOutBtn" class="share-modal-close">&times;</button>
+            </div>
+
+            <div class="share-modal-body optout-body">
+                <p class="optout-text">
+                    Vloitz opera exclusivamente como una plataforma de curación de audio de alta fidelidad sin fines de
+                    lucro. Nuestra arquitectura no ofrece descargas directas, sino streaming de alta fidelidad y un
+                    sistema de metadatos con redirección hacia la tienda oficial.
+                </p>
+
+                <div class="optout-warning-box">
+                    <h4>⚠️ ¿Seguro que quieres retirar tu música de Vloitz?</h4>
+                    <p>Publicamos esta música bajo un estricto proceso de filtrado y curación musical para resaltar los
+                        mejores lanzamientos de la escena underground. Quien escuche este set y quiera adquirir la
+                        pista, <strong>tiene la opción de utilizar nuestro enlace directo que busca automáticamente el
+                            track en la tienda de Beatport para una posible compra.</strong></p>
+
+                    <p style="margin-top: 10px; color: #ccc;">Si decides retirar este contenido:</p>
+                    <ul class="optout-bullets">
+                        <li>Añadiremos este contenido a nuestra lista negra según el alcance seleccionado, asegurando
+                            que <strong>ni esta obra ni futuros lanzamientos afectados vuelvan a ser
+                                considerados</strong> en nuestros DJ sets.</li>
+                        <li>Procesaremos tu solicitud en un plazo máximo de 48 horas, eliminando la pista y
+                            <strong>cerrando los accesos directos de compra</strong> hacia Beatport.
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="optout-divider">📋 DETALLE DEL REPORTE AUTOMÁTICO (Capturado al momento)</div>
+
+                <div class="optout-group">
+                    <div class="optout-label">📍 Set actual: <span id="optSetId" class="optout-highlight">(Detectado
+                            dinámicamente)</span></div>
+
+                    <div class="optout-label" style="margin-top: 12px;">Selecciona la pista afectada:</div>
+                    <div class="optout-radio-list" id="optTrackList">
+                        <label><input type="radio" name="optTrack" value="prev"> <span id="optTrackPrev">[Anterior]
+                                Track A</span></label>
+                        <label><input type="radio" name="optTrack" value="current" checked> <span
+                                id="optTrackCurrent">[Actual] Track B (Reproduciendo)</span></label>
+                        <label><input type="radio" name="optTrack" value="next"> <span id="optTrackNext">[Siguiente]
+                                Track C</span></label>
+                    </div>
+
+                    <div class="optout-label" style="margin-top: 12px;">⏱️ Minuto exacto (Opcional si deseas afinar):
+                    </div>
+                    <input type="text" id="optMinute" placeholder="[ ej: 5:59 ]" class="optout-input-text"
+                        style="max-width: 150px;">
+                </div>
+
+                <div class="optout-divider">🔒 VERIFICACIÓN DE IDENTIDAD Y ALCANCE</div>
+
+                <div class="optout-group">
+                    <div class="optout-label">Nombre del artista(s):</div>
+                    <input type="text" id="optEntityName" placeholder="[ Nombre del artista ]" class="optout-input-text"
+                        required>
+
+                    <div class="optout-label" style="margin-top: 12px;">Correo Electrónico (Corporativo o Personal con
+                        verificación):</div>
+                    <input type="email" id="optEmail" placeholder="[ contacto@tusello.com ]" class="optout-input-text"
+                        required>
+
+                    <div class="optout-label" style="margin-top: 12px;">Alcance de la exclusión:</div>
+                    <div class="optout-radio-list">
+                        <label>
+                            <input type="radio" name="optScope" value="track" checked>
+                            <span id="optScopeTrackText">Retirar únicamente esta pista (Productor / Artista
+                                independiente)</span>
+                        </label>
+
+                        <label style="opacity: 0.6;" id="catalogLabelContainer">
+                            <input type="radio" name="optScope" value="catalog" id="optScopeCatalog" disabled>
+                            Retirar todo el catálogo del sello discográfico completo (Solo corporativo)
+                        </label>
+                    </div>
+
+                    <!-- Contenedor de evidencia (Se muestra solo si es correo personal/genérico) -->
+                    <div id="proofContainer" class="optout-group" style="display: none; margin-top: 15px;">
+                        <div id="proofDropzone" class="proof-dropzone">
+                            🔒 Verificación de Propiedad: Pega (Ctrl+V) una captura de pantalla de tu panel de gestión
+                            (ej. Beatport Hype, DistroKid, Spotify for Artists) que demuestre tu control administrativo
+                            sobre esta obra.
+                        </div>
+                    </div>
+
+                    <label class="share-checkbox-label"
+                        style="margin-top: 20px; display: flex; align-items: flex-start; gap: 10px;">
+                        <input type="checkbox" id="optConfirm" required style="margin-top: 3px;">
+                        <span class="checkmark" style="position: relative; top: 0; left: 0;"></span>
+                        <span style="font-size: 11px; color: #aaa; line-height: 1.4;">Bajo pena de perjuro, afirmo ser
+                            el titular legítimo o representante autorizado y entiendo que se removerán nuestros enlaces
+                            de compra.</span>
+                    </label>
+
+                    <!-- Botón de envío -->
+                    <button type="submit" class="optout-submit-btn">
+                        Enviar Solicitud Formal de Exclusión
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ==========================================================================
+         [FIN] MODAL OPT-OUT
+         ========================================================================== -->
+
+    <!-- ========================================================================== -->
+    <!-- [INICIO] FOOTER OFICIAL & DMCA LEGAL COMPLIANCE                            -->
+    <!-- ========================================================================== -->
+    <footer class="vloitz-legal-footer">
+        <p class="footer-copy">Vloitz High Quality Sets © 2026 — Arquitectura de Streaming sin fines de lucro.</p>
+        <p class="footer-links">
+            <a href="#" id="footer-optout-trigger" class="legal-link">⚖️ DMCA / Gestión de Catálogo y Derechos
+                (Opt-Out)</a>
+        </p>
+    </footer>
+    <!-- ========================================================================== -->
+    <!-- [FIN] FOOTER OFICIAL                                                       -->
+    <!-- ========================================================================== -->
+
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js')
@@ -434,7 +563,7 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest" defer></script>
     <script src="portada_visual.js"></script>
-    <script src="app.js?v=10.9"></script>
+    <script src="app.js?v=12.6"></script>
     <script src="calibradores.js"></script>
 
     <div id="storyOverlay">

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vloitz-app-v23.7';
+const CACHE_NAME = 'vloitz-app-v25.3';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache'; // Bóveda de 2s para Latencia Cero
 const ASSETS_TO_CACHE = [
     './',
@@ -441,6 +441,11 @@ self.addEventListener('fetch', (e) => {
     // EXCEPCIÓN: No cachear los archivos de audio gigantes (FLAC) automáticamente
     // Dejamos que el navegador maneje el streaming para no llenar la memoria del usuario
     if (e.request.url.includes('.flac') || e.request.url.includes('media.githubusercontent.com')) {
+        return;
+    }
+
+    // EXCEPCIÓN: Ignorar peticiones a Google Apps Script para evitar falsos "Miss Caché" y bloqueos
+    if (e.request.url.includes('script.google.com')) {
         return;
     }
 
