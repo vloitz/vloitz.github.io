@@ -30,9 +30,14 @@ html {
     user-select: none;
 }
 
+@media (min-width: 769px) {
+    html {
+        zoom: 80%;
+    }
+}
+
 .app-container {
-    max-width: 1380px;
-    /*1200*/
+    max-width: 1200px;
     margin: 20px auto;
     padding: 0 15px;
 }
