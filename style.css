@@ -31,7 +31,8 @@ html {
 }
 
 .app-container {
-    max-width: 1200px;
+    max-width: 1380px;
+    /*1200*/
     margin: 20px auto;
     padding: 0 15px;
 }
