@@ -13,97 +13,135 @@
                 {
                     "time": "0:00",
                     "emoji": "👥",
-                    "title": "Mihai Popoviciu - To The People"
+                    "title": "Mihai Popoviciu - To The People",
+                    "label": " 8Bit ",
+                    "cover_url": " fe9aa8d9-1e02-b163-055d-cad782540bca"
                 },
                 {
                     "time": "3:14",
                     "emoji": "🛸",
-                    "title": "Jack District - Take Me Higher"
+                    "title": "Jack District - Take Me Higher",
+                    "label": " DeepBeat Records ",
+                    "cover_url": " 8eaf9092-3669-be5d-1020-564639a9781d"
                 },
                 {
                     "time": "5:59",
                     "emoji": "🔮",
-                    "title": "Daniel Orpi - Never Enough"
+                    "title": "Daniel Orpi - Never Enough",
+                    "label": " Diggin' Records ",
+                    "cover_url": " 5a3a6997-3f1e-b74d-f47c-e7d867172588"
                 },
                 {
                     "time": "8:58",
                     "emoji": "👁️",
-                    "title": "Mike Millrain - Signs"
+                    "title": "Mike Millrain - Signs",
+                    "label": " Soul Revolution Records ",
+                    "cover_url": " 1629db1e-4097-b4cb-0a7f-1ed1e5732bb7"
                 },
                 {
                     "time": "12:43",
                     "emoji": "🏁",
-                    "title": "Reboot, Shokë - Here We Go"
+                    "title": "Reboot, Shokë - Here We Go",
+                    "label": " Cecille ",
+                    "cover_url": " e6c80b4c-209b-bd58-203d-d5a3c5e9d45e"
                 },
                 {
                     "time": "16:12",
                     "emoji": "🔥",
-                    "title": "Enrico Dragoni - Getting It On"
+                    "title": "Enrico Dragoni - Getting It On",
+                    "label": " Airtime Records ",
+                    "cover_url": " 7c5edb5d-9305-bca7-1dbc-ceb4e219787e"
                 },
                 {
                     "time": "18:30",
                     "emoji": "🪩",
-                    "title": "JHAY RHOD - Funky In The Club"
+                    "title": "JHAY RHOD - Funky In The Club",
+                    "label": " LW Recordings ",
+                    "cover_url": " 8ef16c2b-0c40-ba6d-0356-a0a07e29997a"
                 },
                 {
                     "time": "20:58",
                     "emoji": "🔧",
-                    "title": "Prodmark0 - I Need a Fix"
+                    "title": "Prodmark0 - I Need a Fix",
+                    "label": " Rawsome Deep ",
+                    "cover_url": " 60008dfc-a152-b23a-fc19-35bf3c709369"
                 },
                 {
                     "time": "23:43",
                     "emoji": "👟",
-                    "title": "MAd Sequencers - Bailalo"
+                    "title": "MAd Sequencers - Bailalo",
+                    "label": " PPMUSIC ",
+                    "cover_url": " 4bd8c9a0-1772-b4fc-2670-67d043b70f80"
                 },
                 {
                     "time": "25:58",
                     "emoji": "🔦",
-                    "title": "Rony Seikaly - Walking Out Of The Dark"
+                    "title": "Rony Seikaly - Walking Out Of The Dark",
+                    "label": " Stride ",
+                    "cover_url": " 74673cfa-45ce-b3e3-2e66-02a28a2ee219"
                 },
                 {
                     "time": "28:58",
                     "emoji": "💬",
-                    "title": "Cosmin Horatiu - Try To Say"
+                    "title": "Cosmin Horatiu - Try To Say",
+                    "label": " Moan ",
+                    "cover_url": " 0144d11e-d3f4-be80-0095-54ec7826452b"
                 },
                 {
                     "time": "30:56",
                     "emoji": "🪽",
-                    "title": "NUSONIDO - Rizzo (Col), Sacchi (VE) - You Can Fly"
+                    "title": "NUSONIDO - Rizzo (Col), Sacchi (VE) - You Can Fly",
+                    "label": " NUSONIDO ",
+                    "cover_url": " 95fed583-b163-bcd1-0c69-c86e938019d0"
                 },
                 {
                     "time": "33:44",
                     "emoji": "🧲",
-                    "title": "LondonGround - Power8"
+                    "title": "LondonGround - Power8",
+                    "label": " Magnetic People ",
+                    "cover_url": " a61db93f-d7e7-bbbc-2edc-2ebdc5f8fa96"
                 },
                 {
                     "time": "36:43",
                     "emoji": "🫧",
-                    "title": "Franco Schmidt - Tornasolado"
+                    "title": "Franco Schmidt - Tornasolado",
+                    "label": " LTF Records ",
+                    "cover_url": " c7edfd03-63c1-bd28-08b2-1d4d214bedc3"
                 },
                 {
                     "time": "38:26",
                     "emoji": "🎫",
-                    "title": "Franck Jimenez - Dance"
+                    "title": "Franck Jimenez - Dance",
+                    "label": " ACCESS Music ",
+                    "cover_url": " ef43d273-c9e2-b6a1-2e4c-fc0dd8208802"
                 },
                 {
                     "time": "40:56",
                     "emoji": "🫀",
-                    "title": "Joey A - When You Feel It"
+                    "title": "Joey A - When You Feel It",
+                    "label": " Strictly Flava Deep ",
+                    "cover_url": " 05b8addc-fce5-b941-14cb-a73413fe19e5"
                 },
                 {
                     "time": "43:58",
                     "emoji": "⏱️",
-                    "title": "Roland Clark, ROMBE4T, Doche - Don't Wait"
+                    "title": "Roland Clark, ROMBE4T, Doche - Don't Wait",
+                    "label": " HouseU ",
+                    "cover_url": " d8bd0d18-7f0c-b459-f623-58c2fee7e0f3"
                 },
                 {
                     "time": "46:28",
                     "emoji": "🔭",
-                    "title": "Sweet World - To the Future"
+                    "title": "Sweet World - To the Future",
+                    "label": " Bomba Room ",
+                    "cover_url": " 2abd4574-9578-bd73-2a60-03068403519f"
                 },
                 {
                     "time": "49:11",
                     "emoji": "🕵️",
-                    "title": "Specialist - I Got Ya"
+                    "title": "Specialist - I Got Ya",
+                    "label": " Nothing But ",
+                    "cover_url": " 0d3ed812-eeda-bce8-fe72-ba3839925234"
                 }
             ]
         },
