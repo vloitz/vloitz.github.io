@@ -13,16 +13,17 @@
     <meta property="og:image:width" content="800">
     <meta property="og:image:height" content="800">
     <meta property="og:type" content="music.song">
-    <meta property="og:url" content="https://vloitz.github.io/share/GDL010/">
+
+    <!-- FIX: La URL exacta de la carpeta actual para que Facebook no se confunda -->
+    <meta property="og:url" content="https://vloitz.github.io/share/GDL010/elisa-nau-shake-that-thing/">
 
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="▶ Elisa Nau - Shake That Thing | GridLoock Groovy 010">
     <meta name="twitter:description" content="Escucha "Elisa Nau - Shake That Thing" en el set GridLoock Groovy 010. Audio HIFI sin cortes.">
     <meta name="twitter:image" content="https://vloitz.github.io/Artwork/GDL010.jpg">
 
-    <!-- Vloitz SEO Armor: Canonical & Fallback Refresh -->
     <link rel="canonical" href="https://vloitz.github.io/?set=GDL010&t=3604" />
-    <meta http-equiv="refresh" content="0; url=https://vloitz.github.io/?set=GDL010&t=3604">
+    <!-- FIX: Etiqueta meta refresh ELIMINADA para retener al bot aquí -->
 
     <!-- JSON-LD Estático para Googlebot -->
     <script type="application/ld+json">
@@ -41,7 +42,7 @@
     </script>
 
     <script>
-        // Redirección infalible apuntando a la URL calculada en Node
+        // Redirección infalible apuntando a la URL calculada en Node (Los humanos se redirigen, los bots no la leen)
         setTimeout(function() {
             window.location.replace('https://vloitz.github.io/?set=GDL010&t=3604');
         }, 400);
