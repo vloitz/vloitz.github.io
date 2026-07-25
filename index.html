@@ -23,7 +23,7 @@
         href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Roboto+Mono:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap"
         rel="stylesheet">
 
-    <link rel="stylesheet" href="style.css?v=11.2">
+    <link rel="stylesheet" href="style.css?v=11.3">
 
 
     <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
@@ -330,7 +330,31 @@
 
             <div class="share-modal-body">
 
-                <div class="share-social-row">
+                <!-- NUEVO: Switch de Intención -->
+                <div class="share-intent-switch">
+                    <input type="radio" id="share-intent-track" name="shareIntent" value="track" checked>
+                    <label for="share-intent-track">Pista Actual</label>
+
+                    <input type="radio" id="share-intent-set" name="shareIntent" value="set">
+                    <label for="share-intent-set">Set Completo</label>
+                </div>
+
+                <div class="share-input-group">
+                    <input type="text" id="shareUrlInput" readonly value="https://vloitz.github.io/...">
+                    <button id="copyShareUrlBtn">Copiar</button>
+                </div>
+
+                <div class="share-option-row" id="shareTimeRow">
+                    <label class="share-checkbox-label">
+                        <input type="checkbox" id="shareTimeCheckbox">
+                        <span class="checkmark"></span>
+                        <span id="shareTimeLabel">Iniciar en 0:00</span>
+                    </label>
+                </div>
+
+                <div style="margin: 20px 0; border-top: 1px dashed rgba(255,255,255,0.1);"></div>
+
+                <div class="share-social-row" style="margin-bottom: 0;">
                     <a id="shareWaBtn" href="#" target="_blank" class="social-share-btn wa"
                         title="Compartir en WhatsApp">
                         <svg viewBox="0 0 24 24" fill="currentColor">
@@ -365,19 +389,6 @@
                         </svg>
                     </button>
 
-                </div>
-
-                <div class="share-input-group">
-                    <input type="text" id="shareUrlInput" readonly value="https://vloitz.github.io/...">
-                    <button id="copyShareUrlBtn">Copiar</button>
-                </div>
-
-                <div class="share-option-row">
-                    <label class="share-checkbox-label">
-                        <input type="checkbox" id="shareTimeCheckbox">
-                        <span class="checkmark"></span>
-                        <span id="shareTimeLabel">Iniciar en 0:00</span>
-                    </label>
                 </div>
             </div>
         </div>
@@ -563,7 +574,7 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest" defer></script>
     <script src="portada_visual.js"></script>
-    <script src="app.js?v=12.8"></script>
+    <script src="app.js?v=12.9"></script>
     <script src="calibradores.js"></script>
 
     <div id="storyOverlay">
