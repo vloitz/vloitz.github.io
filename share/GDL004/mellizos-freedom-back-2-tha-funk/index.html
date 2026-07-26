@@ -46,9 +46,22 @@
         const isBot = /bot|googlebot|crawler|spider|robot|crawling/i.test(navigator.userAgent);
 
         if (!isBot) {
-            // Los humanos saltan a la app real llevándose el "slug" de recuerdo
             setTimeout(function() {
-                window.location.replace('https://vloitz.github.io/?set=GDL004&t=2557&slug=mellizos-freedom-back-2-tha-funk');
+                // 1. Verificamos si la URL actual trae un tiempo exacto de compartido (ej: ?t=989)
+                const urlParams = new URLSearchParams(window.location.search);
+                const customTime = urlParams.get('t');
+
+                // 2. Si trae un ?t= personalizado, lo usamos. Si no, usamos el del track por defecto.
+                const timeToUse = customTime !== null ? customTime : '2557';
+
+                // 3. Armamos la ruta de salto respetando el tiempo elegido
+                let targetUrl = 'https://vloitz.github.io/?set=GDL004&t=' + timeToUse;
+                const trackSlug = 'mellizos-freedom-back-2-tha-funk';
+                if (trackSlug) {
+                    targetUrl += '&slug=' + trackSlug;
+                }
+
+                window.location.replace(targetUrl);
             }, 50);
         }
     </script>
