@@ -1,7 +1,7 @@
 {
     "profile": {
-        "profile_pic_url": "./perfil/perfil.webp",
-        "banner_url": "./perfil/banner.webp"
+        "profile_pic_url": "/perfil/perfil.webp",
+        "banner_url": "/perfil/banner.webp"
     },
     "sets": [
         {
