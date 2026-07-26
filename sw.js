@@ -1,17 +1,17 @@
 const CACHE_NAME = 'vloitz-app-v28.9';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache'; // Bóveda de 2s para Latencia Cero
 const ASSETS_TO_CACHE = [
-    './',
-    './index.html',
-    './style.css',
-    './app.js',
-    './calibradores.js',
-    './portada_visual.js',
-    './sets.json',
-    './perfil/perfil.webp',
-    './perfil/banner.webp',
-    './perfil/logo_og.webp',
-    './favicon/favicon.ico',
+    '/',
+    '/index.html',
+    '/style.css',
+    '/app.js',
+    '/calibradores.js',
+    '/portada_visual.js',
+    '/sets.json',
+    '/perfil/perfil.webp',
+    '/perfil/banner.webp',
+    '/perfil/logo_og.webp',
+    '/favicon/favicon.ico',
     'https://unpkg.com/wavesurfer.js@7.7.5/dist/wavesurfer.min.js',
     'https://unpkg.com/wavesurfer.js@7.7.5/dist/plugins/regions.min.js'
 ];
@@ -285,12 +285,13 @@ self.addEventListener('fetch', (e) => {
         return;
     }
 
-    // --- INICIO: DETECCIÓN DE CAMBIOS CRÍTICOS (HTML / VLOITZ_DEV_MODE) ---
+    // --- INICIO: DETECCIÓN DE CAMBIOS CRÍTICOS (HTML / VLOITZ_DEV_MODE) Y ENRUTAMIENTO SPA ---
     if (e.request.mode === 'navigate' || e.request.url.includes('index.html') || e.request.url === self.registration.scope) {
         e.respondWith(
-            caches.match(e.request).then((cachedResponse) => {
+            // El escudo SPA: Forzamos la entrega de /index.html siempre que haya una navegación
+            caches.match('/index.html').then((cachedResponse) => {
                 const safeHtmlResponse = cachedResponse ? cachedResponse.clone() : null;
-                const fetchPromise = fetch(e.request).then(async (networkResponse) => {
+                const fetchPromise = fetch('/index.html').then(async (networkResponse) => {
                     if (networkResponse.ok) {
                         const copy = networkResponse.clone();
 
@@ -305,7 +306,7 @@ self.addEventListener('fetch', (e) => {
                                 }));
                             }
                         }
-                        caches.open(CACHE_NAME).then((cache) => cache.put(e.request, copy));
+                        caches.open(CACHE_NAME).then((cache) => cache.put('/index.html', copy));
                     }
                     return networkResponse;
                 }).catch(() => {});
