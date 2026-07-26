@@ -3207,8 +3207,10 @@ span#currentTime {
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 12px;
-    padding: 12px 15px;
-    margin-bottom: 15px;
+    padding: 8px 12px;
+    /* Reducido de 12px a 8px */
+    margin-bottom: 8px;
+    /* Reducido de 15px a 8px para evitar acumulaciones */
     text-align: left;
 }
 
@@ -3223,13 +3225,14 @@ span#currentTime {
 
 .st-imm-controls,
 .st-vinyl-controls {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    /* Distribución simétrica en dos columnas */
+    gap: 12px;
     align-items: center;
-    justify-content: space-between;
-    margin-top: 12px;
-    padding-top: 12px;
+    margin-top: 8px;
+    padding-top: 8px;
     border-top: 1px dashed rgba(255, 255, 255, 0.1);
-    animation: fadeIn 0.2s ease-out;
 }
 
 .st-imm-label {
