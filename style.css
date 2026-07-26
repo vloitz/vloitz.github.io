@@ -1866,6 +1866,28 @@ span#currentTime {
     min-width: 50px;
 }
 
+/* NUEVO: Transformamos el texto estático en un botón de captura */
+.st-sync-btn {
+    cursor: pointer;
+    padding: 4px 12px;
+    border-radius: 6px;
+    background: rgba(29, 185, 84, 0.08);
+    /* Fondo verde muy sutil */
+    border: 1px dashed transparent;
+    transition: all 0.2s ease;
+}
+
+.st-sync-btn:hover {
+    background: rgba(29, 185, 84, 0.15);
+    border-color: rgba(29, 185, 84, 0.4);
+    transform: scale(1.05);
+}
+
+.st-sync-btn:active {
+    transform: scale(0.95);
+    /* Efecto de hundimiento rápido */
+}
+
 .st-fade-control {
     display: flex;
     align-items: center;
