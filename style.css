@@ -1866,26 +1866,74 @@ span#currentTime {
     min-width: 50px;
 }
 
-/* NUEVO: Transformamos el texto estático en un botón de captura */
+.st-adj-time {
+    font-family: 'Roboto Mono', monospace, sans-serif;
+    color: #1DB954;
+    font-size: 15px;
+    font-weight: bold;
+    min-width: 60px;
+    /* Ligeramente más ancho */
+    text-align: center;
+    /* Aseguramos que el tiempo no baile */
+}
+
+/* NUEVO: Diseño de "Pill Button" evidente para móviles */
 .st-sync-btn {
     cursor: pointer;
-    padding: 4px 12px;
-    border-radius: 6px;
-    background: rgba(29, 185, 84, 0.08);
-    /* Fondo verde muy sutil */
-    border: 1px dashed transparent;
+    padding: 4px 18px;
+    /* Más ancho para aspecto de botón */
+    border-radius: 20px;
+    /* Bordes súper curvos (Píldora) */
+    background: rgba(29, 185, 84, 0.12);
+    /* Fondo notorio */
+    border: 1px solid rgba(29, 185, 84, 0.5);
+    /* Borde explícito, grita "Tócame" */
     transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Indicador de "En Vivo" (Punto parpadeante inyectado por CSS) */
+.st-sync-btn::before {
+    content: '';
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    background-color: #1DB954;
+    border-radius: 50%;
+    margin-right: 8px;
+    box-shadow: 0 0 6px rgba(29, 185, 84, 0.8);
+    animation: v-pulse-live 2s infinite ease-in-out;
+}
+
+@keyframes v-pulse-live {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.3;
+        transform: scale(0.7);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
 .st-sync-btn:hover {
-    background: rgba(29, 185, 84, 0.15);
-    border-color: rgba(29, 185, 84, 0.4);
+    background: rgba(29, 185, 84, 0.2);
+    border-color: rgba(29, 185, 84, 0.8);
     transform: scale(1.05);
 }
 
 .st-sync-btn:active {
     transform: scale(0.95);
-    /* Efecto de hundimiento rápido */
+    background: #1DB954 !important;
+    color: #000 !important;
 }
 
 .st-fade-control {
