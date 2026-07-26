@@ -3186,4 +3186,110 @@ span#currentTime {
     color: #1DB954;
 }
 
+/* ==========================================================================
+   [ VLOITZ STORY ENGINE V3 ] Controles Visuales Senior
+   ========================================================================== */
+
+/* Opt-Out de Niebla Neón */
+.st-color-none {
+    background-color: #222 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    border: 1px solid #444 !important;
+}
+
+/* Paneles de Configuración V3 */
+.st-config-panel {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 12px 15px;
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.st-config-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #b3b3b3;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.st-imm-controls,
+.st-vinyl-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed rgba(255, 255, 255, 0.1);
+    animation: fadeIn 0.2s ease-out;
+}
+
+.st-imm-label {
+    color: #888;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.st-imm-stepper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #121212;
+    padding: 4px 8px;
+    border-radius: 20px;
+    border: 1px solid #333;
+}
+
+.st-btn-small {
+    background: transparent;
+    color: #fff;
+    border: none;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0 6px;
+    transition: color 0.2s;
+}
+
+.st-btn-small:hover {
+    color: #1DB954;
+}
+
+.st-imm-value {
+    font-family: 'Roboto Mono', monospace;
+    color: #1DB954;
+    font-size: 12px;
+    font-weight: bold;
+    min-width: 35px;
+    text-align: center;
+}
+
+.st-smart-color-btn {
+    background: rgba(29, 185, 84, 0.15);
+    color: #1DB954;
+    border: 1px solid rgba(29, 185, 84, 0.5);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.st-smart-color-btn:hover {
+    background: rgba(29, 185, 84, 0.3);
+}
+
+.st-smart-color-btn.active {
+    background: #1DB954;
+    color: #000;
+    box-shadow: 0 0 10px rgba(29, 185, 84, 0.5);
+}
+
 /* --- FIN DEL ARCHIVO --- */
