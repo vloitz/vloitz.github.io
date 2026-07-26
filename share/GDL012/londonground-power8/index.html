@@ -22,7 +22,7 @@
     <meta name="twitter:description" content="Escucha "LondonGround - Power8" en el set GridLoock Groovy 012. Audio HIFI sin cortes.">
     <meta name="twitter:image" content="https://static-assets-node.zutaitalo.workers.dev/cover/GDL012/a61db93f-d7e7-bbbc-2edc-2ebdc5f8fa96.jpg">
 
-    <link rel="canonical" href="https://vloitz.github.io/?set=GDL012&t=2024" />
+    <link rel="canonical" href="https://vloitz.github.io/share/GDL012/londonground-power8/" />
     <!-- FIX: Etiqueta meta refresh ELIMINADA para retener al bot aquí -->
 
     <!-- JSON-LD Estático para Googlebot -->
@@ -37,15 +37,20 @@
                 "@type": "MusicPlaylist",
                 "name": "GridLoock Groovy 012"
         },
-        "url": "https://vloitz.github.io/?set=GDL012&t=2024"
+        "url": "https://vloitz.github.io/share/GDL012/londonground-power8/"
 }
     </script>
 
     <script>
-        // Redirección infalible apuntando a la URL calculada en Node (Los humanos se redirigen, los bots no la leen)
-        setTimeout(function() {
-            window.location.replace('https://vloitz.github.io/?set=GDL012&t=2024');
-        }, 400);
+        // Detector de Bots Básico para proteger el SEO
+        const isBot = /bot|googlebot|crawler|spider|robot|crawling/i.test(navigator.userAgent);
+
+        if (!isBot) {
+            // Los humanos saltan a la app real llevándose el "slug" de recuerdo
+            setTimeout(function() {
+                window.location.replace('https://vloitz.github.io/?set=GDL012&t=2024&slug=londonground-power8');
+            }, 50);
+        }
     </script>
 
 </head>

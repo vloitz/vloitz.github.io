@@ -22,7 +22,7 @@
     <meta name="twitter:description" content="📅 2026-06-20 13:00:23 • 🎵 19 Tracks • Escucha este set exclusivo en alta calidad FLAC/WAV.">
     <meta name="twitter:image" content="https://vloitz.github.io/Artwork/GDL012.jpg">
 
-    <link rel="canonical" href="https://vloitz.github.io/?set=GDL012" />
+    <link rel="canonical" href="https://vloitz.github.io/share/GDL012/" />
     <!-- FIX: Etiqueta meta refresh ELIMINADA para retener al bot aquí -->
 
     <!-- JSON-LD Estático para Googlebot -->
@@ -249,10 +249,15 @@
     </script>
 
     <script>
-        // Redirección infalible apuntando a la URL calculada en Node (Los humanos se redirigen, los bots no la leen)
-        setTimeout(function() {
-            window.location.replace('https://vloitz.github.io/?set=GDL012');
-        }, 400);
+        // Detector de Bots Básico para proteger el SEO
+        const isBot = /bot|googlebot|crawler|spider|robot|crawling/i.test(navigator.userAgent);
+
+        if (!isBot) {
+            // Los humanos saltan a la app real llevándose el "slug" de recuerdo
+            setTimeout(function() {
+                window.location.replace('https://vloitz.github.io/?set=GDL012');
+            }, 50);
+        }
     </script>
 
 </head>

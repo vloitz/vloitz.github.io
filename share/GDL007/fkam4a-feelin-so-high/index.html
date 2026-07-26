@@ -22,7 +22,7 @@
     <meta name="twitter:description" content="Escucha "fka.m4a - Feelin' (So High)" en el set GridLoock Groovy 007. Audio HIFI sin cortes.">
     <meta name="twitter:image" content="https://static-assets-node.zutaitalo.workers.dev/cover/GDL007/a9062719-fdbe-b110-1eec-8061433fbefc.jpg">
 
-    <link rel="canonical" href="https://vloitz.github.io/?set=GDL007&t=1169" />
+    <link rel="canonical" href="https://vloitz.github.io/share/GDL007/fkam4a-feelin-so-high/" />
     <!-- FIX: Etiqueta meta refresh ELIMINADA para retener al bot aquí -->
 
     <!-- JSON-LD Estático para Googlebot -->
@@ -37,15 +37,20 @@
                 "@type": "MusicPlaylist",
                 "name": "GridLoock Groovy 007"
         },
-        "url": "https://vloitz.github.io/?set=GDL007&t=1169"
+        "url": "https://vloitz.github.io/share/GDL007/fkam4a-feelin-so-high/"
 }
     </script>
 
     <script>
-        // Redirección infalible apuntando a la URL calculada en Node (Los humanos se redirigen, los bots no la leen)
-        setTimeout(function() {
-            window.location.replace('https://vloitz.github.io/?set=GDL007&t=1169');
-        }, 400);
+        // Detector de Bots Básico para proteger el SEO
+        const isBot = /bot|googlebot|crawler|spider|robot|crawling/i.test(navigator.userAgent);
+
+        if (!isBot) {
+            // Los humanos saltan a la app real llevándose el "slug" de recuerdo
+            setTimeout(function() {
+                window.location.replace('https://vloitz.github.io/?set=GDL007&t=1169&slug=fkam4a-feelin-so-high');
+            }, 50);
+        }
     </script>
 
 </head>

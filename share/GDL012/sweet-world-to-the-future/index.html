@@ -22,7 +22,7 @@
     <meta name="twitter:description" content="Escucha "Sweet World - To the Future" en el set GridLoock Groovy 012. Audio HIFI sin cortes.">
     <meta name="twitter:image" content="https://static-assets-node.zutaitalo.workers.dev/cover/GDL012/2abd4574-9578-bd73-2a60-03068403519f.jpg">
 
-    <link rel="canonical" href="https://vloitz.github.io/?set=GDL012&t=2788" />
+    <link rel="canonical" href="https://vloitz.github.io/share/GDL012/sweet-world-to-the-future/" />
     <!-- FIX: Etiqueta meta refresh ELIMINADA para retener al bot aquí -->
 
     <!-- JSON-LD Estático para Googlebot -->
@@ -37,15 +37,20 @@
                 "@type": "MusicPlaylist",
                 "name": "GridLoock Groovy 012"
         },
-        "url": "https://vloitz.github.io/?set=GDL012&t=2788"
+        "url": "https://vloitz.github.io/share/GDL012/sweet-world-to-the-future/"
 }
     </script>
 
     <script>
-        // Redirección infalible apuntando a la URL calculada en Node (Los humanos se redirigen, los bots no la leen)
-        setTimeout(function() {
-            window.location.replace('https://vloitz.github.io/?set=GDL012&t=2788');
-        }, 400);
+        // Detector de Bots Básico para proteger el SEO
+        const isBot = /bot|googlebot|crawler|spider|robot|crawling/i.test(navigator.userAgent);
+
+        if (!isBot) {
+            // Los humanos saltan a la app real llevándose el "slug" de recuerdo
+            setTimeout(function() {
+                window.location.replace('https://vloitz.github.io/?set=GDL012&t=2788&slug=sweet-world-to-the-future');
+            }, 50);
+        }
     </script>
 
 </head>

@@ -22,7 +22,7 @@
     <meta name="twitter:description" content="Escucha "Nari - Don't Start Now" en el set GridLoock Groovy 004. Audio HIFI sin cortes.">
     <meta name="twitter:image" content="https://static-assets-node.zutaitalo.workers.dev/cover/GDL004/0021ce41-fb55-b3e4-fcdd-f6926cb8fcb7.jpg">
 
-    <link rel="canonical" href="https://vloitz.github.io/?set=GDL004&t=2154" />
+    <link rel="canonical" href="https://vloitz.github.io/share/GDL004/nari-dont-start-now/" />
     <!-- FIX: Etiqueta meta refresh ELIMINADA para retener al bot aquí -->
 
     <!-- JSON-LD Estático para Googlebot -->
@@ -37,15 +37,20 @@
                 "@type": "MusicPlaylist",
                 "name": "GridLoock Groovy 004"
         },
-        "url": "https://vloitz.github.io/?set=GDL004&t=2154"
+        "url": "https://vloitz.github.io/share/GDL004/nari-dont-start-now/"
 }
     </script>
 
     <script>
-        // Redirección infalible apuntando a la URL calculada en Node (Los humanos se redirigen, los bots no la leen)
-        setTimeout(function() {
-            window.location.replace('https://vloitz.github.io/?set=GDL004&t=2154');
-        }, 400);
+        // Detector de Bots Básico para proteger el SEO
+        const isBot = /bot|googlebot|crawler|spider|robot|crawling/i.test(navigator.userAgent);
+
+        if (!isBot) {
+            // Los humanos saltan a la app real llevándose el "slug" de recuerdo
+            setTimeout(function() {
+                window.location.replace('https://vloitz.github.io/?set=GDL004&t=2154&slug=nari-dont-start-now');
+            }, 50);
+        }
     </script>
 
 </head>

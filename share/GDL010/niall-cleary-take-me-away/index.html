@@ -22,7 +22,7 @@
     <meta name="twitter:description" content="Escucha "Niall Cleary - Take Me Away" en el set GridLoock Groovy 010. Audio HIFI sin cortes.">
     <meta name="twitter:image" content="https://static-assets-node.zutaitalo.workers.dev/cover/GDL010/728ecf65-168b-bd05-151a-605abc9007e7.jpg">
 
-    <link rel="canonical" href="https://vloitz.github.io/?set=GDL010&t=4172" />
+    <link rel="canonical" href="https://vloitz.github.io/share/GDL010/niall-cleary-take-me-away/" />
     <!-- FIX: Etiqueta meta refresh ELIMINADA para retener al bot aquí -->
 
     <!-- JSON-LD Estático para Googlebot -->
@@ -37,15 +37,20 @@
                 "@type": "MusicPlaylist",
                 "name": "GridLoock Groovy 010"
         },
-        "url": "https://vloitz.github.io/?set=GDL010&t=4172"
+        "url": "https://vloitz.github.io/share/GDL010/niall-cleary-take-me-away/"
 }
     </script>
 
     <script>
-        // Redirección infalible apuntando a la URL calculada en Node (Los humanos se redirigen, los bots no la leen)
-        setTimeout(function() {
-            window.location.replace('https://vloitz.github.io/?set=GDL010&t=4172');
-        }, 400);
+        // Detector de Bots Básico para proteger el SEO
+        const isBot = /bot|googlebot|crawler|spider|robot|crawling/i.test(navigator.userAgent);
+
+        if (!isBot) {
+            // Los humanos saltan a la app real llevándose el "slug" de recuerdo
+            setTimeout(function() {
+                window.location.replace('https://vloitz.github.io/?set=GDL010&t=4172&slug=niall-cleary-take-me-away');
+            }, 50);
+        }
     </script>
 
 </head>
