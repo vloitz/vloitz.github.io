@@ -663,23 +663,25 @@
                             <option value="2">Vinilo Giratorio</option>
                         </select>
                     </div>
-                    <!-- Flex wrap para que no se apriete en móviles -->
+                    <!-- Flex wrap comprimido tácticamente para móviles estrechos -->
                     <div class="st-vinyl-controls" id="stVinylControls"
-                        style="display: none; flex-wrap: wrap; gap: 10px; align-items: center;">
-                        <div style="display:flex; align-items:center; gap:5px;">
-                            <span class="st-imm-label">Escala:</span>
-                            <div class="st-imm-stepper">
-                                <button class="st-btn-small" id="stZoomMinus">-</button>
-                                <span class="st-imm-value" id="stZoomVal">1.0x</span>
-                                <button class="st-btn-small" id="stZoomPlus">+</button>
+                        style="display: none; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: flex-start;">
+
+                        <div style="display:flex; align-items:center; gap:4px;">
+                            <span class="st-imm-label">Esc:</span>
+                            <div class="st-imm-stepper" style="padding: 2px 6px; gap: 4px; min-width: auto;">
+                                <button class="st-btn-small" id="stZoomMinus" style="padding: 2px 6px;">-</button>
+                                <span class="st-imm-value" id="stZoomVal" style="min-width: 24px;">1.0x</span>
+                                <button class="st-btn-small" id="stZoomPlus" style="padding: 2px 6px;">+</button>
                             </div>
                         </div>
-                        <div style="display:flex; align-items:center; gap:5px;">
+
+                        <div style="display:flex; align-items:center; gap:4px;">
                             <span class="st-imm-label">Giro:</span>
-                            <div class="st-imm-stepper">
-                                <button class="st-btn-small" id="stSpeedMinus">-</button>
-                                <span class="st-imm-value" id="stSpeedVal">1.0x</span>
-                                <button class="st-btn-small" id="stSpeedPlus">+</button>
+                            <div class="st-imm-stepper" style="padding: 2px 6px; gap: 4px; min-width: auto;">
+                                <button class="st-btn-small" id="stSpeedMinus" style="padding: 2px 6px;">-</button>
+                                <span class="st-imm-value" id="stSpeedVal" style="min-width: 24px;">1.0x</span>
+                                <button class="st-btn-small" id="stSpeedPlus" style="padding: 2px 6px;">+</button>
                             </div>
                         </div>
 
