@@ -5,6 +5,259 @@
     },
     "sets": [
         {
+            "id": "GDL013",
+            "title": "GDL013",
+            "server": "CF",
+            "date": "2026-08-15 13:42:04",
+            "tracklist": [
+                {
+                    "time": "00:00",
+                    "emoji": "🎧",
+                    "title": "Nicola Gavino - Jazzzzz",
+                    "label": "Casa Bonita",
+                    "cover_url": "66079cc9-e5ee-b6f9-09ba-aace86001706"
+                },
+                {
+                    "time": "02:29",
+                    "emoji": "🛸",
+                    "title": "RDL.wav - Que Rico",
+                    "label": "Passe",
+                    "cover_url": "c657bb5e-8410-bcfe-105d-5f2e3d2796ec"
+                },
+                {
+                    "time": "04:58",
+                    "emoji": "🔥",
+                    "title": "Diego Sosa - Break It Down",
+                    "label": "Rawtracks",
+                    "cover_url": "e9222e1a-8a00-bb33-1dad-24e9d4a21cab"
+                },
+                {
+                    "time": "07:11",
+                    "emoji": "🔊",
+                    "title": "Deophonik - The Game",
+                    "label": "Players Label",
+                    "cover_url": "9a4db7fd-21e0-be8f-278e-e0e9a8cc6241"
+                },
+                {
+                    "time": "09:26",
+                    "emoji": "🎶",
+                    "title": "Bruno Furlan - Show Your Moves",
+                    "label": "Hellbent Records",
+                    "cover_url": "318246d9-1449-b855-1424-35651f564c51"
+                },
+                {
+                    "time": "11:40",
+                    "emoji": "🌌",
+                    "title": "Diego Sosa - Terere",
+                    "label": "Rawtracks",
+                    "cover_url": "e9222e1a-8a00-bb33-1dad-24e9d4a21cab"
+                },
+                {
+                    "time": "14:53",
+                    "emoji": "🎛️",
+                    "title": "Techouzer, Hermann Bravo - The Reaper",
+                    "label": "BNN RECORDS",
+                    "cover_url": "54f5d70e-55f0-b8a0-2da5-1ef6b8c47be4"
+                },
+                {
+                    "time": "16:52",
+                    "emoji": "🚀",
+                    "title": "Jah Gabriel - Da Funk",
+                    "label": "Drillers Records",
+                    "cover_url": "59c6fd4b-cb52-b74c-fc75-0f255ddc0393"
+                },
+                {
+                    "time": "19:21",
+                    "emoji": "👽",
+                    "title": "Eden Traxx, C-Field - Thinking Of You feat. C-Field",
+                    "label": "Irma Dancefloor",
+                    "cover_url": "723292e2-3eae-bede-25f5-0dd90f6250e0"
+                },
+                {
+                    "time": "21:13",
+                    "emoji": "👾",
+                    "title": "RSquared, Iglesias - Let's Freak",
+                    "label": "RWorks",
+                    "cover_url": "d75238be-1506-b1aa-f90d-757335beb673"
+                },
+                {
+                    "time": "23:41",
+                    "emoji": "🤖",
+                    "title": "Eros Santisi - Gitty Up",
+                    "label": "Glasgow Underground",
+                    "cover_url": "586cac9e-9922-b844-f230-a48ca7281542"
+                },
+                {
+                    "time": "25:55",
+                    "emoji": "☄️",
+                    "title": "Emanuel Natucci - Get The Fonk",
+                    "label": "Weird Recordings",
+                    "cover_url": "55fabfef-7354-b809-fa79-607b23e2f71c"
+                },
+                {
+                    "time": "29:09",
+                    "emoji": "🪐",
+                    "title": "Nico Ramírez - Keep Doing It",
+                    "label": "Arcila Records",
+                    "cover_url": "c74e6016-8466-be39-f4ce-5618fdb2d4e2"
+                },
+                {
+                    "time": "31:00",
+                    "emoji": "🌠",
+                    "title": "VIIBI - All Night Long",
+                    "label": "Shaman Records",
+                    "cover_url": "04c8c9d8-5fba-b692-0a1a-2d4f28b01efa"
+                },
+                {
+                    "time": "33:00",
+                    "emoji": "⚡",
+                    "title": "Juve Alonso - Trip To Cuba",
+                    "label": "Mystic Label",
+                    "cover_url": "3defee49-4e4a-bab3-f840-1c29ed3312e9"
+                },
+                {
+                    "time": "35:56",
+                    "emoji": "💥",
+                    "title": "Gonzalo Ram, Tito Jara - Breakdown",
+                    "label": "Mambo Lab",
+                    "cover_url": "cdce3e92-5482-b524-00c2-14a7fef064eb"
+                },
+                {
+                    "time": "37:56",
+                    "emoji": "✨",
+                    "title": "Alex Rave - Active",
+                    "label": "SAMBA",
+                    "cover_url": "1b3d7848-eb97-b7ff-20dc-d44797edf22c"
+                },
+                {
+                    "time": "40:40",
+                    "emoji": "🌟",
+                    "title": "Mirco Costa - Weekend",
+                    "label": "Distortion",
+                    "cover_url": "a59b4ff3-bffe-b517-17d4-feaf216f296a"
+                },
+                {
+                    "time": "44:23",
+                    "emoji": "💫",
+                    "title": "Fran Ares, Lexlay - Pull Up",
+                    "label": "Criterio Music",
+                    "cover_url": "af900308-eca8-b598-f588-b51bf4d7eee8"
+                },
+                {
+                    "time": "46:37",
+                    "emoji": "🌍",
+                    "title": "INOFF - Acid",
+                    "label": "And Dance",
+                    "cover_url": "ca8ce51a-7482-b12b-2d31-bcf010e7dea6"
+                },
+                {
+                    "time": "48:22",
+                    "emoji": "🌎",
+                    "title": "AMMIL - All for the Ladies",
+                    "label": "Flashmob Records",
+                    "cover_url": "4e237ff4-00d1-b544-2f11-3084d9f9a092"
+                },
+                {
+                    "time": "51:06",
+                    "emoji": "🌏",
+                    "title": "Nexz (AR) - Rollin' in the city",
+                    "label": "Only Friends Music",
+                    "cover_url": "2ad66f0e-c560-bd4e-11c7-5eae95083a2e"
+                },
+                {
+                    "time": "53:30",
+                    "emoji": "🌒",
+                    "title": "Gemelos (US) - Lollipop",
+                    "label": "Ride Music",
+                    "cover_url": "2c53dfce-3e4f-ba2d-f135-5fc1a9a583e7"
+                },
+                {
+                    "time": "56:14",
+                    "emoji": "🌓",
+                    "title": "Kruhz - One",
+                    "label": "Ribox Records",
+                    "cover_url": "94ff62ff-a981-b4ce-f4ed-f0e59771cdab"
+                },
+                {
+                    "time": "58:44",
+                    "emoji": "🌔",
+                    "title": "Marc Twelker - Don't Make The Cut",
+                    "label": "DESIGN_ Records",
+                    "cover_url": "4eac392d-db48-b35c-0ed9-28dcc6f5f373"
+                },
+                {
+                    "time": "60:28",
+                    "emoji": "🌕",
+                    "title": "Maxdal - I Gone Deeper",
+                    "label": "LW Recordings",
+                    "cover_url": "a2744818-1c88-b79d-f3b3-998a02d2e07a"
+                },
+                {
+                    "time": "62:27",
+                    "emoji": "🌖",
+                    "title": "RAYZIR - Dead Serious",
+                    "label": "HE.SHE.THEY.",
+                    "cover_url": "77369019-0e98-b071-2b7d-afb06e09fb4d"
+                },
+                {
+                    "time": "65:00",
+                    "emoji": "🌘",
+                    "title": "AMMIL - That Bass",
+                    "label": "CLU Recs",
+                    "cover_url": "805ec36d-33e8-b88c-fafb-e6707276ad7e"
+                },
+                {
+                    "time": "68:58",
+                    "emoji": "🌑",
+                    "title": "Rafa Barrios - Kendall",
+                    "label": "Variety Music",
+                    "cover_url": "1b521741-31b7-b7a7-03b6-f31f7e0dcf91"
+                },
+                {
+                    "time": "71:39",
+                    "emoji": "📻",
+                    "title": "Lettyh - It Is",
+                    "label": "The Anchor Records",
+                    "cover_url": "317e2f6d-2e62-bd2a-23fc-251655a7be53"
+                },
+                {
+                    "time": "73:53",
+                    "emoji": "🎚️",
+                    "title": "Marfaq, Von Beck - So Vicious",
+                    "label": "ROOS",
+                    "cover_url": "cdfd265e-6eaf-b61c-2f02-43e720d87f70"
+                },
+                {
+                    "time": "75:51",
+                    "emoji": "🎵",
+                    "title": "Emery Bex - break it down",
+                    "label": "Flâneur Music",
+                    "cover_url": "7bf6a390-11a7-b9ca-2550-a17d4162996f"
+                },
+                {
+                    "time": "78:21",
+                    "emoji": "🎙️",
+                    "title": "Brandon Tourle, Diego Gee (UK) - Thug Love",
+                    "label": "Bloom Sound",
+                    "cover_url": "876d15db-90a1-b44c-083b-7a062a60c8c7"
+                },
+                {
+                    "time": "81:20",
+                    "emoji": "🎹",
+                    "title": "Dimo - You Can Make It",
+                    "label": "BeLove",
+                    "cover_url": "3d0ef177-1383-b2cc-2d1f-cfd603b36c84"
+                },
+                {
+                    "time": "84:04",
+                    "emoji": "🪩",
+                    "title": "95 North, Dam Swindle - Find a Way to Believe",
+                    "label": "King Street Sounds",
+                    "cover_url": "8cf5d770-693f-b61f-1ce2-3d695fde2d30"
+                }
+            ]
+        },
+        {
             "id": "GDL012",
             "title": "GridLoock Groovy 012",
             "server": "CF",
@@ -1430,7 +1683,7 @@
         {
             "id": "GDL003",
             "title": "GridLoock Groovy 003",
-            "server": "CF",
+            "server": "HF",
             "date": "2026-02-20 19:44:48",
             "tracklist": [
                 {
