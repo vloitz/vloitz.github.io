@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vloitz-app-v32.9';
+const CACHE_NAME = 'vloitz-app-v41.1';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache'; // Bóveda de 2s para Latencia Cero
 const ASSETS_TO_CACHE = [
     '/',
@@ -197,20 +197,29 @@ async function enforceCacheLimit() {
 
 // --- FIN: FUNCIONES DE LECTURA Y ESCRITURA ---
 
-// --- INICIO: RECEPTOR DE CONFIGURACIÓN (OÍDO DEL ESCUDO) ---
+// --- INICIO: RECEPTOR DE CONFIGURACIÓN Y MENSAJES (OÍDO DEL ESCUDO) ---
 self.addEventListener('message', (event) => {
-    if (event.data && event.data.type === 'CONFIG_HARDWARE') {
+    if (!event.data) return;
+
+    // 1. Receptor de Hardware (Ya existente)
+    if (event.data.type === 'CONFIG_HARDWARE') {
         performanceTier = event.data.tier;
         cacheLimit = TIER_LIMITS[performanceTier] || 200;
-        isIOSDevice = event.data.isIOS || false; // <--- AÑADIDO: Guardar estado iOS
+        isIOSDevice = event.data.isIOS || false;
 
         console.log(
             `%c[Vloitz Cache] 🧠 Escudo Adaptativo: Nivel ${performanceTier} detectado. Límite de seguridad: ${cacheLimit} fragmentos. (iOS: ${isIOSDevice})`,
             "background: #121212; color: #FF00FF; font-weight: bold; padding: 2px 4px; border: 1px solid #FF00FF; border-radius: 3px;"
         );
     }
+
+    // 2. Receptor de Actualización Forzada (Nuevo - Conectado al botón del Toast)
+    if (event.data.type === 'SKIP_WAITING') {
+        console.log('[Service Worker] ⚡ Orden de salto de espera recibida por el usuario.');
+        self.skipWaiting();
+    }
 });
-// --- FIN: RECEPTOR DE CONFIGURACIÓN ---
+// --- FIN: RECEPTOR DE CONFIGURACIÓN Y MENSAJES ---
 
 // 1. INSTALACIÓN: Guardamos la interfaz en el caché
 self.addEventListener('install', (e) => {
