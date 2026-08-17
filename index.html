@@ -48,14 +48,35 @@
     <script src="https://unpkg.com/wavesurfer.js@7.7.5/dist/wavesurfer.min.js" defer></script>
     <script src="https://unpkg.com/wavesurfer.js@7.7.5/dist/plugins/regions.min.js" defer></script>
 
-    <!-- Schema de WebSite para corregir el nombre de marca frente a GitHub -->
+    <!-- Schema Maestro de Entidad (Knowledge Graph) para posicionamiento de marca y desambiguación -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "Vloitz",
-      "alternateName": ["Vloitz Music", "Vloitz Sets"],
-      "url": "https://vloitz.github.io/"
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://vloitz.github.io/#website",
+          "url": "https://vloitz.github.io/",
+          "name": "Vloitz",
+          "alternateName": ["Vloitz Music", "Vloitz Sets", "GridLock Sets"],
+          "description": "El hogar oficial de GridLock. Sesiones Hi-Fi de House, Deep Tech y Jackin.",
+          "inLanguage": "es"
+        },
+        {
+          "@type": "MusicGroup",
+          "@id": "https://vloitz.github.io/#musicgroup",
+          "name": "Vloitz",
+          "url": "https://vloitz.github.io/",
+          "genre": ["House", "Deep House", "Tech House", "Jackin House"],
+          "image": "https://vloitz.github.io/perfil/logo_og.webp",
+          "sameAs": [
+            "https://soundcloud.com/vloitz",
+            "https://www.youtube.com/@Vloitz",
+            "https://www.instagram.com/italozuta/",
+            "https://www.tiktok.com/@vloitz"
+          ]
+        }
+      ]
     }
     </script>
 </head>
