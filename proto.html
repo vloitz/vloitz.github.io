@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Vloitz Laser Engine - Fix Prototype</title>
+    <style>
+        body {
+            background: #121212;
+            color: #fff;
+            font-family: monospace;
+            padding: 20px;
+        }
+
+        .vloitz-btn {
+            background: #1DB954;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        #waveform-container {
+            position: relative;
+            margin-top: 40px;
+            background: #1a1a1a;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        #vloitz-ghost-pointer {
+            position: absolute;
+            top: 0;
+            width: 2px;
+            height: 100%;
+            background: #00F3FF;
+            display: none;
+            z-index: 10;
+            box-shadow: 0 0 10px #00F3FF;
+            pointer-events: none;
+            transform: translateX(-50%);
+        }
+
+        .dron-head {
+            position: absolute;
+            top: -5px;
+            left: -4px;
+            width: 10px;
+            height: 10px;
+            background: #00F3FF;
+            border-radius: 50%;
+        }
+
+        #telemetry {
+            margin-top: 20px;
+            padding: 15px;
+            background: #000;
+            border-left: 3px solid #1DB954;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .highlight {
+            color: #1DB954;
+            font-weight: bold;
+        }
+
+        .alert {
+            color: #ff5555;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <h3>Diagnóstico: Desfase WaveSurfer v7+</h3>
+    <button class="vloitz-btn" id="playBtn">▶ Reproducir / Pausa</button>
+    <button class="vloitz-btn" id="jumpBtn" style="background: #00F3FF;">🎯 Saltar al Minuto 1:00 (Provocar
+        Scroll)</button>
+
+    <div id="waveform-container">
+        <div id="vloitz-ghost-pointer">
+            <div class="dron-head"></div>
+        </div>
+        <div id="waveform"></div>
+    </div>
+
+    <div id="telemetry">Interactúa con la onda para ver telemetría en vivo.</div>
+
+    <script type="module">
+        import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js';
+
+        const ws = WaveSurfer.create({
+            container: '#waveform',
+            waveColor: 'rgba(255, 255, 255, 0.2)',
+            progressColor: 'rgba(29, 185, 84, 0.8)',
+            height: 128,
+            cursorWidth: 2,
+            autoScroll: true
+        });
+
+        ws.load('https://wavesurfer.xyz/wavesurfer-code/examples/audio/audio.wav');
+
+        document.getElementById('playBtn').onclick = () => ws.playPause();
+        document.getElementById('jumpBtn').onclick = () => { ws.seekTo(60 / ws.getDuration()); ws.play(); };
+
+        const pointer = document.getElementById('vloitz-ghost-pointer');
+        const telemetry = document.getElementById('telemetry');
+        const container = document.getElementById('waveform-container');
+
+        // =======================================================================
+        // EL PARCHE ARQUITECTÓNICO: Escáner Dinámico de Nodos de Scroll
+        // =======================================================================
+        function getActiveScrollContainer(wsInstance) {
+            const wrapper = wsInstance.getWrapper();
+            if (!wrapper || !wrapper.shadowRoot) return wrapper;
+
+            const shadowChildren = Array.from(wrapper.shadowRoot.children);
+            for (const el of shadowChildren) {
+                const hasPhysicalOverflow = el.scrollWidth > el.clientWidth;
+                const style = window.getComputedStyle(el);
+                const hasScrollableStyle = style.overflowX === 'auto' || style.overflowX === 'scroll';
+
+                if (hasPhysicalOverflow || hasScrollableStyle) return el;
+            }
+            return shadowChildren[0] || wrapper;
+        }
+        // =======================================================================
+
+        let isLaserActive = false, startX = 0, baseTime = 0, pxPerSec = 200;
+
+        // Simulador Táctil (Mouse para PC)
+        container.addEventListener('mousedown', (e) => {
+            isLaserActive = true;
+            startX = e.clientX;
+            baseTime = ws.getCurrentTime();
+            ws.setOptions({ autoScroll: false });
+            ws.zoom(pxPerSec);
+            pointer.style.display = 'block';
+            updateDronPosition(e.clientX);
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (isLaserActive) updateDronPosition(e.clientX);
+        });
+
+        window.addEventListener('mouseup', () => {
+            if (!isLaserActive) return;
+            isLaserActive = false;
+            pointer.style.display = 'none';
+            ws.zoom(0);
+            ws.setOptions({ autoScroll: true });
+            telemetry.innerHTML = "Estado: Reposo";
+        });
+
+        function updateDronPosition(currentX) {
+            const addedTime = (currentX - startX) / pxPerSec;
+            const targetTime = Math.max(0, Math.min(ws.getDuration(), baseTime + addedTime));
+
+            // EXTRACCIÓN DINÁMICA DEL SCROLL (Reemplaza al selector estático .scroll)
+            const scrollNode = getActiveScrollContainer(ws);
+
+            // FÓRMULA CORREGIDA
+            const targetPixel = targetTime * pxPerSec;
+            const realScreenX = targetPixel - scrollNode.scrollLeft;
+
+            pointer.style.left = `${realScreenX}px`;
+
+            telemetry.innerHTML = `
+                Target Time: <span class="highlight">${targetTime.toFixed(2)}s</span><br>
+                Zoom Px/Sec: ${pxPerSec}<br>
+                Target Absoluto (Pixel): ${targetPixel.toFixed(2)}px<br>
+                ScrollLeft Recuperado: <span class="alert">${scrollNode.scrollLeft.toFixed(2)}px</span><br>
+                Pantalla Relativa (realScreenX): <span class="highlight">${realScreenX.toFixed(2)}px</span>
+            `;
+        }
+    </script>
+</body>
+
+</html>
