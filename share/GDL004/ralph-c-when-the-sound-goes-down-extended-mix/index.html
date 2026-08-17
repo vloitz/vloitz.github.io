@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>▶ Ralph C - When the Sound Goes Down - Extended Mix | GridLoock Groovy 004</title>
 
     <meta property="og:site_name" content="Vloitz - High Quality Sets">
@@ -13,8 +14,6 @@
     <meta property="og:image:width" content="800">
     <meta property="og:image:height" content="800">
     <meta property="og:type" content="music.song">
-
-    <!-- FIX: La URL exacta de la carpeta actual para que Facebook no se confunda -->
     <meta property="og:url" content="https://vloitz.github.io/share/GDL004/ralph-c-when-the-sound-goes-down-extended-mix/">
 
     <meta name="twitter:card" content="summary_large_image">
@@ -23,7 +22,8 @@
     <meta name="twitter:image" content="https://static-assets-node.zutaitalo.workers.dev/cover/GDL004/2ae49c9f-666b-b8b4-24d7-c36d67a24271.jpg">
 
     <link rel="canonical" href="https://vloitz.github.io/share/GDL004/ralph-c-when-the-sound-goes-down-extended-mix/" />
-    <!-- FIX: Etiqueta meta refresh ELIMINADA para retener al bot aquí -->
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
 
     <!-- JSON-LD Estático para Googlebot -->
     <script type="application/ld+json">
@@ -41,39 +41,39 @@
 }
     </script>
 
-    <script>
-        // Detector de Bots Básico para proteger el SEO
-        const isBot = /bot|googlebot|crawler|spider|robot|crawling/i.test(navigator.userAgent);
-
-        if (!isBot) {
-            setTimeout(function() {
-                // 1. Verificamos si la URL actual trae un tiempo exacto de compartido (ej: ?t=989)
-                const urlParams = new URLSearchParams(window.location.search);
-                const customTime = urlParams.get('t');
-
-                // 2. Si trae un ?t= personalizado, lo usamos. Si no, usamos el del track por defecto.
-                const timeToUse = customTime !== null ? customTime : '2396';
-
-                // 3. Armamos la ruta de salto respetando el tiempo elegido
-                let targetUrl = 'https://vloitz.github.io/?set=GDL004&t=' + timeToUse;
-                const trackSlug = 'ralph-c-when-the-sound-goes-down-extended-mix';
-                if (trackSlug) {
-                    targetUrl += '&slug=' + trackSlug;
-                }
-
-                window.location.replace(targetUrl);
-            }, 50);
-        }
-    </script>
-
+    <style>
+        body { margin: 0; padding: 0; background-color: #0b0c10; color: white; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; }
+        .bg-blur { position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background-image: url('https://static-assets-node.zutaitalo.workers.dev/cover/GDL004/2ae49c9f-666b-b8b4-24d7-c36d67a24271.jpg'); background-size: cover; background-position: center; filter: blur(60px) brightness(0.3); z-index: 0; }
+        .card { position: relative; z-index: 1; background: rgba(20, 22, 27, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 30px; text-align: center; max-width: 320px; width: 85%; box-shadow: 0 30px 60px rgba(0,0,0,0.6); }
+        .cover { width: 100%; aspect-ratio: 1/1; border-radius: 12px; object-fit: cover; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px; }
+        .title { font-weight: 900; font-size: 20px; line-height: 1.2; margin: 0 0 8px 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .artist { color: #1DB954; font-weight: 700; font-size: 13px; margin: 0 0 24px 0; letter-spacing: 0.5px; text-transform: uppercase; }
+        .play-btn { display: inline-flex; align-items: center; justify-content: center; width: 100%; background-color: #1DB954; color: #000; text-decoration: none; font-weight: 900; font-size: 15px; padding: 16px 0; border-radius: 100px; transition: transform 0.2s, background-color 0.2s; box-shadow: 0 8px 20px rgba(29, 185, 84, 0.3); }
+        .play-btn:hover { background-color: #1ed760; transform: translateY(-2px); }
+        .play-icon { width: 20px; height: 20px; fill: currentColor; margin-right: 8px; }
+        /* SEO Oculto pero indexable */
+        .seo-data { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+    </style>
 </head>
 <body>
+    <div class="bg-blur"></div>
+    <div class="card">
+        <img src="https://static-assets-node.zutaitalo.workers.dev/cover/GDL004/2ae49c9f-666b-b8b4-24d7-c36d67a24271.jpg" alt="Cover" class="cover">
+        <h1 class="title">Ralph C - When the Sound Goes Down - Extended Mix</h1>
+        <p class="artist">GridLoock Groovy 004</p>
+
+        <!-- El enlace real que lleva a la App y cumple con UX/SEO -->
+        <a href="https://vloitz.github.io/?set=GDL004&t=2396&slug=ralph-c-when-the-sound-goes-down-extended-mix" class="play-btn">
+            <svg class="play-icon" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+            ESCUCHAR AHORA
+        </a>
+    </div>
+
     <!-- Contenido Semántico para Googlebot -->
-    <article style="position: absolute; left: -9999px;">
-        <h1>▶ Ralph C - When the Sound Goes Down - Extended Mix | GridLoock Groovy 004</h1>
+    <article class="seo-data">
+        <h2>Descripción del Set</h2>
         <p>Escucha "Ralph C - When the Sound Goes Down - Extended Mix" en el set GridLoock Groovy 004. Audio HIFI sin cortes.</p>
-        <img src="https://static-assets-node.zutaitalo.workers.dev/cover/GDL004/2ae49c9f-666b-b8b4-24d7-c36d67a24271.jpg" alt="Portada de GridLoock Groovy 004">
-        <h2>Tracklist / IDs</h2>
+        <h2>Tracklist Completo</h2>
 <ul class="seo-tracklist">
         <li><span itemprop="name">Juve Alonso - Without Your Love - Original Mix</span> (Played at 0:00) - Listen in High Quality FLAC / WAV Set</li>
         <li><span itemprop="name">Cristina Lazic - Watch The Time - LondonGround Remix</span> (Played at 3:33) - Listen in High Quality FLAC / WAV Set</li>
@@ -97,6 +97,5 @@
         <li><span itemprop="name">Mellizos - Freedom (Back 2 Tha Funk)</span> (Played at 42:37) - Listen in High Quality FLAC / WAV Set</li>
     </ul>
     </article>
-    <p>Cargando ▶ Ralph C - When the Sound Goes Down - Extended Mix | GridLoock Groovy 004...</p>
 </body>
 </html>

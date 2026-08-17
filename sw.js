@@ -294,7 +294,12 @@ self.addEventListener('fetch', (e) => {
     }
 
     // --- INICIO: DETECCIÓN DE CAMBIOS CRÍTICOS (HTML / VLOITZ_DEV_MODE) Y ENRUTAMIENTO SPA ---
-    if (e.request.mode === 'navigate' || e.request.url.includes('index.html') || e.request.url === self.registration.scope) {
+
+    // 🛡️ SEO FIX: Si la URL es una página estática de /share/, el Service Worker NO la intercepta.
+    // Esto garantiza que Googlebot y los usuarios humanos vean exactamente el mismo HTML con el SEO.
+    const isShareRoute = e.request.url.includes('/share/');
+
+    if (!isShareRoute && (e.request.mode === 'navigate' || e.request.url.includes('index.html') || e.request.url === self.registration.scope)) {
         e.respondWith(
             // El escudo SPA: Forzamos la entrega de /index.html siempre que haya una navegación
             caches.match('/index.html').then((cachedResponse) => {
