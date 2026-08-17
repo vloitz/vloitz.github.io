@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vloitz-app-v43.1';
+const CACHE_NAME = 'vloitz-app-v43.3';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache'; // Bóveda de 2s para Latencia Cero
 const ASSETS_TO_CACHE = [
     '/',
@@ -12,6 +12,7 @@ const ASSETS_TO_CACHE = [
     '/perfil/banner.webp',
     '/perfil/logo_og.webp',
     '/favicon/favicon.ico',
+    '/manifest.json',
     'https://unpkg.com/wavesurfer.js@7.7.5/dist/wavesurfer.min.js',
     'https://unpkg.com/wavesurfer.js@7.7.5/dist/plugins/regions.min.js'
 ];
@@ -233,13 +234,19 @@ self.addEventListener('install', (e) => {
 
 // 2. ACTIVACIÓN: Limpiamos versiones viejas si actualizas la web
 self.addEventListener('activate', (e) => {
-    e.waitUntil(clients.claim()); // ⚡ Toma el mando de la página actual de inmediato
     e.waitUntil(
-        caches.keys().then((keyList) => {
-            return Promise.all(keyList.map((key) => {
-                if (key !== CACHE_NAME) return caches.delete(key);
-            }));
-        })
+        Promise.all([
+            clients.claim(), // ⚡ Toma el mando de la página actual de inmediato
+            caches.keys().then((keyList) => {
+                return Promise.all(keyList.map((key) => {
+                    // ⚠️ FIX CRÍTICO: No borrar la bóveda fantasma (PRELOAD_CACHE_NAME)
+                    if (key !== CACHE_NAME && key !== PRELOAD_CACHE_NAME) {
+                        console.log(`[Service Worker] 🧹 Limpiando caché obsoleta: ${key}`);
+                        return caches.delete(key);
+                    }
+                }));
+            })
+        ])
     );
 });
 
