@@ -477,9 +477,25 @@ self.addEventListener('fetch', (e) => {
             if (!response) {
                 console.warn(`[Service Worker] ⚠️ Miss Caché (undefined) en recarga: ${e.request.url}`);
             }
-            // Si está en caché, lo devolvemos (Carga Instantánea)
-            // Si no, lo pedimos a internet
-            return response || fetch(e.request);
+            // Si está en caché, lo devolvemos. Si no, intentamos la red con un escudo catch defensivo.
+            return response || fetch(e.request).catch(async (err) => {
+                console.warn(`[Service Worker] 🛡️ Fallo de red recuperado silenciosamente para: ${e.request.url}`);
+
+                // Si es una petición de navegación (ej. recargar una ruta /share/),
+                // devolvemos el index.html principal para mantener viva la SPA sin romper la consola.
+                if (e.request.mode === 'navigate') {
+                    const cachedFallback = await caches.match('/index.html');
+                    if (cachedFallback) return cachedFallback;
+                }
+
+                // Respuesta de emergencia neutral para recursos secundarios fallidos por red
+                return new Response('Network fallback error', {
+                    status: 408,
+                    headers: {
+                        'Content-Type': 'text/plain'
+                    }
+                });
+            });
         })
     );
 });
