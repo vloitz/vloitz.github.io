@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vloitz-app-v43.8';
+const CACHE_NAME = 'vloitz-app-v44.2';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache'; // Bóveda de 2s para Latencia Cero
 const ASSETS_TO_CACHE = [
     '/',
@@ -35,6 +35,17 @@ function decryptBuffer(buffer) {
     }
     return data.buffer;
 }
+
+// ⏱️ Helper Senior: Generador de Estampilla de Tiempo Absoluto (HH:MM:SS.mmm)
+function getWallClockTime() {
+    const d = new Date();
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    const seconds = String(d.getSeconds()).padStart(2, '0');
+    const ms = String(d.getMilliseconds()).padStart(3, '0');
+    return `${hours}:${minutes}:${seconds}.${ms}`;
+}
+
 // --------------------------------------------
 
 let performanceTier = 'ALTA/PC';
@@ -351,7 +362,7 @@ self.addEventListener('fetch', (e) => {
                     if (cachedResponse && cachedResponse.ok) {
                         const blob = await cachedResponse.clone().blob();
                         if (blob.size > 500) {
-                            console.log(`%c[Service Worker] 🧲 Hit Caché Limpio (0ms): ${e.request.url.split('/').pop()}`, "color: #39FF14; font-weight: bold;");
+                            console.log(`%c[${getWallClockTime()}] [Service Worker] 🧲 Hit Caché Limpio (0ms): ${e.request.url.split('/').pop()}`, "color: #39FF14; font-weight: bold;");
                             return cachedResponse;
                         }
                         cache.delete(e.request); // Limpiar basura técnica
@@ -377,7 +388,7 @@ self.addEventListener('fetch', (e) => {
                         const secs = totalSecs % 60;
                         const timeFormatted = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 
-                        console.log(`%c[Vloitz Crypto] 🔓 Desencriptado [${timeFormatted}] (${fileName})`, "color: #03dac6; font-size: 10px; font-weight: bold;");
+                        console.log(`%c[${getWallClockTime()}] [Vloitz Crypto] 🔓 Desencriptado [Audio: ${timeFormatted}] (${fileName})`, "color: #03dac6; font-size: 10px; font-weight: bold;");
 
                         const finalResponse = new Response(decryptedBuffer, {
                             status: 200,
