@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vloitz-app-v44.7';
+const CACHE_NAME = 'vloitz-app-v44.8';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache'; // Bóveda de 2s para Latencia Cero
 const ASSETS_TO_CACHE = [
     '/',
@@ -263,6 +263,13 @@ self.addEventListener('activate', (e) => {
 
 // 3. INTERCEPTACIÓN: Si piden algo, miramos el caché primero
 self.addEventListener('fetch', (e) => {
+
+    // 🛡️ INMUNIDAD ABSOLUTA CONTRA EXTENSIONES Y PARÁSITOS
+    // Si la petición no es protocolo web estándar (ej. chrome-extension:// o moz-extension://),
+    // la abortamos instantáneamente para no asfixiar el hilo del Service Worker.
+    if (!e.request.url.startsWith('http')) {
+        return;
+    }
 
     // 🛰️ ESTRATEGIA VLOITZ ULTRA-FRESH: Carga 0ms + Verificación Real Forzada
     if (e.request.url.includes('sets.json')) {
