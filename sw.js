@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vloitz-app-v45.1';
+const CACHE_NAME = 'vloitz-app-v45.2';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache'; // Bóveda de 2s para Latencia Cero
 const ASSETS_TO_CACHE = [
     '/',
@@ -318,6 +318,7 @@ self.addEventListener('fetch', (e) => {
         return;
     }
 
+
     // --- INICIO: DETECCIÓN DE CAMBIOS CRÍTICOS (HTML / VLOITZ_DEV_MODE) Y ENRUTAMIENTO SPA ---
 
     // 🛡️ SEO FIX: Si la URL es una página estática de /share/, el Service Worker NO la intercepta.
@@ -336,15 +337,25 @@ self.addEventListener('fetch', (e) => {
                         if (safeHtmlResponse) {
                             const oldText = await safeHtmlResponse.text();
                             const newText = await networkResponse.clone().text();
+
                             if (oldText !== newText) {
                                 // Si el código base o la variable dev_mode cambia, forzamos recarga total
+                                // FIX: AWAIT ESTRICTO. Garantizamos escritura en caché antes de recargar.
+                                const cache = await caches.open(CACHE_NAME);
+                                await cache.put('/index.html', copy);
+
                                 const clientsList = await self.clients.matchAll();
                                 clientsList.forEach(client => client.postMessage({
                                     type: 'ACTUALIZACION_CRITICA'
                                 }));
+
+                                return networkResponse; // Interrupción temprana
                             }
                         }
-                        caches.open(CACHE_NAME).then((cache) => cache.put('/index.html', copy));
+
+                        // Flujo normal si no hay cambios o es la primera instalación
+                        const cache = await caches.open(CACHE_NAME);
+                        await cache.put('/index.html', copy);
                     }
                     return networkResponse;
                 }).catch(() => {});
