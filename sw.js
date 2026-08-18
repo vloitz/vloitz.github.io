@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vloitz-app-v43.6';
+const CACHE_NAME = 'vloitz-app-v43.8';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache'; // Bóveda de 2s para Latencia Cero
 const ASSETS_TO_CACHE = [
     '/',
@@ -368,14 +368,37 @@ self.addEventListener('fetch', (e) => {
                         // 3. Éxito: Desencriptamos el buffer al vuelo
                         const buffer = await encResponse.clone().arrayBuffer();
                         const decryptedBuffer = decryptBuffer(buffer);
-                        console.log(`%c[Vloitz Crypto] 🔓 Desencriptado desde R2: ${fileName}`, "color: #bb86fc; font-weight: bold;");
 
-                        return new Response(decryptedBuffer, {
+                        // ⏱️ Extracción milimétrica del índice y conversión a [MM:SS] (Bloques HLS de 2s)
+                        const match = fileName.match(/seg-(\d+)\.m4s/);
+                        const segIndex = match ? parseInt(match[1], 10) : 0;
+                        const totalSecs = segIndex * 2;
+                        const mins = Math.floor(totalSecs / 60);
+                        const secs = totalSecs % 60;
+                        const timeFormatted = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+                        console.log(`%c[Vloitz Crypto] 🔓 Desencriptado [${timeFormatted}] (${fileName})`, "color: #03dac6; font-size: 10px; font-weight: bold;");
+
+                        const finalResponse = new Response(decryptedBuffer, {
                             status: 200,
                             headers: {
                                 'Content-Type': 'video/iso.segment'
                             }
                         });
+
+                        // 💡 FIX SENIOR: Guardar automáticamente en la Bóveda Táctica (PRELOAD_CACHE_NAME)
+                        // Forzando el método GET para evitar errores con peticiones HEAD o personalizadas.
+                        try {
+                            const cacheToSave = await caches.open(PRELOAD_CACHE_NAME);
+                            const cleanGetRequest = new Request(e.request.url, {
+                                method: 'GET'
+                            });
+                            await cacheToSave.put(cleanGetRequest, finalResponse.clone());
+                        } catch (cacheErr) {
+                            console.warn("[Vloitz Cache] No se pudo auto-guardar el fragmento R2 al vuelo:", cacheErr);
+                        }
+
+                        return finalResponse;
                     } else {
                         // 4. Fallback de Seguridad: Si da 404 el .enc, pedimos el original y lo devolvemos INTACTO
                         console.warn(`%c[Vloitz Crypto] ⚠️ Archivo blindado no encontrado. Usando original: ${fileName}`, "color: #ffb703; font-weight: bold;");
