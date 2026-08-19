@@ -2,6 +2,13 @@
 <html lang="es">
 
 <head>
+
+    <script>
+        if ('scrollRestoration' in history) {
+            history.scrollRestoration = 'manual';
+        }
+    </script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Vloitz - High Quality Sets</title>
@@ -99,7 +106,7 @@
                     Lima, Peru
                 </p>
 
-                <div class="profile-bio" id="profile-bio-container" data-nosnippet>
+                <div class="profile-bio" id="profile-bio-container">
                     <span id="bio-short">
                         <span class="bio-role" data-i18n="bioRole">Desarrollador & Curador Musical</span>
                         <div class="bio-genres">
@@ -188,7 +195,7 @@
                 </div>
             </div>
 
-            <div class="profile-extra-content">
+            <div class="profile-extra-content" data-nosnippet>
                 <div class="latest-set-highlight">
                     <h5>Último Set</h5>
                     <p id="latest-set-title">Cargando...</p>
@@ -198,8 +205,8 @@
         </div>
     </header>
 
-    <main class="app-container">
-        <section class="player-card">
+    <main class="app-container" data-nosnippet>
+        <section class="player-card" id="player-card">
             <img src="" alt="Cover Art" class="player-cover-art" id="current-cover-art">
             <div class="player-details">
 
@@ -276,6 +283,25 @@
                 <audio id="audio-player" crossorigin="anonymous" style="display: none;"></audio>
             </div>
         </section>
+
+        <!-- Script bloqueante de ejecución inmediata antes del primer renderizado -->
+        <script>
+            (function () {
+                // 1. Detectar si la URL trae parámetros de share o ruta /share/
+                const isShareLink = window.location.pathname.includes('/share/') ||
+                    window.location.search.includes('t=') ||
+                    window.location.search.includes('set=');
+
+                // 2. Solo ejecutar en visitas limpias a la Home
+                if (!isShareLink && !sessionStorage.getItem('vloitz_initial_scroll')) {
+                    sessionStorage.setItem('vloitz_initial_scroll', 'true');
+                    const target = document.getElementById('player-card');
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'instant', block: 'start' });
+                    }
+                }
+            })();
+        </script>
 
         <section class="current-tracklist-container">
             <div class="current-tracklist-header">
@@ -602,7 +628,7 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest" defer></script>
     <script src="/portada_visual.js"></script>
-    <script src="/app.js?v=22.2"></script>
+    <script src="/app.js?v=22.3"></script>
     <script src="/calibradores.js"></script>
 
     <div id="storyOverlay">
@@ -913,7 +939,7 @@
                     // 2. Scroll 100% Nativo (GPU) - Cero tirones
                     window.scrollTo({
                         top: targetPosition,
-                        behavior: 'smooth'
+                        behavior: 'instant'
                     });
 
                     // 3. Efecto diferido: La presión ocurre AL ATERRIZAR (450ms después)
