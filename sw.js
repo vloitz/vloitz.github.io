@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vloitz-app-v45.8';
+const CACHE_NAME = 'vloitz-app-v45.9';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache'; // Bóveda de 2s para Latencia Cero
 const ASSETS_TO_CACHE = [
     '/',
@@ -510,6 +510,33 @@ self.addEventListener('fetch', (e) => {
     }
     // --- FIN: INTERCEPTOR DE BÓVEDA HF ---
 
+    // --- INICIO: INTERCEPTOR DE PICOS (LCP 0ms Fix) ---
+    // Intercepta los archivos .json de la forma de onda para servirlos desde la RAM en visitas futuras.
+    if (e.request.url.includes('/peaks/') && e.request.url.endsWith('.json')) {
+        e.respondWith(
+            caches.match(e.request).then((cachedResponse) => {
+                if (cachedResponse) {
+                    // Hit: Entregamos el archivo en milisegundos desde el disco/RAM
+                    console.log(`%c[Service Worker] ⚡ Hit Caché de Picos (LCP 0ms): ${e.request.url.split('/').pop()}`, "color: #00FF00; font-size: 10px;");
+                    return cachedResponse;
+                }
+
+                // Miss: Lo descargamos de la red y lo clonamos en la caché para la próxima vez
+                return fetch(e.request).then(async (networkResponse) => {
+                    if (networkResponse.ok) {
+                        const cache = await caches.open(CACHE_NAME);
+                        cache.put(e.request, networkResponse.clone());
+                    }
+                    return networkResponse;
+                }).catch((err) => {
+                    console.warn('[Service Worker] ⚠️ Fallo al cargar picos de red:', err);
+                    throw err;
+                });
+            })
+        );
+        return; // Interrupción temprana para no pasar a las reglas de abajo
+    }
+    // --- FIN: INTERCEPTOR DE PICOS ---
 
     // EXCEPCIÓN: No cachear los archivos de audio gigantes (FLAC) automáticamente
     // Dejamos que el navegador maneje el streaming para no llenar la memoria del usuario
