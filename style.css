@@ -238,12 +238,6 @@ html {
     text-shadow: none;
 }
 
-#current-track-artist {
-    margin: 0 0 15px 0;
-    font-size: 1.2em;
-    color: var(--text-secondary);
-    text-shadow: none;
-}
 
 .waveform-container {
     width: 100%;
@@ -3295,6 +3289,82 @@ span#currentTime {
     background: #1DB954;
     color: #000;
     box-shadow: 0 0 10px rgba(29, 185, 84, 0.5);
+}
+
+/* ==========================================================================
+   [ V-MATRIX ] Títulos Responsive y Metadatos (Versión Optimizada)
+   ========================================================================== */
+
+/* --- Control del Título Dual --- */
+.title-mobile {
+    display: none;
+}
+
+.title-desktop {
+    display: inline;
+}
+
+/* --- Control de la Fila de Artista y Tiempo --- */
+.artist-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin: 0 0 15px 0;
+}
+
+#current-track-artist {
+    margin: 0 !important;
+    font-size: 1.2em;
+    color: var(--text-secondary);
+    text-shadow: none;
+}
+
+.meta-separator {
+    color: var(--text-secondary);
+    font-size: 1.3em;
+    font-weight: 800;
+    line-height: 1;
+    transform: translateY(-4px);
+}
+
+.timestamp {
+    font-size: 1.1em;
+    color: var(--text-secondary);
+    font-weight: 400;
+}
+
+/* --- REGLAS ESTRICTAS PARA MÓVIL (< 768px) --- */
+@media (max-width: 768px) {
+
+    /* 1. Cambio de Título: Oculta el largo, muestra el corto */
+    .title-desktop {
+        display: none !important;
+    }
+
+    .title-mobile {
+        display: inline !important;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* 2. Limpieza de Metadatos: Aniquila el punto y el tiempo */
+    .meta-separator,
+    .timestamp {
+        display: none !important;
+    }
+
+    /* 3. Centrado y Sombra del Artista en Móvil */
+    .artist-meta-row {
+        justify-content: center;
+    }
+
+    /* ⚠️ AÑADE ESTO AQUÍ DE NUEVO PARA QUE NO PIERDA LA SOMBRA EN MÓVIL */
+    #current-track-artist {
+        text-align: center;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7) !important;
+    }
 }
 
 /* --- FIN DEL ARCHIVO --- */
