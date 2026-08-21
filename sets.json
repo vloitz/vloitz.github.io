@@ -255,7 +255,12 @@
                     "label": "King Street Sounds",
                     "cover_url": "8cf5d770-693f-b61f-1ce2-3d695fde2d30"
                 }
-            ]
+            ],
+            "youtube_sync": {
+                "enabled": true,
+                "video_id": "SHJdXQr5ozg",
+                "offset_ms": 0
+            }
         },
         {
             "id": "GDL012",
@@ -396,7 +401,12 @@
                     "label": " Nothing But ",
                     "cover_url": " 0d3ed812-eeda-bce8-fe72-ba3839925234"
                 }
-            ]
+            ],
+            "youtube_sync": {
+                "enabled": false,
+                "video_id": "",
+                "offset_ms": 0
+            }
         },
         {
             "id": "GDL011",
@@ -635,7 +645,12 @@
                     "label": "Fania",
                     "cover_url": "16068d99-f4c1-bd64-fed6-f1c00c9255fb"
                 }
-            ]
+            ],
+            "youtube_sync": {
+                "enabled": false,
+                "video_id": "",
+                "offset_ms": 0
+            }
         },
         {
             "id": "GDL010",
@@ -867,7 +882,12 @@
                     "label": "WHYNOTUS",
                     "cover_url": "bde4f93e-88ef-b4d5-2f97-4f8cdccce0db"
                 }
-            ]
+            ],
+            "youtube_sync": {
+                "enabled": false,
+                "video_id": "",
+                "offset_ms": 0
+            }
         },
         {
             "id": "GDL009",
@@ -1043,7 +1063,12 @@
                     "label": "blanc",
                     "cover_url": "811819c9-be57-bb25-0320-fd5d36f28f46"
                 }
-            ]
+            ],
+            "youtube_sync": {
+                "enabled": false,
+                "video_id": "",
+                "offset_ms": 0
+            }
         },
         {
             "id": "GDL008",
@@ -1163,7 +1188,12 @@
                     "label": "Tamango Records",
                     "cover_url": "9fcc7ea8-e20b-b33d-f4f0-381ebeb9e980"
                 }
-            ]
+            ],
+            "youtube_sync": {
+                "enabled": false,
+                "video_id": "",
+                "offset_ms": 0
+            }
         },
         {
             "id": "GDL007",
@@ -1276,7 +1306,12 @@
                     "label": "Spitfire Music",
                     "cover_url": "8ca69aa2-fc2b-ba97-2406-19203eb647a1"
                 }
-            ]
+            ],
+            "youtube_sync": {
+                "enabled": false,
+                "video_id": "",
+                "offset_ms": 0
+            }
         },
         {
             "id": "GDL006",
@@ -1396,7 +1431,12 @@
                     "label": "Starcake Records",
                     "cover_url": "32f59cce-371b-bdd7-004d-53284b4ceacb"
                 }
-            ]
+            ],
+            "youtube_sync": {
+                "enabled": false,
+                "video_id": "",
+                "offset_ms": 0
+            }
         },
         {
             "id": "GDL005",
@@ -1530,7 +1570,12 @@
                     "label": "Safari Groove Music",
                     "cover_url": "ddd0b1e7-1dba-b65c-1a8f-6be005f96c15"
                 }
-            ]
+            ],
+            "youtube_sync": {
+                "enabled": false,
+                "video_id": "",
+                "offset_ms": 0
+            }
         },
         {
             "id": "GDL004",
@@ -1678,7 +1723,12 @@
                     "label": "elrow Limited",
                     "cover_url": "2de94497-1343-b508-11cf-c20ab9c394a8"
                 }
-            ]
+            ],
+            "youtube_sync": {
+                "enabled": false,
+                "video_id": "",
+                "offset_ms": 0
+            }
         },
         {
             "id": "GDL003",
@@ -1889,7 +1939,12 @@
                     "label": "NU CLUB",
                     "cover_url": "2e7c413a-318c-b449-1f27-791d24bdc241"
                 }
-            ]
+            ],
+            "youtube_sync": {
+                "enabled": false,
+                "video_id": "",
+                "offset_ms": 0
+            }
         },
         {
             "id": "JRG004",
@@ -2072,7 +2127,12 @@
                     "label": "Denied Music",
                     "cover_url": "0ef7c813-f9b3-b3f5-fdbe-addbedb5e67b"
                 }
-            ]
+            ],
+            "youtube_sync": {
+                "enabled": false,
+                "video_id": "",
+                "offset_ms": 0
+            }
         }
     ]
 }
