@@ -330,17 +330,27 @@
         <!-- Script bloqueante de ejecución inmediata antes del primer renderizado -->
         <script>
             (function () {
-                // 1. Detectar si la URL trae parámetros de share o ruta /share/
                 const isShareLink = window.location.pathname.includes('/share/') ||
                     window.location.search.includes('t=') ||
                     window.location.search.includes('set=');
 
-                // 2. Solo ejecutar en visitas limpias a la Home
-                if (!isShareLink && !sessionStorage.getItem('vloitz_initial_scroll')) {
-                    sessionStorage.setItem('vloitz_initial_scroll', 'true');
+                if (isShareLink) {
+                    // PUERTA 1: Si es un enlace para compartir, anclaje instantáneo al reproductor siempre.
                     const target = document.getElementById('player-card');
                     if (target) {
                         target.scrollIntoView({ behavior: 'instant', block: 'start' });
+                    }
+                } else {
+                    // PUERTA 2: Si es el Home, evaluamos el localStorage
+                    if (!localStorage.getItem('vloitz_intro_seen')) {
+                        const el = document.getElementById('profile-pic-img');
+                        if (el) {
+                            // Cálculo matemático exacto de tu WelcomeController (0.55)
+                            const targetY = el.getBoundingClientRect().top + window.scrollY + (el.offsetHeight * 0.55);
+                            window.scrollTo({ top: targetY, behavior: 'instant' });
+                            // Guardamos para que no vuelva a saltar en su vida
+                            localStorage.setItem('vloitz_intro_seen', '1');
+                        }
                     }
                 }
             })();
@@ -671,7 +681,7 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest" defer></script>
     <script src="/portada_visual.js"></script>
-    <script src="/app.js?v=22.9"></script>
+    <script src="/app.js?v=23.1"></script>
     <script src="/calibradores.js"></script>
 
     <div id="storyOverlay">
