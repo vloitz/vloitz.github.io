@@ -275,9 +275,15 @@ html {
 }
 
 /* ==========================================================================
-   [ MÓDULO TROYANO V-MATRIX ] Arquitectura Ancla Magnética
+   [ MÓDULO TROYANO V-MATRIX ] Arquitectura Ancla Magnética & Mirilla
    ========================================================================== */
-/* LA METAMORFOSIS PiP (Vuelo a la esquina) */
+#trojan-master {
+    background: transparent !important;
+    /* La Mirilla Mágica inicial: recorta todo el iframe gigante y deja visible solo el botón */
+    clip-path: circle(24px at 279.5px 158px);
+}
+
+/* LA METAMORFOSIS PiP (Vuelo a la esquina y expansión total de la Mirilla) */
 .pip-mode {
     position: fixed !important;
     bottom: 20px !important;
@@ -289,12 +295,11 @@ html {
     transform: none !important;
     border: 1px solid rgba(255, 255, 255, 0.1);
     z-index: 9999 !important;
+    /* Al llegar a la esquina, la mirilla se abre al 150% para mostrar todo el video */
+    clip-path: circle(150% at 50% 50%) !important;
 }
 
-.pip-mode #laser-paper {
-    opacity: 0 !important;
-    pointer-events: none !important;
-}
+/* Fin Módulo Troyano */
 
 #playPauseBtn {
     background-color: var(--brand-color);
