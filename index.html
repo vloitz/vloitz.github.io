@@ -30,7 +30,7 @@
         href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Roboto+Mono:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap"
         rel="stylesheet">
 
-    <link rel="stylesheet" href="/style.css?v=13.6">
+    <link rel="stylesheet" href="/style.css?v=13.7">
 
     <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="512x512" href="/favicon/web-app-manifest-512x512.png">
@@ -298,22 +298,8 @@
                                 <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
                             </svg>
                         </button>
-
-                        <!-- 🐴 EL PORTAL TROYANO (Oculto por defecto, Módulo V-Matrix) -->
-                        <div id="yt-trojan-portal" style="display: none;">
-                            <div id="hybrid-container">
-                                <div id="yt-player-container"></div>
-                                <!-- Hoja Vectorial con Coordenadas Maestras (X:279.5, Y:158, R:22.5) -->
-                                <svg id="laser-paper" viewBox="0 0 560 315" preserveAspectRatio="none">
-                                    <path fill-rule="evenodd" d="
-                                        M 0 0 H 560 V 315 H 0 Z
-                                        M 279.5 135.5
-                                        a 22.5 22.5 0 1 0 0 45
-                                        a 22.5 22.5 0 1 0 0 -45 Z
-                                    " />
-                                </svg>
-                            </div>
-                        </div>
+                        <div id="vloitz-yt-anchor"
+                            style="display: none; width: 50px; height: 50px; position: relative; flex-shrink: 0;"></div>
 
                         <button id="seekFwdBtn" class="seek-btn" title="Adelantar 5s">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -341,14 +327,20 @@
 
                 <audio id="audio-player" crossorigin="anonymous" style="display: none;"></audio>
 
-                <!-- YTSyncBridge: Contenedor Antifraude (Fijado a la pantalla - ROI 100%) -->
-                <div id="yt-sync-widget"
-                    style="position: fixed; bottom: 20px; right: 20px; width: 160px; height: 100px; opacity: 0.4; pointer-events: none; z-index: 9999; border-radius: 6px; overflow: hidden; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
-                    <div id="yt-player-container" style="width: 100%; height: 100%;"></div>
-                </div>
-
             </div>
         </section>
+
+        <div id="trojan-master"
+            style="display: none; position: absolute; width: 560px; height: 315px; background: #000; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.8); transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1); transform-origin: 279.5px 158px; z-index: 1000;">
+            <div id="yt-player-container"
+                style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; border: none;"></div>
+            <svg id="laser-paper" viewBox="0 0 560 315" preserveAspectRatio="none"
+                style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; transition: opacity 0.4s ease;">
+                <path fill-rule="evenodd"
+                    d="M 0 0 H 560 V 315 H 0 Z M 279.5 135.5 a 22.5 22.5 0 1 0 0 45 a 22.5 22.5 0 1 0 0 -45 Z"
+                    style="fill: #0D131A; pointer-events: fill;" />
+            </svg>
+        </div>
 
         <!-- Script bloqueante de ejecución inmediata antes del primer renderizado -->
         <script>
@@ -704,7 +696,7 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest" defer></script>
     <script src="/portada_visual.js"></script>
-    <script src="/app.js?v=24.3"></script>
+    <script src="/app.js?v=24.5"></script>
     <script src="/calibradores.js"></script>
 
     <div id="storyOverlay">
