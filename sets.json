@@ -257,7 +257,6 @@
                 }
             ],
             "youtube_sync": {
-                "enabled": true,
                 "video_id": "SHJdXQr5ozg",
                 "offset_ms": 0
             }
@@ -403,7 +402,6 @@
                 }
             ],
             "youtube_sync": {
-                "enabled": false,
                 "video_id": "",
                 "offset_ms": 0
             }
@@ -647,7 +645,6 @@
                 }
             ],
             "youtube_sync": {
-                "enabled": false,
                 "video_id": "",
                 "offset_ms": 0
             }
@@ -884,7 +881,6 @@
                 }
             ],
             "youtube_sync": {
-                "enabled": false,
                 "video_id": "",
                 "offset_ms": 0
             }
@@ -1065,7 +1061,6 @@
                 }
             ],
             "youtube_sync": {
-                "enabled": false,
                 "video_id": "",
                 "offset_ms": 0
             }
@@ -1190,7 +1185,6 @@
                 }
             ],
             "youtube_sync": {
-                "enabled": false,
                 "video_id": "",
                 "offset_ms": 0
             }
@@ -1308,7 +1302,6 @@
                 }
             ],
             "youtube_sync": {
-                "enabled": false,
                 "video_id": "",
                 "offset_ms": 0
             }
@@ -1433,7 +1426,6 @@
                 }
             ],
             "youtube_sync": {
-                "enabled": false,
                 "video_id": "",
                 "offset_ms": 0
             }
@@ -1572,7 +1564,6 @@
                 }
             ],
             "youtube_sync": {
-                "enabled": false,
                 "video_id": "",
                 "offset_ms": 0
             }
@@ -1725,7 +1716,6 @@
                 }
             ],
             "youtube_sync": {
-                "enabled": false,
                 "video_id": "",
                 "offset_ms": 0
             }
@@ -1941,7 +1931,6 @@
                 }
             ],
             "youtube_sync": {
-                "enabled": false,
                 "video_id": "",
                 "offset_ms": 0
             }
@@ -2129,7 +2118,6 @@
                 }
             ],
             "youtube_sync": {
-                "enabled": false,
                 "video_id": "",
                 "offset_ms": 0
             }
