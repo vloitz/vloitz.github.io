@@ -684,14 +684,14 @@
 
     <script>
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js')
+            navigator.serviceWorker.register('/sw.js')
                 .then(() => console.log('[PWA] Service Worker Registrado Correctamente'))
                 .catch(err => console.error('[PWA] Error al registrar SW:', err));
         }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest" defer></script>
     <script src="/portada_visual.js"></script>
-    <script src="/app.js?v=30.8"></script>
+    <script src="/app.js?v=30.9"></script>
     <script src="/calibradores.js"></script>
 
     <div id="storyOverlay">
