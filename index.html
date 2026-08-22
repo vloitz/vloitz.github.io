@@ -684,7 +684,7 @@
 
     <script>
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register(window.location.origin + '/sw.js', { scope: '/' })
+            navigator.serviceWorker.register('sw.js')
                 .then(() => console.log('[PWA] Service Worker Registrado Correctamente'))
                 .catch(err => console.error('[PWA] Error al registrar SW:', err));
         }
