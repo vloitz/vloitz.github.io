@@ -3406,4 +3406,29 @@ span#currentTime {
     }
 }
 
+/* ==========================================================================
+   [ VLOITZ ROI SHIELD ] Llamada a la acción obligatoria (Desktop)
+   ========================================================================== */
+@keyframes roi-pulse-alert {
+    0% {
+        box-shadow: 0 0 0 0 rgba(29, 185, 84, 0.8);
+        border: 2px solid #1DB954;
+    }
+
+    70% {
+        box-shadow: 0 0 0 20px rgba(29, 185, 84, 0);
+        border: 2px solid #1DB954;
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(29, 185, 84, 0);
+        border: none;
+    }
+}
+
+.pulse-alert {
+    animation: roi-pulse-alert 1.5s infinite;
+    transform: scale(1.1);
+}
+
 /* --- FIN DEL ARCHIVO --- */
