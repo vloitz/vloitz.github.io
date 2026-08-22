@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vloitz-app-v54.2';
+const CACHE_NAME = 'vloitz-app-v54.3';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache'; // Bóveda de 2s para Latencia Cero
 const ASSETS_TO_CACHE = [
     '/',
@@ -233,9 +233,10 @@ self.addEventListener('message', (event) => {
 });
 // --- FIN: RECEPTOR DE CONFIGURACIÓN Y MENSAJES ---
 
-// 1. INSTALACIÓN: Guardamos la interfaz en el caché (Esperando decisión del usuario)
+// 1. INSTALACIÓN: Guardamos la interfaz en el caché (Bypass Automático Firefox)
 self.addEventListener('install', (e) => {
-    console.log('[Service Worker] Nueva versión instalada. Esperando la orden del usuario para activarse...');
+    console.log('[Service Worker] Nueva versión instalada. Forzando activación inmediata...');
+    self.skipWaiting(); // ⚡ EL ANTÍDOTO PARA FIREFOX: Saltamos la sala de espera por la fuerza
     e.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
             return cache.addAll(ASSETS_TO_CACHE);
