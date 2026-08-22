@@ -283,19 +283,26 @@ html {
     clip-path: circle(24px at 279.5px 158px);
 }
 
-/* LA METAMORFOSIS PiP (Vuelo a la esquina y expansión total de la Mirilla) */
+/* LA METAMORFOSIS PiP (Vuelo a la esquina y expansión total de la Mirilla) - BLINDAJE ROI YOUTUBE */
 .pip-mode {
     position: fixed !important;
     bottom: 20px !important;
     right: 20px !important;
-    width: 250px !important;
-    height: 140px !important;
+    /* BLINDAJE: La barrera de los 200px. Para mantener formato 16:9 el ancho debe ser ~356px */
+    width: 356px !important;
+    height: 200px !important;
     top: auto !important;
     left: auto !important;
     transform: none !important;
     border: 1px solid rgba(255, 255, 255, 0.1);
     z-index: 9999 !important;
     clip-path: circle(150% at 50% 50%) !important;
+
+    /* BLINDAJE: Aseguramos visibilidad total para el algoritmo Active View */
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: block !important;
+    pointer-events: auto !important;
 }
 
 /* Fin Módulo Troyano */
