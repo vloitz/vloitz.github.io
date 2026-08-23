@@ -353,29 +353,58 @@
                     if (!localStorage.getItem('vloitz_intro_seen')) {
                         const el = document.getElementById('profile-pic-img');
                         if (el) {
-                            // 1. Calculamos y hacemos el salto instantáneo (Cero flash blanco)
+                            // 1. Calculamos la posición inicial ideal
                             const targetY = el.getBoundingClientRect().top + window.scrollY + (el.offsetHeight * 0.55);
                             window.scrollTo({ top: targetY, behavior: 'instant' });
 
-                            // 2. ESCUDO UX: Detector de intención humana
-                            let userTookControl = false;
-                            const markControl = () => userTookControl = true;
+                            // --- EL CENTINELA DE POSICIÓN (Diseño Arquitectónico) ---
+                            let lastKnownY = targetY;
+                            let isHumanDriving = false;
+                            let sentinelActive = true;
 
-                            // Damos 100ms de gracia para no confundir nuestro propio salto con un gesto del usuario
-                            setTimeout(() => {
-                                window.addEventListener('touchstart', markControl, { passive: true, once: true });
-                                window.addEventListener('wheel', markControl, { passive: true, once: true });
-                            }, 100);
+                            // 2. Detectores de contacto humano (Para saber quién tiene el control)
+                            const humanTakesControl = () => { isHumanDriving = true; };
+                            const humanReleasesControl = () => {
+                                isHumanDriving = false;
+                                if (sentinelActive) lastKnownY = window.scrollY; // Guardamos dónde lo dejó el usuario
+                            };
 
-                            // 3. El Auditor de Chrome (Contragolpe Silencioso)
-                            window.addEventListener('load', () => {
-                                // Si el usuario NO tocó la pantalla Y Chrome nos jaló hacia arriba (scrollY casi 0)
-                                if (!userTookControl && window.scrollY < 10) {
-                                    window.scrollTo({ top: targetY, behavior: 'instant' });
+                            window.addEventListener('touchstart', humanTakesControl, { passive: true });
+                            window.addEventListener('touchend', humanReleasesControl, { passive: true });
+                            window.addEventListener('wheel', humanTakesControl, { passive: true });
+
+                            // 3. El Auditor de Scroll (El que pelea contra el navegador)
+                            const scrollSentinel = () => {
+                                if (!sentinelActive) return;
+
+                                if (isHumanDriving) {
+                                    // Si el humano maneja, el centinela solo toma nota de la nueva posición
+                                    lastKnownY = window.scrollY;
+                                } else {
+                                    // Si no hay humano tocando y el scroll cambia violentamente, fue Chrome.
+                                    // Aplicamos fuerza bruta para devolverlo a la última posición guardada (lastKnownY).
+                                    if (Math.abs(window.scrollY - lastKnownY) > 5) {
+                                        window.scrollTo({ top: lastKnownY, behavior: 'instant' });
+                                    }
                                 }
+                            };
 
-                                // Sellamos la memoria una vez que la guerra contra el navegador terminó
-                                localStorage.setItem('vloitz_intro_seen', '1');
+                            // Escuchamos CADA movimiento de la pantalla
+                            window.addEventListener('scroll', scrollSentinel, { passive: true });
+
+                            // 4. Desarme del Centinela tras pasar la zona de peligro
+                            window.addEventListener('load', () => {
+                                // Le damos 800ms extra después del load por si Chrome tiene un lag asíncrono
+                                setTimeout(() => {
+                                    sentinelActive = false;
+                                    localStorage.setItem('vloitz_intro_seen', '1');
+
+                                    // Limpieza absoluta de memoria (No dejamos basura en el DOM)
+                                    window.removeEventListener('scroll', scrollSentinel);
+                                    window.removeEventListener('touchstart', humanTakesControl);
+                                    window.removeEventListener('touchend', humanReleasesControl);
+                                    window.removeEventListener('wheel', humanTakesControl);
+                                }, 800);
                             });
                         }
                     }
