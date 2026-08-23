@@ -3431,4 +3431,236 @@ span#currentTime {
     transform: scale(1.1);
 }
 
+/* ==========================================================================
+   [ VLOITZ LASER TUTORIAL HUD ] (Mind-Reading Education)
+   ========================================================================== */
+.vloitz-tutorial-hud {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+    /* Crucial: no interfiere con clics */
+    z-index: 100;
+    border-radius: 4px;
+    background: transparent;
+    opacity: 0;
+    /* Empieza invisible para el fade-in */
+    transition: opacity 0.8s ease-in-out;
+}
+
+.vloitz-tutorial-hud .hud-main {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 0 20px;
+    animation: vloitzSway 3.6s ease-in-out infinite;
+}
+
+/* Chevrons (flechas) */
+.vloitz-tutorial-hud .chevron-group {
+    display: flex;
+    gap: 8px;
+}
+
+.vloitz-tutorial-hud .chevron {
+    width: 12px;
+    height: 12px;
+    border-top: 2.5px solid rgba(255, 255, 255, 0.2);
+    border-right: 2.5px solid rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    animation: vloitzGlow 1.8s ease-in-out infinite;
+}
+
+.vloitz-tutorial-hud .chevron-group.left .chevron {
+    transform: rotate(-135deg);
+    --rot: rotate(-135deg);
+    --tx: -3px;
+    --tx2: -2px;
+}
+
+.vloitz-tutorial-hud .chevron-group.right .chevron {
+    transform: rotate(45deg);
+    --rot: rotate(45deg);
+    --tx: 3px;
+    --tx2: 2px;
+}
+
+/* Secuencias de tiempo */
+.vloitz-tutorial-hud .chevron-group.left .chevron:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.vloitz-tutorial-hud .chevron-group.left .chevron:nth-child(2) {
+    animation-delay: 0.25s;
+}
+
+.vloitz-tutorial-hud .chevron-group.left .chevron:nth-child(3) {
+    animation-delay: 0.5s;
+}
+
+.vloitz-tutorial-hud .chevron-group.right .chevron:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.vloitz-tutorial-hud .chevron-group.right .chevron:nth-child(2) {
+    animation-delay: 0.25s;
+}
+
+.vloitz-tutorial-hud .chevron-group.right .chevron:nth-child(3) {
+    animation-delay: 0.5s;
+}
+
+@keyframes vloitzGlow {
+
+    0%,
+    100% {
+        border-color: rgba(255, 255, 255, 0.15);
+        transform: var(--rot) scale(1);
+        filter: drop-shadow(0 0 0 transparent);
+    }
+
+    40% {
+        border-color: #1DB954;
+        transform: var(--rot) scale(1.2) translateX(var(--tx));
+        filter: drop-shadow(0 0 8px rgba(29, 185, 84, 0.7));
+    }
+
+    60% {
+        border-color: #1DB954;
+        transform: var(--rot) scale(1.1) translateX(var(--tx2));
+        filter: drop-shadow(0 0 6px rgba(29, 185, 84, 0.5));
+    }
+}
+
+/* Núcleo */
+.vloitz-tutorial-hud .core {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.vloitz-tutorial-hud .ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1.5px solid rgba(29, 185, 84, 0.25);
+    animation: vloitzSpin 6s linear infinite;
+}
+
+.vloitz-tutorial-hud .ring::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: 50%;
+    width: 6px;
+    height: 6px;
+    background: #1DB954;
+    border-radius: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 0 12px #1DB954, 0 0 24px rgba(29, 185, 84, 0.4);
+}
+
+.vloitz-tutorial-hud .bracket {
+    font-family: 'Courier New', monospace;
+    font-size: 20px;
+    font-weight: 300;
+    color: rgba(255, 255, 255, 0.35);
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.vloitz-tutorial-hud .bracket.left {
+    left: -6px;
+}
+
+.vloitz-tutorial-hud .bracket.right {
+    right: -6px;
+}
+
+.vloitz-tutorial-hud .dot {
+    width: 8px;
+    height: 8px;
+    background: #1DB954;
+    border-radius: 50%;
+    box-shadow: 0 0 12px #1DB954, 0 0 30px rgba(29, 185, 84, 0.5);
+    animation: vloitzPulseCore 2s ease-in-out infinite;
+    z-index: 2;
+}
+
+@keyframes vloitzPulseCore {
+
+    0%,
+    100% {
+        transform: scale(0.85);
+        opacity: 0.7;
+    }
+
+    50% {
+        transform: scale(1.3);
+        opacity: 1;
+        box-shadow: 0 0 20px #1DB954, 0 0 50px rgba(29, 185, 84, 0.6);
+    }
+}
+
+@keyframes vloitzSpin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes vloitzSway {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    30% {
+        transform: translateX(8px);
+    }
+
+    70% {
+        transform: translateX(-8px);
+    }
+}
+
+@media (max-width: 480px) {
+    .vloitz-tutorial-hud .chevron {
+        width: 10px;
+        height: 10px;
+        border-width: 2px;
+    }
+
+    .vloitz-tutorial-hud .hud-main {
+        gap: 12px;
+    }
+
+    .vloitz-tutorial-hud .core {
+        width: 36px;
+        height: 36px;
+    }
+
+    .vloitz-tutorial-hud .dot {
+        width: 6px;
+        height: 6px;
+    }
+
+    .vloitz-tutorial-hud .ring {
+        border-width: 1px;
+    }
+}
+
+/* END [ VLOITZ LASER TUTORIAL HUD ] (Mind-Reading Education) */
+
 /* --- FIN DEL ARCHIVO --- */
