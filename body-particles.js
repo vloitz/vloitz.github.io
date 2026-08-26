@@ -1,5 +1,13 @@
+
+
 // @ts-check
 (function() {
+
+// Si la pantalla es mayor a 768px (escritorio), detiene la ejecución aquí mismo
+    if (window.innerWidth > 768) {
+        return;
+    }
+
     const canvas = document.createElement('canvas');
     canvas.id = 'vloitz-clean-streak-canvas';
     canvas.style.position = 'fixed';
