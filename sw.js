@@ -1,5 +1,5 @@
-const CACHE_NAME = 'vloitz-app-v56.7';
-const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache'; // Bóveda de 2s para Latencia Cero
+const CACHE_NAME = 'vloitz-app-v56.8';
+const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache-v2'; // Bóveda de 2s para Latencia Cero
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
@@ -20,8 +20,8 @@ const ASSETS_TO_CACHE = [
 
 // --- INICIO: MOTOR DE BASE DE DATOS (VLOITZ VAULT DB) ---
 const DB_NAME = 'vloitz_vault_db';
-const STORE_NAME = 'audio_fragments';
-const DB_VERSION = 2;
+const STORE_NAME = 'audio_fragments_v2';
+const DB_VERSION = 3;
 
 // --- VLOITZ CRYPTO ENGINE (Caja Negra JS) ---
 const SECRET_KEY = "vloitz_key_2026";
@@ -69,12 +69,19 @@ function openDB() {
         // Se ejecuta si es la primera vez o si cambiamos la versión
         request.onupgradeneeded = (event) => {
             const db = event.target.result;
+
+            // 🧹 LÓGICA SENIOR: Asesino de zombis (Elimina gigabytes basura)
+            if (db.objectStoreNames.contains('audio_fragments')) {
+                db.deleteObjectStore('audio_fragments');
+                console.log('[Vloitz DB] 💥 Tabla antigua destruida. Gigabytes liberados.');
+            }
+
             let store;
             if (!db.objectStoreNames.contains(STORE_NAME)) {
                 store = db.createObjectStore(STORE_NAME, {
                     keyPath: 'url'
                 });
-                console.log('[Vloitz DB] 🏗️ Almacén de fragmentos creado.');
+                console.log('[Vloitz DB] 🏗️ Almacén de fragmentos v2 creado.');
             } else {
                 store = event.target.transaction.objectStore(STORE_NAME);
             }
