@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vloitz-app-v57.4';
+const CACHE_NAME = 'vloitz-app-v57.5';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache-v2'; // Bóveda de 2s para Latencia Cero
 const ASSETS_TO_CACHE = [
     '/',
@@ -15,7 +15,8 @@ const ASSETS_TO_CACHE = [
     '/favicon/favicon.ico',
     '/manifest.json',
     'https://unpkg.com/wavesurfer.js@7.7.5/dist/wavesurfer.min.js',
-    'https://unpkg.com/wavesurfer.js@7.7.5/dist/plugins/regions.min.js'
+    'https://unpkg.com/wavesurfer.js@7.7.5/dist/plugins/regions.min.js',
+    'https://cdn.jsdelivr.net/npm/hls.js@latest'
 ];
 
 // --- INICIO: MOTOR DE BASE DE DATOS (VLOITZ VAULT DB) ---
