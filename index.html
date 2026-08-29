@@ -30,11 +30,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-    <link
-        href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Roboto+Mono:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap"
-        rel="stylesheet">
+    <link rel="stylesheet" href="/fonts.css">
 
-    <link rel="stylesheet" href="/style.css?v=15.1">
+    <link rel="stylesheet" href="/style.css?v=15.2">
 
     <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="512x512" href="/favicon/web-app-manifest-512x512.png">
@@ -823,7 +821,7 @@
                 .catch(err => console.error('[PWA] Error al registrar SW:', err));
         }
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest" defer></script>
     <script src="/portada_visual.js"></script>
     <!-- body-particles.js removido para inyección diferida en app.js -->
     <script src="/app.js?v=34.1"></script>
