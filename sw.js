@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vloitz-app-v57.1';
+const CACHE_NAME = 'vloitz-app-v57.2';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache-v2'; // Bóveda de 2s para Latencia Cero
 const ASSETS_TO_CACHE = [
     '/',
@@ -62,65 +62,65 @@ const TIER_LIMITS = {
 
 
 // Promesa envolvente para manejar IndexedDB dentro del Service Worker
-    function openDB() {
-        return new Promise((resolve, reject) => {
-            const request = indexedDB.open(DB_NAME, DB_VERSION);
+function openDB() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-            // 🛡️ ESCUDO 1: Si la base de datos está bloqueada por una pestaña abierta
-            request.onblocked = (event) => {
-                console.warn('[Vloitz DB] ⚠️ Actualización bloqueada: Pestañas antiguas siguen usando la BD.');
-            };
+        // 🛡️ ESCUDO 1: Si la base de datos está bloqueada por una pestaña abierta
+        request.onblocked = (event) => {
+            console.warn('[Vloitz DB] ⚠️ Actualización bloqueada: Pestañas antiguas siguen usando la BD.');
+        };
 
-            // Se ejecuta si es la primera vez o si cambiamos la versión
-            request.onupgradeneeded = (event) => {
-                const db = event.target.result;
+        // Se ejecuta si es la primera vez o si cambiamos la versión
+        request.onupgradeneeded = (event) => {
+            const db = event.target.result;
 
-                // 🧹 LÓGICA SENIOR (A Prueba de Fallos): Asesino de zombis envuelto en try/catch
-                if (db.objectStoreNames.contains('audio_fragments')) {
-                    try {
-                        db.deleteObjectStore('audio_fragments');
-                        console.log('[Vloitz DB] 💥 Tabla antigua destruida. Gigabytes liberados.');
-                    } catch (e) {
-                        console.warn('[Vloitz DB] ⚠️ No se pudo eliminar la tabla antigua (posible bloqueo):', e);
-                    }
+            // 🧹 LÓGICA SENIOR (A Prueba de Fallos): Asesino de zombis envuelto en try/catch
+            if (db.objectStoreNames.contains('audio_fragments')) {
+                try {
+                    db.deleteObjectStore('audio_fragments');
+                    console.log('[Vloitz DB] 💥 Tabla antigua destruida. Gigabytes liberados.');
+                } catch (e) {
+                    console.warn('[Vloitz DB] ⚠️ No se pudo eliminar la tabla antigua (posible bloqueo):', e);
                 }
+            }
 
-                let store;
-                if (!db.objectStoreNames.contains(STORE_NAME)) {
-                    store = db.createObjectStore(STORE_NAME, {
-                        keyPath: 'url'
-                    });
-                    console.log('[Vloitz DB] 🏗️ Almacén de fragmentos v2 creado.');
-                } else {
-                    store = event.target.transaction.objectStore(STORE_NAME);
-                }
+            let store;
+            if (!db.objectStoreNames.contains(STORE_NAME)) {
+                store = db.createObjectStore(STORE_NAME, {
+                    keyPath: 'url'
+                });
+                console.log('[Vloitz DB] 🏗️ Almacén de fragmentos v2 creado.');
+            } else {
+                store = event.target.transaction.objectStore(STORE_NAME);
+            }
 
-                // Creamos el índice para poder borrar por el más antiguo (LRU)
-                if (!store.indexNames.contains('by_timestamp')) {
-                    store.createIndex('by_timestamp', 'timestamp');
-                    console.log('[Vloitz DB] 🕒 Índice de tiempo (LRU) activado.');
-                }
+            // Creamos el índice para poder borrar por el más antiguo (LRU)
+            if (!store.indexNames.contains('by_timestamp')) {
+                store.createIndex('by_timestamp', 'timestamp');
+                console.log('[Vloitz DB] 🕒 Índice de tiempo (LRU) activado.');
+            }
+        };
+
+        request.onsuccess = (event) => {
+            const db = event.target.result;
+
+            // 🛡️ ESCUDO 2: Válvula de escape. Si en el futuro instalas un nuevo SW,
+            // este SW actual soltará la base de datos inmediatamente para no causar un bucle.
+            db.onversionchange = () => {
+                db.close();
+                console.log('[Vloitz DB] 🔄 Conexión cerrada pacíficamente para permitir actualización.');
             };
 
-            request.onsuccess = (event) => {
-                const db = event.target.result;
+            resolve(db);
+        };
 
-                // 🛡️ ESCUDO 2: Válvula de escape. Si en el futuro instalas un nuevo SW,
-                // este SW actual soltará la base de datos inmediatamente para no causar un bucle.
-                db.onversionchange = () => {
-                    db.close();
-                    console.log('[Vloitz DB] 🔄 Conexión cerrada pacíficamente para permitir actualización.');
-                };
-
-                resolve(db);
-            };
-
-            request.onerror = (event) => {
-                console.error('[Vloitz DB] ❌ Error al abrir IndexedDB:', event.target.error);
-                reject(event.target.error);
-            };
-        });
-    }
+        request.onerror = (event) => {
+            console.error('[Vloitz DB] ❌ Error al abrir IndexedDB:', event.target.error);
+            reject(event.target.error);
+        };
+    });
+}
 // --- FIN: MOTOR DE BASE DE DATOS ---
 
 // --- INICIO: FUNCIONES DE LECTURA Y ESCRITURA (VLOITZ CACHE) ---
