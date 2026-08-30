@@ -1,7 +1,12 @@
 import {
-    Muxer,
-    ArrayBufferTarget
-} from 'https://esm.sh/mp4-muxer@5.1.0';
+    Output,
+    Mp4OutputFormat,
+    BufferTarget,
+    CanvasSource,
+    EncodedAudioPacketSource,
+    EncodedPacket,
+    Quality
+} from 'https://esm.sh/mediabunny';
 
 let workerState = {
     coverBitmap: null,
@@ -37,7 +42,7 @@ self.onmessage = async (e) => {
 };
 
 // ==========================================================================
-// ⚙️ PIPELINE DE EXPORTACIÓN (RAM MUXER + BUCLE VIRTUAL DE ALTA VELOCIDAD)
+// ⚙️ PIPELINE DE EXPORTACIÓN (MEDIABUNNY + BUFFER RAM + AUDIO CORREGIDO)
 // ==========================================================================
 async function executeExportPipeline(config) {
     const canvas = new OffscreenCanvas(config.width || 360, config.height || 640);
@@ -83,100 +88,87 @@ async function executeExportPipeline(config) {
         preRenderedVinylBitmap = vCanvas.transferToImageBitmap();
     }
 
-    // 1. Configuración del Muxer en Memoria RAM Pura (El secreto de la Era Dorada)
-    let muxer = new Muxer({
-        target: new ArrayBufferTarget(),
-        video: {
-            codec: 'avc',
-            width: config.width,
-            height: config.height
-        },
-        fastStart: 'in-memory',
-        firstTimestampBehavior: 'offset'
+    // 1. Configuración de Mediabunny con BufferTarget en RAM (Velocidad extrema)
+    const output = new Output({
+        format: new Mp4OutputFormat({
+            fastStart: 'in-memory'
+        }),
+        target: new BufferTarget()
     });
 
-    // 2. Configuración del VideoEncoder nativo de alta velocidad
-    let videoEncoder = new VideoEncoder({
-        output: (chunk, meta) => muxer.addVideoChunk(chunk, meta),
-        error: e => console.error("[Vloitz Worker] Video Encoder Error:", e)
+    // 2. Configuración de Pistas
+    const audioSource = new EncodedAudioPacketSource('aac');
+    output.addAudioTrack(audioSource);
+
+    const videoSource = new CanvasSource(canvas, {
+        codec: 'avc',
+        latencyMode: 'realtime',
+        hardwareAcceleration: 'prefer-hardware',
+        quality: new Quality({
+            bitrate: 10_000_000
+        })
+    });
+    output.addVideoTrack(videoSource, {
+        frameRate: config.fps
     });
 
-    videoEncoder.configure({
-        codec: 'avc1.42001E',
-        width: config.width,
-        height: config.height,
-        bitrate: 10_000_000,
-        framerate: config.fps
-    });
+    // 🚀 Arrancar Mediabunny
+    await output.start();
 
-    // 3. Inyección instantánea de paquetes de audio en el muxer si están disponibles
+    // 3. Inyección robusta de paquetes de audio serializados
     if (config.audioPackets && config.audioPackets.length > 0) {
         for (const item of config.audioPackets) {
             try {
-                // Si el muxer soporta chunks de audio directamente o vía pista
-                if (typeof muxer.addAudioChunk === 'function') {
-                    muxer.addAudioChunk(item.packet, item.meta);
+                // Reconstruir el buffer y el paquete de forma segura tras el postMessage
+                let rawData = item.packet.data;
+                if (!(rawData instanceof Uint8Array)) {
+                    rawData = new Uint8Array(rawData);
                 }
+
+                const packet = new EncodedPacket(
+                    rawData,
+                    item.packet.type || 'key',
+                    item.packet.timestamp,
+                    item.packet.duration
+                );
+
+                await audioSource.add(packet, item.meta);
             } catch (err) {
-                console.warn("[Vloitz Worker] Advertencia al inyectar audio en Muxer:", err);
+                console.warn("[Vloitz Worker] ⚠️ Error al reinyectar paquete de audio:", err);
             }
         }
     }
 
-    // 4. Bucle Virtual de Alta Velocidad (Cero esperas de E/S de disco)[cite: 4, 5]
-    const durationMs = config.durationSeconds * 1000;
+    // 4. Bucle de renderizado ultrarrápido por marcos
     const fps = config.fps;
     const totalFrames = config.durationSeconds * fps;
     const frameDurationMs = 1000 / fps;
-    let frameCount = 0;
+    const frameDurationSecs = 1 / fps;
 
-    while (frameCount <= totalFrames) {
-        // Control de tráfico para no saturar la cola del codificador[cite: 4, 5]
-        if (videoEncoder.encodeQueueSize >= 5) {
-            await new Promise(r => setTimeout(r, 10));
-            continue;
-        }
+    for (let frameIndex = 0; frameIndex <= totalFrames; frameIndex++) {
+        const currentTimestamp = frameIndex * frameDurationSecs;
+        const isKeyFrame = (frameIndex % fps === 0);
 
-        let elapsed = frameCount * frameDurationMs;
-        let isLastFrame = (frameCount === totalFrames);
-
-        // Progreso fluido al hilo principal cada 5 frames
-        if (frameCount % 5 === 0) {
+        if (frameIndex % 5 === 0) {
             self.postMessage({
                 type: 'EXPORT_PROGRESS',
-                progress: Math.min(100, (elapsed / durationMs) * 100)
+                progress: Math.min(100, (frameIndex / totalFrames) * 100)
             });
         }
 
-        updateAudioSimulation(frameCount, fps);
-        renderFrameOptimized(canvas, ctx, frameCount, elapsed / 1000, config, preRenderedBgBitmap, preRenderedVinylBitmap);
+        updateAudioSimulation(frameIndex, fps);
+        renderFrameOptimized(canvas, ctx, frameIndex, currentTimestamp, config, preRenderedBgBitmap, preRenderedVinylBitmap);
 
-        const vFrame = new VideoFrame(canvas, {
-            timestamp: Math.round(elapsed * 1000), // microsegundos
-            duration: Math.round(frameDurationMs * 1000)
+        await videoSource.add(currentTimestamp, frameDurationSecs, {
+            keyFrame: isKeyFrame
         });
-
-        videoEncoder.encode(vFrame, {
-            keyFrame: frameCount % fps === 0
-        });
-        vFrame.close();
-        frameCount++;
-
-        if (isLastFrame) {
-            await videoEncoder.flush();
-            videoEncoder.close();
-            muxer.finalize();
-            break;
-        }
-
-        // Pequeña respiración cada 1 segundo virtual para liberar el hilo[cite: 4, 5]
-        if (frameCount % fps === 0) {
-            await new Promise(r => setTimeout(r, 0));
-        }
     }
 
-    // 5. Obtener el Buffer binario final de la RAM y volcarlo de golpe al OPFS de forma segura
-    const finalBuffer = muxer.target.buffer;
+    // 5. Finalizar empaquetado en RAM de forma instantánea
+    await output.finalize();
+    const finalBuffer = output.target.buffer;
+
+    // 6. Volcado atómico final al OPFS
     const opfsRoot = await navigator.storage.getDirectory();
     const fileHandle = await opfsRoot.getFileHandle('vloitz_export.mp4', {
         create: true
@@ -185,7 +177,7 @@ async function executeExportPipeline(config) {
     await writableStream.write(finalBuffer);
     await writableStream.close();
 
-    console.log("[Vloitz Worker] 🎉 Pipeline relámpago completado en memoria y guardado en OPFS.");
+    console.log("[Vloitz Worker] 🎉 Pipeline con Mediabunny completado, audio sincronizado y guardado en OPFS.");
 }
 
 // ==========================================================================
