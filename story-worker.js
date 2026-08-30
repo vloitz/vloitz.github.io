@@ -50,12 +50,12 @@ class ThermalThrottlingPatrol {
         this.criticalFrameTimeMs = 28.0;
         this.emaRenderTimeMs = 16.6;
         this.alpha = 0.15;
-        this.frameCount = 0; // 👈 Ignora el lag de arranque del primer segundo
+        this.frameCount = 0;
     }
 
     observeFrameProcessingTime(durationMs) {
         this.frameCount++;
-        if (this.frameCount < 10) return; // Warmup de seguridad en los primeros 10 frames
+        if (this.frameCount < 10) return; // Warmup inicial
 
         this.emaRenderTimeMs = (this.alpha * durationMs) + ((1 - this.alpha) * this.emaRenderTimeMs);
         if (this.currentTargetFps === 60 && this.emaRenderTimeMs > this.criticalFrameTimeMs) {
@@ -73,7 +73,7 @@ class ThermalThrottlingPatrol {
 }
 
 // ==========================================================================
-// ⚙️ PIPELINE DE EXPORTACIÓN (OPFS + MEDIABUNNY + CANVAS INTERNO)
+// ⚙️ PIPELINE DE EXPORTACIÓN (OPFS + PRE-CACHÉ GRÁFICA + MEDIABUNNY)
 // ==========================================================================
 async function executeExportPipeline(config) {
     const canvas = new OffscreenCanvas(config.width || 360, config.height || 640);
@@ -81,6 +81,45 @@ async function executeExportPipeline(config) {
         alpha: false,
         desynchronized: true
     });
+
+    // ⚡ PRE-CACHÉ 1: Renderizar el fondo inmersivo con blur UNA SOLA VEZ al inicio
+    let preRenderedBgBitmap = null;
+    if (config.immersiveBg && workerState.coverBitmap) {
+        const bgCanvas = new OffscreenCanvas(config.width, config.height);
+        const bgCtx = bgCanvas.getContext('2d');
+        bgCtx.filter = `blur(${config.blurValue || 40}px) brightness(0.3)`;
+        bgCtx.drawImage(workerState.coverBitmap, -50, -50, config.width + 100, config.height + 100);
+        preRenderedBgBitmap = bgCanvas.transferToImageBitmap();
+    }
+
+    // ⚡ PRE-CACHÉ 2: Renderizar la base estática del vinilo y sus surcos UNA SOLA VEZ al inicio
+    let preRenderedVinylBitmap = null;
+    if (config.vinylMode > 0) {
+        const cardW = config.width * 0.90;
+        const imgSize = cardW * 0.85;
+        const vCanvas = new OffscreenCanvas(imgSize, imgSize);
+        const vCtx = vCanvas.getContext('2d');
+        const centerX = imgSize / 2;
+        const centerY = imgSize / 2;
+
+        // Cuerpo exterior negro del vinilo
+        vCtx.beginPath();
+        vCtx.arc(centerX, centerY, imgSize / 2, 0, Math.PI * 2);
+        vCtx.fillStyle = '#000000';
+        vCtx.fill();
+
+        // Surcos concéntricos estáticos
+        vCtx.lineWidth = 1;
+        const labelRadius = imgSize * 0.32;
+        const outerRadius = imgSize / 2 - 4;
+        for (let r = labelRadius + 12; r < outerRadius; r += 6) {
+            vCtx.beginPath();
+            vCtx.arc(centerX, centerY, r, 0, Math.PI * 2);
+            vCtx.strokeStyle = 'rgba(255, 255, 255, 0.035)';
+            vCtx.stroke();
+        }
+        preRenderedVinylBitmap = vCanvas.transferToImageBitmap();
+    }
 
     // 1. Inicialización de OPFS
     const opfsRoot = await navigator.storage.getDirectory();
@@ -114,7 +153,7 @@ async function executeExportPipeline(config) {
         frameRate: config.fps
     });
 
-    // 🚀 CRÍTICO: Arrancar el Output de Mediabunny ANTES de alimentar paquetes
+    // 🚀 Arrancar el Output de Mediabunny
     await output.start();
 
     // 4. Inyección de paquetes de audio AAC procesados en RAM
@@ -125,12 +164,12 @@ async function executeExportPipeline(config) {
         }
     }
 
-    // 5. Bucle de renderizado basado estrictamente en tiempo real (Inquebrantable)
+    // 5. Bucle de renderizado ultrarrápido con assets pre-cacheados
     const thermalPatrol = new ThermalThrottlingPatrol();
     let currentFps = config.fps;
     let currentTimestamp = 0;
     let frameIndex = 0;
-    const targetDuration = config.durationSeconds; // 15s, 30s, 45s exactos
+    const targetDuration = config.durationSeconds;
 
     while (currentTimestamp < targetDuration) {
         while (workerState.isContextLost) {
@@ -139,7 +178,6 @@ async function executeExportPipeline(config) {
 
         const frameStartTime = performance.now();
 
-        // Verificación térmica en caliente
         const targetFpsNow = thermalPatrol.getCurrentTargetFps();
         if (currentFps === 60 && targetFpsNow === 30) {
             currentFps = 30;
@@ -148,16 +186,16 @@ async function executeExportPipeline(config) {
         const frameDuration = 1 / currentFps;
         const isKeyFrame = (Math.round(currentTimestamp * currentFps) % currentFps === 0);
 
-        // Progreso porcentual lineal perfecto de 0 a 100%
         const progress = (currentTimestamp / targetDuration) * 100;
         self.postMessage({
             type: 'EXPORT_PROGRESS',
             progress: Math.min(100, progress)
         });
 
-        // Simulación y renderizado gráfico
         updateAudioSimulation(frameIndex, currentFps);
-        renderFrame(canvas, ctx, frameIndex, currentTimestamp, config);
+
+        // Renderizado ultra optimizado consumiendo la pre-caché
+        renderFrameOptimized(canvas, ctx, frameIndex, currentTimestamp, config, preRenderedBgBitmap, preRenderedVinylBitmap);
 
         await videoSource.add(currentTimestamp, frameDuration, {
             keyFrame: isKeyFrame
@@ -171,11 +209,11 @@ async function executeExportPipeline(config) {
     }
 
     await output.finalize();
-    console.log("[Vloitz Worker] 🎉 Pipeline finalizado y empaquetado en OPFS.");
+    console.log("[Vloitz Worker] 🎉 Pipeline ultrarrápido finalizado y empaquetado en OPFS.");
 }
 
 // ==========================================================================
-// 🎨 MOTOR GRÁFICO AISLADO
+// 🎨 MOTOR GRÁFICO OPTIMIZADO (CON PRE-CACHÉ)
 // ==========================================================================
 function roundRect(ctx, x, y, w, h, r) {
     if (w < 2 * r) r = w / 2;
@@ -224,16 +262,14 @@ function updateAudioSimulation(frame, fps) {
     }
 }
 
-function renderFrame(canvas, ctx, frameIndex, secondsElapsed, config) {
+function renderFrameOptimized(canvas, ctx, frameIndex, secondsElapsed, config, preRenderedBg, preRenderedVinyl) {
     const w = config.width;
     const h = config.height;
     const coverImg = workerState.coverBitmap;
 
-    if (config.immersiveBg && coverImg) {
-        ctx.save();
-        ctx.filter = `blur(${config.blurValue || 40}px) brightness(0.3)`;
-        ctx.drawImage(coverImg, -50, -50, w + 100, h + 100);
-        ctx.restore();
+    // 1. Fondo (Usa el Bitmap pre-renderizado al instante, cero filtros en bucle)
+    if (preRenderedBg) {
+        ctx.drawImage(preRenderedBg, 0, 0, w, h);
     } else {
         ctx.fillStyle = '#000000';
         ctx.fillRect(0, 0, w, h);
@@ -244,6 +280,7 @@ function renderFrame(canvas, ctx, frameIndex, secondsElapsed, config) {
     const cardX = (w - cardW) / 2;
     const cardY = (h - cardH) / 2;
 
+    // 2. Tarjeta / Chasis con Aura Neón Opcional
     ctx.save();
     if (!config.auraEnabled) {
         ctx.shadowBlur = 0;
@@ -266,23 +303,13 @@ function renderFrame(canvas, ctx, frameIndex, secondsElapsed, config) {
     const centerX = imgX + imgSize / 2;
     const centerY = imgY + imgSize / 2;
 
+    // 3. Renderizado de Portada o Vinilo (Usa la pre-caché gráfica)
     ctx.save();
-    if (config.vinylMode > 0) {
-        ctx.beginPath();
-        ctx.arc(centerX, centerY, imgSize / 2, 0, Math.PI * 2);
-        ctx.fillStyle = '#000000';
-        ctx.fill();
+    if (config.vinylMode > 0 && preRenderedVinyl) {
+        // Estampamos la textura del vinilo pre-renderizada en milisegundos
+        ctx.drawImage(preRenderedVinyl, imgX, imgY);
 
-        ctx.lineWidth = 1;
         const labelRadius = imgSize * 0.32;
-        const outerRadius = imgSize / 2 - 4;
-        for (let r = labelRadius + 12; r < outerRadius; r += 6) {
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, r, 0, Math.PI * 2);
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.035)';
-            ctx.stroke();
-        }
-
         ctx.save();
         ctx.beginPath();
         ctx.arc(centerX, centerY, labelRadius, 0, Math.PI * 2);
@@ -312,6 +339,7 @@ function renderFrame(canvas, ctx, frameIndex, secondsElapsed, config) {
         }
         ctx.restore();
 
+        // Anillo divisor y agujero central
         ctx.beginPath();
         ctx.arc(centerX, centerY, labelRadius, 0, Math.PI * 2);
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
@@ -327,6 +355,7 @@ function renderFrame(canvas, ctx, frameIndex, secondsElapsed, config) {
         ctx.stroke();
 
     } else {
+        // Modo Cuadrado Clásico
         ctx.beginPath();
         roundRect(ctx, imgX, imgY, imgSize, imgSize, 8);
         ctx.clip();
@@ -340,6 +369,7 @@ function renderFrame(canvas, ctx, frameIndex, secondsElapsed, config) {
         ctx.restore();
     }
 
+    // 4. Textos (Título y Artista)
     const textX = imgX;
     let cursorY = imgY + imgSize + 25;
     const neonColor = config.brandColorHex || '#1DB954';
@@ -364,6 +394,7 @@ function renderFrame(canvas, ctx, frameIndex, secondsElapsed, config) {
     ctx.font = "400 9px Inter, sans-serif";
     ctx.fillText("Escúchalo en vloitz.github.io", w / 2, cardBottom - 15);
 
+    // 5. Barras del Visualizador de Audio
     const startBarX = (w - (w * 0.90 * 0.85)) / 2;
     const barsBaseY = cursorY + 40;
     const gap = 3;
@@ -375,6 +406,7 @@ function renderFrame(canvas, ctx, frameIndex, secondsElapsed, config) {
         ctx.fillRect(startBarX + (i * (barWidth + gap)), barsBaseY - height, barWidth, height);
     }
 
+    // 6. Barra de Progreso y Tiempos
     const progY = barsBaseY + 10;
     ctx.fillStyle = "#333";
     ctx.fillRect(startBarX, progY, imgSize, 3);
