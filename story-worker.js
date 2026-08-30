@@ -110,13 +110,15 @@ async function executeExportPipeline(config) {
                     chunkData = new Uint8Array(chunkData);
                 }
 
-                // mp4-muxer recibe los chunks de audio directamente de forma limpia
-                muxer.addAudioChunk({
-                    data: chunkData,
+                // 🛠️ Reconstruir como EncodedAudioChunk nativo para que mp4-muxer lo acepte
+                const audioChunk = new EncodedAudioChunk({
                     type: item.packet.type || 'key',
                     timestamp: item.packet.timestamp,
-                    duration: item.packet.duration
-                }, item.meta);
+                    duration: item.packet.duration || 0,
+                    data: chunkData
+                });
+
+                muxer.addAudioChunk(audioChunk, item.meta);
             } catch (err) {
                 console.warn("[Vloitz Worker] ⚠️ Error al inyectar audio en mp4-muxer:", err);
             }
@@ -199,10 +201,10 @@ async function executeExportPipeline(config) {
     const elapsedSecs = ((performance.now() - startTime) / 1000).toFixed(1);
     console.log(`[Vloitz Worker] ⚡ Render relámpago con mp4-muxer completado en ${elapsedSecs}s`);
 
-    // 📊 Reportar métrica exacta a la UI
+    // 🚀 Enviamos el éxito junto al tiempo exacto de renderizado
     self.postMessage({
-        type: 'EXPORT_METRICS',
-        text: `⚡ ¡Render relámpago en ${elapsedSecs}s!`
+        type: 'EXPORT_SUCCESS',
+        elapsed: elapsedSecs
     });
 }
 
