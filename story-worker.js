@@ -1,7 +1,12 @@
 import {
-    Muxer,
-    ArrayBufferTarget
-} from 'https://esm.sh/mp4-muxer@5.1.0';
+    Output,
+    Mp4OutputFormat,
+    BufferTarget,
+    CanvasSource,
+    EncodedAudioPacketSource,
+    EncodedPacket,
+    Quality
+} from 'https://esm.sh/mediabunny';
 
 let workerState = {
     coverBitmap: null,
@@ -37,10 +42,10 @@ self.onmessage = async (e) => {
 };
 
 // ==========================================================================
-// ⚙️ PIPELINE DE EXPORTACIÓN (MP4-MUXER + RAM + BUCLE VIRTUAL)
+// ⚙️ PIPELINE DE EXPORTACIÓN (MEDIABUNNY + BUFFER RAM + AUDIO CORREGIDO)
 // ==========================================================================
 async function executeExportPipeline(config) {
-    const startTime = performance.now(); // ⏱️ Cronómetro quirúrgico
+    const startTime = performance.now(); // ⏱️ Inicio del cronómetro quirúrgico
     const canvas = new OffscreenCanvas(config.width || 360, config.height || 640);
     const ctx = canvas.getContext('2d', {
         alpha: false,
@@ -84,112 +89,87 @@ async function executeExportPipeline(config) {
         preRenderedVinylBitmap = vCanvas.transferToImageBitmap();
     }
 
-    // 1. Configuración del Muxer en Memoria RAM Pura con mp4-muxer
-    let muxer = new Muxer({
-        target: new ArrayBufferTarget(),
-        video: {
-            codec: 'avc',
-            width: config.width,
-            height: config.height
-        },
-        audio: {
-            codec: 'aac',
-            numberOfChannels: 2,
-            sampleRate: 48000
-        },
-        fastStart: 'in-memory',
-        firstTimestampBehavior: 'offset'
+    // 1. Configuración de Mediabunny con BufferTarget en RAM (Velocidad extrema)
+    const output = new Output({
+        format: new Mp4OutputFormat({
+            fastStart: 'in-memory'
+        }),
+        target: new BufferTarget()
     });
 
-    // 2. Inyección de paquetes de audio pre-procesados en la Fase 1
+    // 2. Configuración de Pistas
+    const audioSource = new EncodedAudioPacketSource('aac');
+    output.addAudioTrack(audioSource);
+
+    const videoSource = new CanvasSource(canvas, {
+        codec: 'avc',
+        latencyMode: 'realtime',
+        hardwareAcceleration: 'prefer-hardware',
+        quality: new Quality({
+            bitrate: 10_000_000
+        })
+    });
+    output.addVideoTrack(videoSource, {
+        frameRate: config.fps
+    });
+
+    // 🚀 Arrancar Mediabunny
+    await output.start();
+
+    // 3. Inyección robusta de paquetes de audio serializados
     if (config.audioPackets && config.audioPackets.length > 0) {
         for (const item of config.audioPackets) {
             try {
-                let chunkData = item.packet.data;
-                if (!(chunkData instanceof Uint8Array)) {
-                    chunkData = new Uint8Array(chunkData);
+                // Reconstruir el buffer y el paquete de forma segura tras el postMessage
+                let rawData = item.packet.data;
+                if (!(rawData instanceof Uint8Array)) {
+                    rawData = new Uint8Array(rawData);
                 }
 
-                // 🛠️ Reconstruir como EncodedAudioChunk nativo para que mp4-muxer lo acepte
-                const audioChunk = new EncodedAudioChunk({
-                    type: item.packet.type || 'key',
-                    timestamp: item.packet.timestamp,
-                    duration: item.packet.duration || 0,
-                    data: chunkData
-                });
+                const packet = new EncodedPacket(
+                    rawData,
+                    item.packet.type || 'key',
+                    item.packet.timestamp,
+                    item.packet.duration
+                );
 
-                muxer.addAudioChunk(audioChunk, item.meta);
+                await audioSource.add(packet, item.meta);
             } catch (err) {
-                console.warn("[Vloitz Worker] ⚠️ Error al inyectar audio en mp4-muxer:", err);
+                console.warn("[Vloitz Worker] ⚠️ Error al reinyectar paquete de audio:", err);
             }
         }
     }
 
-    // 3. Configuración del VideoEncoder nativo
-    let videoEncoder = new VideoEncoder({
-        output: (chunk, meta) => muxer.addVideoChunk(chunk, meta),
-        error: e => console.error("[Vloitz Worker] Video Error:", e)
-    });
-
-    videoEncoder.configure({
-        codec: 'avc1.42001E',
-        width: config.width,
-        height: config.height,
-        bitrate: 10_000_000,
-        framerate: config.fps
-    });
-
-    // 4. Bucle Virtual de Alta Velocidad (Cero E/S de disco durante el render)
-    const durationMs = config.durationSeconds * 1000;
+    // 4. Bucle de renderizado ultrarrápido por marcos
     const fps = config.fps;
     const totalFrames = config.durationSeconds * fps;
     const frameDurationMs = 1000 / fps;
-    let frameCount = 0;
+    const frameDurationSecs = 1 / fps;
 
-    while (frameCount <= totalFrames) {
-        if (videoEncoder.encodeQueueSize >= 5) {
-            await new Promise(r => setTimeout(r, 10));
-            continue;
-        }
+    for (let frameIndex = 0; frameIndex <= totalFrames; frameIndex++) {
+        const currentTimestamp = frameIndex * frameDurationSecs;
+        const isKeyFrame = (frameIndex % fps === 0);
 
-        let elapsed = frameCount * frameDurationMs;
-        let isLastFrame = (frameCount === totalFrames);
-
-        if (frameCount % 5 === 0) {
+        if (frameIndex % 5 === 0) {
             self.postMessage({
                 type: 'EXPORT_PROGRESS',
-                progress: Math.min(100, (elapsed / durationMs) * 100)
+                progress: Math.min(100, (frameIndex / totalFrames) * 100)
             });
         }
 
-        updateAudioSimulation(frameCount, fps);
-        renderFrameOptimized(canvas, ctx, frameCount, elapsed / 1000, config, preRenderedBgBitmap, preRenderedVinylBitmap);
+        updateAudioSimulation(frameIndex, fps);
+        renderFrameOptimized(canvas, ctx, frameIndex, currentTimestamp, config, preRenderedBgBitmap, preRenderedVinylBitmap);
 
-        const vFrame = new VideoFrame(canvas, {
-            timestamp: Math.round(elapsed * 1000), // microsegundos exactos
-            duration: Math.round(frameDurationMs * 1000)
+        await videoSource.add(currentTimestamp, frameDurationSecs, {
+            keyFrame: isKeyFrame
         });
-
-        videoEncoder.encode(vFrame, {
-            keyFrame: frameCount % fps === 0
-        });
-        vFrame.close();
-        frameCount++;
-
-        if (isLastFrame) {
-            await videoEncoder.flush();
-            videoEncoder.close();
-            muxer.finalize(); // Sella el archivo en RAM de golpe
-            break;
-        }
-
-        if (frameCount % fps === 0) {
-            await new Promise(r => setTimeout(r, 0));
-        }
     }
 
-    // 5. Obtener el Buffer final de la RAM y volcarlo de un solo golpe al OPFS
-    const finalBuffer = muxer.target.buffer;
+    // 5. Finalizar empaquetado en RAM de forma instantánea
+    await output.finalize();
+    const finalBuffer = output.target.buffer;
+
+    // 6. Volcado atómico final al OPFS
     const opfsRoot = await navigator.storage.getDirectory();
     const fileHandle = await opfsRoot.getFileHandle('vloitz_export.mp4', {
         create: true
@@ -199,17 +179,17 @@ async function executeExportPipeline(config) {
     await writableStream.close();
 
     const elapsedSecs = ((performance.now() - startTime) / 1000).toFixed(1);
-    console.log(`[Vloitz Worker] ⚡ Render relámpago con mp4-muxer completado en ${elapsedSecs}s`);
+    console.log(`[Vloitz Worker] ⚡ Renderizado completado en ${elapsedSecs}s`);
 
-    // 🚀 Enviamos el éxito junto al tiempo exacto de renderizado
+    // 📊 Enviar métrica de tiempo al hilo principal
     self.postMessage({
-        type: 'EXPORT_SUCCESS',
-        elapsed: elapsedSecs
+        type: 'EXPORT_METRICS',
+        text: `⚡ ¡Render relámpago en ${elapsedSecs}s!`
     });
 }
 
 // ==========================================================================
-// 🎨 MOTOR GRÁFICO OPTIMIZADO
+// 🎨 MOTOR GRÁFICO OPTIMIZADO (CON PRE-CACHÉ)
 // ==========================================================================
 function roundRect(ctx, x, y, w, h, r) {
     if (w < 2 * r) r = w / 2;
