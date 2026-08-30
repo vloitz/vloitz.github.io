@@ -125,43 +125,49 @@ async function executeExportPipeline(config) {
         }
     }
 
-    // 5. Bucle con Patrullaje Térmico (EMA)
+    // 5. Bucle de renderizado basado en tiempo real (Inquebrantable ante Throttling)
     const thermalPatrol = new ThermalThrottlingPatrol();
     let currentFps = config.fps;
-    let i = 0;
-    let logicalTimestamp = 0;
+    let currentTimestamp = 0;
+    let frameIndex = 0;
+    const targetDuration = config.durationSeconds;
 
-    while (i <= totalFrames) {
+    while (currentTimestamp < targetDuration) {
+        while (workerState.isContextLost) {
+            await new Promise(r => setTimeout(r, 100));
+        }
+
         const frameStartTime = performance.now();
 
+        // Verificación térmica en caliente
         const targetFpsNow = thermalPatrol.getCurrentTargetFps();
         if (currentFps === 60 && targetFpsNow === 30) {
             currentFps = 30;
-            config.fps = 30;
         }
 
-        const durationSeconds = 1 / currentFps;
-        const isKeyFrame = (i % currentFps === 0);
+        const frameDuration = 1 / currentFps;
+        const isKeyFrame = (Math.round(currentTimestamp * currentFps) % currentFps === 0);
 
-        if (i % 5 === 0) {
-            self.postMessage({
-                type: 'EXPORT_PROGRESS',
-                progress: (i / totalFrames) * 100
-            });
-        }
+        // Progreso porcentual estable basado estrictamente en el tiempo
+        const progress = (currentTimestamp / targetDuration) * 100;
+        self.postMessage({
+            type: 'EXPORT_PROGRESS',
+            progress: Math.min(100, progress)
+        });
 
-        updateAudioSimulation(i, currentFps);
-        renderFrame(canvas, ctx, i, logicalTimestamp, config);
+        // Renderizado y simulación
+        updateAudioSimulation(frameIndex, currentFps);
+        renderFrame(canvas, ctx, frameIndex, currentTimestamp, config);
 
-        await videoSource.add(logicalTimestamp, durationSeconds, {
+        await videoSource.add(currentTimestamp, frameDuration, {
             keyFrame: isKeyFrame
         });
 
         const frameEndTime = performance.now();
         thermalPatrol.observeFrameProcessingTime(frameEndTime - frameStartTime);
 
-        logicalTimestamp += durationSeconds;
-        i += (currentFps === 30 && config.fps === 30 && currentFps !== 60) ? 2 : 1;
+        currentTimestamp += frameDuration;
+        frameIndex++;
     }
 
     await output.finalize();
