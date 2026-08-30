@@ -4,7 +4,8 @@ import {
     StreamTarget,
     CanvasSource,
     EncodedAudioPacketSource,
-    EncodedPacket
+    EncodedPacket,
+    Quality // 👈 Importamos la clase oficial de calidad
 } from 'https://esm.sh/mediabunny';
 
 let workerState = {
@@ -100,11 +101,14 @@ async function executeExportPipeline(config) {
     const audioSource = new EncodedAudioPacketSource('aac');
     output.addAudioTrack(audioSource);
 
-    // 4. Pista de Video (CanvasSource optimizado sin objetos de calidad planos)
+    // 4. Pista de Video (CanvasSource con Quality instanciado correctamente)
     const videoSource = new CanvasSource(canvas, {
         codec: 'avc',
         latencyMode: 'realtime',
-        hardwareAcceleration: 'prefer-hardware'
+        hardwareAcceleration: 'prefer-hardware',
+        quality: new Quality({
+            bitrate: 10_000_000
+        }) // 👈 Sintaxis estricta exigida por mediabunny
     });
     output.addVideoTrack(videoSource, {
         frameRate: config.fps
