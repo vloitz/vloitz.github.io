@@ -96,18 +96,10 @@ async function executeExportPipeline(config) {
         })
     });
 
-    // 3. Pista de Audio
+    // 3. Configuración de Pistas (Audio y Video)
     const audioSource = new EncodedAudioPacketSource('aac');
     output.addAudioTrack(audioSource);
 
-    if (config.audioPackets && config.audioPackets.length > 0) {
-        for (const item of config.audioPackets) {
-            const packet = item.packet instanceof EncodedPacket ? item.packet : new EncodedPacket(item.packet.data, item.packet.type, item.packet.timestamp, item.packet.duration);
-            await audioSource.add(packet, item.meta);
-        }
-    }
-
-    // 4. Pista de Video (CanvasSource con H.264 Baseline y realtime)
     const videoSource = new CanvasSource(canvas, {
         codec: 'avc1.42002A',
         latencyMode: 'realtime',
@@ -116,11 +108,20 @@ async function executeExportPipeline(config) {
             bitrate: 10_000_000
         }
     });
-
     output.addVideoTrack(videoSource, {
         frameRate: config.fps
     });
+
+    // 🚀 CRÍTICO: Arrancar el Output de Mediabunny ANTES de alimentar paquetes o video
     await output.start();
+
+    // 4. Inyección de paquetes de audio AAC procesados en RAM
+    if (config.audioPackets && config.audioPackets.length > 0) {
+        for (const item of config.audioPackets) {
+            const packet = item.packet instanceof EncodedPacket ? item.packet : new EncodedPacket(item.packet.data, item.packet.type, item.packet.timestamp, item.packet.duration);
+            await audioSource.add(packet, item.meta);
+        }
+    }
 
     // 5. Bucle con Patrullaje Térmico (EMA)
     const thermalPatrol = new ThermalThrottlingPatrol();
