@@ -151,9 +151,15 @@ async function executeExportPipeline(config) {
         const isKeyFrame = (frameIndex % fps === 0);
 
         if (frameIndex % 5 === 0) {
+            // 🚀 Telemetría en tiempo real a nivel senior
+            const elapsed = (performance.now() - startTime) / 1000;
+            const currentSpeed = elapsed > 0 ? (frameIndex / elapsed).toFixed(0) : 0;
+            const percent = Math.round((frameIndex / totalFrames) * 100);
+
             self.postMessage({
                 type: 'EXPORT_PROGRESS',
-                progress: Math.min(100, (frameIndex / totalFrames) * 100)
+                progress: percent,
+                text: `⚡ Renderizando a ${currentSpeed} fps (${percent}%)`
             });
         }
 
