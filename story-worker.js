@@ -8,9 +8,7 @@ import {
 } from 'https://esm.sh/mediabunny';
 
 let workerState = {
-    canvas: null,
     coverBitmap: null,
-    isContextLost: false,
     audioData: new Array(20).fill(5)
 };
 
@@ -22,12 +20,6 @@ self.onmessage = async (e) => {
         type,
         payload
     } = e.data;
-
-    if (type === 'INIT_CANVAS') {
-        workerState.canvas = payload.canvas;
-        setupCanvasListeners();
-        console.log("[Vloitz Worker] 🚀 Canvas transferido y Worker inicializado.");
-    }
 
     if (type === 'START_EXPORT') {
         try {
@@ -48,37 +40,21 @@ self.onmessage = async (e) => {
     }
 };
 
-function setupCanvasListeners() {
-    if (!workerState.canvas) return;
-    workerState.canvas.addEventListener('contextlost', (event) => {
-        event.preventDefault(); // Crítico para permitir la recuperación de GPU
-        workerState.isContextLost = true;
-        console.warn("[Vloitz Worker] ⚠️ GPU Context Lost. Suspendiendo renderizado...");
-    });
-
-    workerState.canvas.addEventListener('contextrestored', () => {
-        workerState.isContextLost = false;
-        console.info("[Vloitz Worker] ✨ GPU Context Restored. Reanudando...");
-    });
-}
-
 // ==========================================================================
 // 🌡️ FASE 4: PATRULLAJE TÉRMICO Y DEGRADACIÓN GRÁCIL (EMA)
 // ==========================================================================
 class ThermalThrottlingPatrol {
     constructor() {
         this.currentTargetFps = 60;
-        this.criticalFrameTimeMs = 28.0; // Umbral crítico para 60 FPS
-        this.emaRenderTimeMs = 16.6; // Baseline ideal para 60 FPS
-        this.alpha = 0.15; // Factor de suavizado EMA
+        this.criticalFrameTimeMs = 28.0;
+        this.emaRenderTimeMs = 16.6;
+        this.alpha = 0.15;
     }
 
     observeFrameProcessingTime(durationMs) {
         this.emaRenderTimeMs = (this.alpha * durationMs) + ((1 - this.alpha) * this.emaRenderTimeMs);
-
-        // Si el procesamiento supera los 28ms estables, el SoC está sufriendo throttling
         if (this.currentTargetFps === 60 && this.emaRenderTimeMs > this.criticalFrameTimeMs) {
-            console.warn("[Vloitz Thermal] ⚠️ Thermal throttling detectado (EMA > 28ms). Degradando dinámicamente a 30 FPS.");
+            console.warn("[Vloitz Thermal] ⚠️ Throttling detectado. Degradando a 30 FPS.");
             this.currentTargetFps = 30;
             self.postMessage({
                 type: 'PERFORMANCE_DEGRADED_WARNING'
@@ -92,17 +68,19 @@ class ThermalThrottlingPatrol {
 }
 
 // ==========================================================================
-// ⚙️ PIPELINE DE EXPORTACIÓN (OPFS + MEDIABUNNY + CANVAS)
+// ⚙️ PIPELINE DE EXPORTACIÓN (OPFS + MEDIABUNNY + CANVAS INTERNO)
 // ==========================================================================
 async function executeExportPipeline(config) {
-    const canvas = workerState.canvas;
-    const totalFrames = config.durationSeconds * config.fps;
+    // Creamos el OffscreenCanvas 100% en la memoria del Worker (Cero conflictos con el DOM)
+    const canvas = new OffscreenCanvas(config.width || 360, config.height || 640);
     const ctx = canvas.getContext('2d', {
         alpha: false,
         desynchronized: true
     });
 
-    // 1. Inicialización de OPFS (Escritura directa a disco flash sin saturar RAM)
+    const totalFrames = config.durationSeconds * config.fps;
+
+    // 1. Inicialización de OPFS
     const opfsRoot = await navigator.storage.getDirectory();
     const fileHandle = await opfsRoot.getFileHandle('vloitz_export.mp4', {
         create: true
@@ -118,7 +96,7 @@ async function executeExportPipeline(config) {
         })
     });
 
-    // 3. Pista de Audio (Inyección de paquetes AAC procesados en Fase 1)
+    // 3. Pista de Audio
     const audioSource = new EncodedAudioPacketSource('aac');
     output.addAudioTrack(audioSource);
 
@@ -129,10 +107,10 @@ async function executeExportPipeline(config) {
         }
     }
 
-    // 4. Pista de Video (CanvasSource con H.264 Baseline y modo realtime)[cite: 5, 8]
+    // 4. Pista de Video (CanvasSource con H.264 Baseline y realtime)
     const videoSource = new CanvasSource(canvas, {
-        codec: 'avc1.42002A', // H.264 Baseline, Nivel 4.2 (Universal)[cite: 5, 8]
-        latencyMode: 'realtime', // Elimina búferes y B-Frames para máxima velocidad[cite: 5, 8]
+        codec: 'avc1.42002A',
+        latencyMode: 'realtime',
         hardwareAcceleration: 'prefer-hardware',
         quality: {
             bitrate: 10_000_000
@@ -144,20 +122,15 @@ async function executeExportPipeline(config) {
     });
     await output.start();
 
-    // 5. Bucle de renderizado asíncrono con Patrullaje Térmico (EMA) y contrapresión
+    // 5. Bucle con Patrullaje Térmico (EMA)
     const thermalPatrol = new ThermalThrottlingPatrol();
     let currentFps = config.fps;
     let i = 0;
     let logicalTimestamp = 0;
 
     while (i <= totalFrames) {
-        while (workerState.isContextLost) {
-            await new Promise(r => setTimeout(r, 100));
-        }
-
         const frameStartTime = performance.now();
 
-        // Verificación de degradación térmica en caliente
         const targetFpsNow = thermalPatrol.getCurrentTargetFps();
         if (currentFps === 60 && targetFpsNow === 30) {
             currentFps = 30;
@@ -174,19 +147,15 @@ async function executeExportPipeline(config) {
             });
         }
 
-        // Simulación de audio y renderizado gráfico con timestamp lógico adaptativo
         updateAudioSimulation(i, currentFps);
         renderFrame(canvas, ctx, i, logicalTimestamp, config);
 
-        // Envío al encoder con contrapresión
         await videoSource.add(logicalTimestamp, durationSeconds, {
             keyFrame: isKeyFrame
         });
 
-        // Medición real para el algoritmo EMA
         const frameEndTime = performance.now();
-        const frameElapsedMs = frameEndTime - frameStartTime;
-        thermalPatrol.observeFrameProcessingTime(frameElapsedMs);
+        thermalPatrol.observeFrameProcessingTime(frameEndTime - frameStartTime);
 
         logicalTimestamp += durationSeconds;
         i += (currentFps === 30 && config.fps === 30 && currentFps !== 60) ? 2 : 1;
@@ -197,7 +166,7 @@ async function executeExportPipeline(config) {
 }
 
 // ==========================================================================
-// 🎨 MOTOR GRÁFICO AISLADO (DISEÑO VLOITZ)
+// 🎨 MOTOR GRÁFICO AISLADO
 // ==========================================================================
 function roundRect(ctx, x, y, w, h, r) {
     if (w < 2 * r) r = w / 2;
@@ -251,7 +220,6 @@ function renderFrame(canvas, ctx, frameIndex, secondsElapsed, config) {
     const h = config.height;
     const coverImg = workerState.coverBitmap;
 
-    // 1. Fondo (Inmersivo con blur o Negro)
     if (config.immersiveBg && coverImg) {
         ctx.save();
         ctx.filter = `blur(${config.blurValue || 40}px) brightness(0.3)`;
@@ -267,7 +235,6 @@ function renderFrame(canvas, ctx, frameIndex, secondsElapsed, config) {
     const cardX = (w - cardW) / 2;
     const cardY = (h - cardH) / 2;
 
-    // 2. Tarjeta / Chasis con Aura Neón Opcional
     ctx.save();
     if (!config.auraEnabled) {
         ctx.shadowBlur = 0;
@@ -290,16 +257,13 @@ function renderFrame(canvas, ctx, frameIndex, secondsElapsed, config) {
     const centerX = imgX + imgSize / 2;
     const centerY = imgY + imgSize / 2;
 
-    // 3. Renderizado de Portada o Vinilo (Estático / Giratorio)
     ctx.save();
     if (config.vinylMode > 0) {
-        // Cuerpo exterior del vinilo
         ctx.beginPath();
         ctx.arc(centerX, centerY, imgSize / 2, 0, Math.PI * 2);
         ctx.fillStyle = '#000000';
         ctx.fill();
 
-        // Surcos concéntricos
         ctx.lineWidth = 1;
         const labelRadius = imgSize * 0.32;
         const outerRadius = imgSize / 2 - 4;
@@ -310,7 +274,6 @@ function renderFrame(canvas, ctx, frameIndex, secondsElapsed, config) {
             ctx.stroke();
         }
 
-        // Clipping para la etiqueta central
         ctx.save();
         ctx.beginPath();
         ctx.arc(centerX, centerY, labelRadius, 0, Math.PI * 2);
@@ -340,7 +303,6 @@ function renderFrame(canvas, ctx, frameIndex, secondsElapsed, config) {
         }
         ctx.restore();
 
-        // Anillo divisor y agujero central
         ctx.beginPath();
         ctx.arc(centerX, centerY, labelRadius, 0, Math.PI * 2);
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
@@ -356,7 +318,6 @@ function renderFrame(canvas, ctx, frameIndex, secondsElapsed, config) {
         ctx.stroke();
 
     } else {
-        // Modo Cuadrado Clásico
         ctx.beginPath();
         roundRect(ctx, imgX, imgY, imgSize, imgSize, 8);
         ctx.clip();
@@ -370,7 +331,6 @@ function renderFrame(canvas, ctx, frameIndex, secondsElapsed, config) {
         ctx.restore();
     }
 
-    // 4. Textos (Título y Artista)
     const textX = imgX;
     let cursorY = imgY + imgSize + 25;
     const neonColor = config.brandColorHex || '#1DB954';
@@ -395,7 +355,6 @@ function renderFrame(canvas, ctx, frameIndex, secondsElapsed, config) {
     ctx.font = "400 9px Inter, sans-serif";
     ctx.fillText("Escúchalo en vloitz.github.io", w / 2, cardBottom - 15);
 
-    // 5. Barras del Visualizador de Audio
     const startBarX = (w - (w * 0.90 * 0.85)) / 2;
     const barsBaseY = cursorY + 40;
     const gap = 3;
@@ -407,7 +366,6 @@ function renderFrame(canvas, ctx, frameIndex, secondsElapsed, config) {
         ctx.fillRect(startBarX + (i * (barWidth + gap)), barsBaseY - height, barWidth, height);
     }
 
-    // 6. Barra de Progreso y Tiempos
     const progY = barsBaseY + 10;
     ctx.fillStyle = "#333";
     ctx.fillRect(startBarX, progY, imgSize, 3);
