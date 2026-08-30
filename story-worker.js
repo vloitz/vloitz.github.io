@@ -5,7 +5,7 @@ import {
     CanvasSource,
     EncodedAudioPacketSource,
     EncodedPacket,
-    Quality // 👈 Importamos la clase oficial de calidad
+    Quality
 } from 'https://esm.sh/mediabunny';
 
 let workerState = {
@@ -42,7 +42,7 @@ self.onmessage = async (e) => {
 };
 
 // ==========================================================================
-// 🌡️ FASE 4: PATRULLAJE TÉRMICO Y DEGRADACIÓN GRÁCIL (EMA)
+// 🌡️ FASE 4: PATRULLAJE TÉRMICO Y DEGRADACIÓN GRÁCIL (EMA con Warmup)
 // ==========================================================================
 class ThermalThrottlingPatrol {
     constructor() {
@@ -50,12 +50,16 @@ class ThermalThrottlingPatrol {
         this.criticalFrameTimeMs = 28.0;
         this.emaRenderTimeMs = 16.6;
         this.alpha = 0.15;
+        this.frameCount = 0; // 👈 Ignora el lag de arranque del primer segundo
     }
 
     observeFrameProcessingTime(durationMs) {
+        this.frameCount++;
+        if (this.frameCount < 10) return; // Warmup de seguridad en los primeros 10 frames
+
         this.emaRenderTimeMs = (this.alpha * durationMs) + ((1 - this.alpha) * this.emaRenderTimeMs);
         if (this.currentTargetFps === 60 && this.emaRenderTimeMs > this.criticalFrameTimeMs) {
-            console.warn("[Vloitz Thermal] ⚠️ Throttling detectado. Degradando a 30 FPS.");
+            console.warn("[Vloitz Thermal] ⚠️ Throttling real detectado. Degradando a 30 FPS en caliente.");
             this.currentTargetFps = 30;
             self.postMessage({
                 type: 'PERFORMANCE_DEGRADED_WARNING'
@@ -72,14 +76,11 @@ class ThermalThrottlingPatrol {
 // ⚙️ PIPELINE DE EXPORTACIÓN (OPFS + MEDIABUNNY + CANVAS INTERNO)
 // ==========================================================================
 async function executeExportPipeline(config) {
-    // Creamos el OffscreenCanvas 100% en la memoria del Worker (Cero conflictos con el DOM)
     const canvas = new OffscreenCanvas(config.width || 360, config.height || 640);
     const ctx = canvas.getContext('2d', {
         alpha: false,
         desynchronized: true
     });
-
-    const totalFrames = config.durationSeconds * config.fps;
 
     // 1. Inicialización de OPFS
     const opfsRoot = await navigator.storage.getDirectory();
@@ -101,20 +102,19 @@ async function executeExportPipeline(config) {
     const audioSource = new EncodedAudioPacketSource('aac');
     output.addAudioTrack(audioSource);
 
-    // 4. Pista de Video (CanvasSource con Quality instanciado correctamente)
     const videoSource = new CanvasSource(canvas, {
         codec: 'avc',
         latencyMode: 'realtime',
         hardwareAcceleration: 'prefer-hardware',
         quality: new Quality({
             bitrate: 10_000_000
-        }) // 👈 Sintaxis estricta exigida por mediabunny
+        })
     });
     output.addVideoTrack(videoSource, {
         frameRate: config.fps
     });
 
-    // 🚀 CRÍTICO: Arrancar el Output de Mediabunny ANTES de alimentar paquetes o video
+    // 🚀 CRÍTICO: Arrancar el Output de Mediabunny ANTES de alimentar paquetes
     await output.start();
 
     // 4. Inyección de paquetes de audio AAC procesados en RAM
@@ -125,12 +125,12 @@ async function executeExportPipeline(config) {
         }
     }
 
-    // 5. Bucle de renderizado basado en tiempo real (Inquebrantable ante Throttling)
+    // 5. Bucle de renderizado basado estrictamente en tiempo real (Inquebrantable)
     const thermalPatrol = new ThermalThrottlingPatrol();
     let currentFps = config.fps;
     let currentTimestamp = 0;
     let frameIndex = 0;
-    const targetDuration = config.durationSeconds;
+    const targetDuration = config.durationSeconds; // 15s, 30s, 45s exactos
 
     while (currentTimestamp < targetDuration) {
         while (workerState.isContextLost) {
@@ -148,14 +148,14 @@ async function executeExportPipeline(config) {
         const frameDuration = 1 / currentFps;
         const isKeyFrame = (Math.round(currentTimestamp * currentFps) % currentFps === 0);
 
-        // Progreso porcentual estable basado estrictamente en el tiempo
+        // Progreso porcentual lineal perfecto de 0 a 100%
         const progress = (currentTimestamp / targetDuration) * 100;
         self.postMessage({
             type: 'EXPORT_PROGRESS',
             progress: Math.min(100, progress)
         });
 
-        // Renderizado y simulación
+        // Simulación y renderizado gráfico
         updateAudioSimulation(frameIndex, currentFps);
         renderFrame(canvas, ctx, frameIndex, currentTimestamp, config);
 
