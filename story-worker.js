@@ -100,7 +100,7 @@ async function executeExportPipeline(config) {
     const audioSource = new EncodedAudioPacketSource('aac');
     output.addAudioTrack(audioSource);
 
-    // 4. Pista de Video (CanvasSource optimizado)
+    // 4. Pista de Video (CanvasSource optimizado sin objetos de calidad planos)
     const videoSource = new CanvasSource(canvas, {
         codec: 'avc',
         latencyMode: 'realtime',
