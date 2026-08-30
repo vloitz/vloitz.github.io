@@ -100,8 +100,9 @@ async function executeExportPipeline(config) {
     const audioSource = new EncodedAudioPacketSource('aac');
     output.addAudioTrack(audioSource);
 
+    // 4. Pista de Video (CanvasSource adaptado al formato exigido por mediabunny)
     const videoSource = new CanvasSource(canvas, {
-        codec: 'avc1.42002A',
+        codec: 'avc', // 👈 'mediabunny' usa este identificador interno para H.264
         latencyMode: 'realtime',
         hardwareAcceleration: 'prefer-hardware',
         quality: {
