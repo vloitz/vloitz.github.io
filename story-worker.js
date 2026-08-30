@@ -202,7 +202,16 @@ async function executeExportPipeline(config) {
         });
 
         const frameEndTime = performance.now();
-        thermalPatrol.observeFrameProcessingTime(frameEndTime - frameStartTime);
+        const frameElapsedMs = frameEndTime - frameStartTime;
+        thermalPatrol.observeFrameProcessingTime(frameElapsedMs);
+
+        // 📊 HUD En Vivo: Enviar métricas al hilo principal cada 5 frames para verlas en el celular
+        if (frameIndex % 5 === 0) {
+            self.postMessage({
+                type: 'EXPORT_METRICS',
+                text: `⏱️ ${currentTimestamp.toFixed(1)}s / ${targetDuration}s | ⚡ ${frameElapsedMs.toFixed(0)}ms/frame | 🎬 ${currentFps}FPS`
+            });
+        }
 
         currentTimestamp += frameDuration;
         frameIndex++;
