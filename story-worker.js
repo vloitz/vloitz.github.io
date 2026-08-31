@@ -104,7 +104,7 @@ async function initPipeline(cfg) {
         height: cfg.height || 640,
         bitrate: 300_000,
         framerate: cfg.fps,
-        hardwareAcceleration: 'no-preference'
+        hardwareAcceleration: 'prefer-software'
     });
 
     totalFrames = cfg.durationSeconds * cfg.fps;
@@ -129,7 +129,7 @@ async function encodeFrame(data) {
     videoEncoder.encode(frame, {
         keyFrame
     });
-    frame.close();
+    frame.close(); // solo cerramos el frame recibido
 
     frameIndex++;
 
@@ -145,24 +145,14 @@ async function encodeFrame(data) {
         });
     }
 
-    // 🚦 CONTROL DE FLUJO: Solo enviar NEXT_FRAME si la cola no está llena
     if (frameIndex >= totalFrames) {
         self.postMessage({
             type: 'ALL_FRAMES_SENT'
         });
-    } else if (videoEncoder.encodeQueueSize < 20) {
+    } else {
         self.postMessage({
             type: 'NEXT_FRAME'
         });
-    } else {
-        // Si la cola está llena, esperar y reintentar
-        setTimeout(() => {
-            if (frameIndex < totalFrames) {
-                self.postMessage({
-                    type: 'NEXT_FRAME'
-                });
-            }
-        }, 10);
     }
 }
 
