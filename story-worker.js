@@ -54,15 +54,19 @@ async function executeExportPipeline(config) {
 
     ctx.imageSmoothingEnabled = false;
 
-    // 🧠 CÁLCULO DE ARQUITECTURA: Tamaño Dinámico de la Caché (máximo 30 frames)
+    // 🧠 CÁLCULO DE ARQUITECTURA: Tamaño Dinámico para ciclo de 360° (con tope de seguridad)
     const currentVinylSpeed = config.vinylSpeed !== undefined ? config.vinylSpeed : 1.0;
     if (config.vinylMode === 2 && currentVinylSpeed > 0) {
-        workerState.cacheTotalFrames = Math.ceil(config.fps * (1 / (0.08 * currentVinylSpeed)));
+        // Fórmula exacta: frames = FPS * (1 / (0.08 * velocidad))
+        const calculated = Math.ceil(config.fps * (1 / (0.08 * currentVinylSpeed)));
+        // Tope máximo de 375 frames (para no exceder memoria en móviles)
+        workerState.cacheTotalFrames = Math.min(calculated, 375);
     } else {
-        workerState.cacheTotalFrames = config.fps;
+        // Modo cuadrado o sin vinilo: usamos 1 segundo de caché (FPS frames)
+        workerState.cacheTotalFrames = Math.min(config.fps, 60);
     }
-    // ✅ FORZAMOS LÍMITE MÁXIMO DE 30 FRAMES PARA EVITAR SATURACIÓN DE VRAM
-    workerState.cacheTotalFrames = Math.min(workerState.cacheTotalFrames, 30);
+    // Aseguramos que al menos haya 1 frame
+    workerState.cacheTotalFrames = Math.max(1, workerState.cacheTotalFrames);
 
     // Límite de seguridad de RAM: Si el ciclo completo es mayor que la duración del video, cacheamos solo el total del video
     const totalVideoFrames = config.durationSeconds * config.fps;
@@ -123,9 +127,9 @@ async function executeExportPipeline(config) {
 
     warmUpCtx.imageSmoothingEnabled = false;
 
-    // 🧠 CACHÉ CIRCULAR OPTIMIZADA: Limitamos el Warm-up máximo a 60 frames (1 segundo) para blindar la VRAM del móvil
-    const maxCacheLimit = Math.min(workerState.cacheTotalFrames, config.fps);
-    workerState.cacheTotalFrames = maxCacheLimit; // Forzamos el ciclo al segundo exacto
+    // 🧠 CACHÉ CIRCULAR: Generamos exactamente el número de frames calculado (con tope)
+    const maxCacheLimit = workerState.cacheTotalFrames;
+    // No sobrescribimos workerState.cacheTotalFrames, lo usamos tal cual
 
     for (let i = 0; i < maxCacheLimit; i++) {
         const simSeconds = i / config.fps;
