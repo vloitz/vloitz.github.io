@@ -117,8 +117,7 @@ async function initPipeline(cfg) {
 // ==========================================================================
 async function encodeFrame(data) {
     const {
-        imageBitmap,
-        timestamp,
+        frame,
         keyFrame
     } = data;
 
@@ -127,16 +126,10 @@ async function encodeFrame(data) {
         await new Promise(r => setTimeout(r, 5));
     }
 
-    const vFrame = new VideoFrame(imageBitmap, {
-        timestamp: timestamp,
-        duration: Math.round((1000 / config.fps) * 1000) // microsegundos
-    });
-
-    videoEncoder.encode(vFrame, {
+    videoEncoder.encode(frame, {
         keyFrame
     });
-    vFrame.close();
-    imageBitmap.close(); // liberar memoria
+    frame.close(); // solo cerramos el frame recibido
 
     frameIndex++;
 
