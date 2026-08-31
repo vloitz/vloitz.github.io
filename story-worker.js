@@ -2,10 +2,9 @@ import {
     Output,
     Mp4OutputFormat,
     BufferTarget,
-    CanvasSource,
+    EncodedVideoPacketSource,
     EncodedAudioPacketSource,
-    EncodedPacket,
-    Quality
+    EncodedPacket
 } from 'https://esm.sh/mediabunny';
 
 let workerState = {
@@ -141,20 +140,28 @@ async function executeExportPipeline(config) {
     const audioSource = new EncodedAudioPacketSource('aac');
     output.addAudioTrack(audioSource);
 
-    const videoSource = new CanvasSource(canvas, {
-        codec: 'avc',
-        latencyMode: 'realtime',
-        hardwareAcceleration: 'prefer-hardware',
-        quality: new Quality({
-            bitrate: 10_000_000
-        })
-    });
-    output.addVideoTrack(videoSource, {
-        frameRate: config.fps
-    });
+    const videoSource = new EncodedVideoPacketSource('avc');
+    output.addVideoTrack(videoSource);
 
     // 🚀 Arrancar Mediabunny
     await output.start();
+
+    // 🧠 MOTOR NATIVO V8: Aceleración por hardware asíncrona pura
+    let videoEncoder = new VideoEncoder({
+        output: (chunk, meta) => {
+            const packet = EncodedPacket.fromEncodedChunk(chunk);
+            videoSource.add(packet, meta); // Inyección en O(1), sin 'await' bloqueante
+        },
+        error: e => console.error("[Vloitz Worker] ❌ Video Error:", e)
+    });
+
+    videoEncoder.configure({
+        codec: 'avc1.42001E', // H.264
+        width: config.width || 360,
+        height: config.height || 640,
+        bitrate: 10_000_000,
+        framerate: config.fps
+    });
 
     // 3. Inyección robusta de paquetes de audio serializados
     if (config.audioPackets && config.audioPackets.length > 0) {
@@ -180,42 +187,62 @@ async function executeExportPipeline(config) {
         }
     }
 
-    // 4. Bucle de renderizado ultrarrápido por marcos
+    // 4. Bucle Asíncrono con Control de Cola (Motor V8)
     const fps = config.fps;
     const totalFrames = config.durationSeconds * fps;
     const frameDurationMs = 1000 / fps;
-    const frameDurationSecs = 1 / fps;
+    let frameIndex = 0;
 
-    for (let frameIndex = 0; frameIndex <= totalFrames; frameIndex++) {
-        const currentTimestamp = frameIndex * frameDurationSecs;
+    while (frameIndex <= totalFrames) {
+        // 🚦 CORTAFUEGOS TÉRMICO: Si el chip está saturado, pausamos el bucle milisegundos
+        if (videoEncoder.encodeQueueSize >= 5) {
+            await new Promise(r => setTimeout(r, 10));
+            continue;
+        }
+
+        const currentTimestamp = frameIndex * (1 / fps);
         const isKeyFrame = (frameIndex % fps === 0);
+        let elapsedMs = frameIndex * frameDurationMs;
 
-        if (frameIndex % 5 === 0) {
-            // 🚀 Telemetría en tiempo real a nivel senior
+        if (frameIndex % 10 === 0) {
             const elapsed = (performance.now() - startTime) / 1000;
             const currentSpeed = elapsed > 0 ? (frameIndex / elapsed).toFixed(0) : 0;
             const percent = Math.round((frameIndex / totalFrames) * 100);
-
             self.postMessage({
                 type: 'EXPORT_PROGRESS',
                 progress: percent,
-                text: `⚡ Renderizando a ${currentSpeed} fps (${percent}%)`
+                text: `⚡ Motor Asíncrono a ${currentSpeed} fps (${percent}%)`
             });
         }
 
-        // 🚀 BITBLT OVERDRIVE: Estampar el fotograma cacheado en O(1) usando el residuo del bucle perfecto
+        // 🚀 BITBLT OVERDRIVE: Caché O(1)
         const cachedIndex = frameIndex % workerState.cacheTotalFrames;
         ctx.drawImage(workerState.cachedFrames[cachedIndex], 0, 0);
 
-        // ⏱️ CARGA DINÁMICA AISLADA: Dibujar únicamente la barra de progreso y el cronómetro
+        // ⏱️ CARGA DINÁMICA AISLADA
         renderDynamicOverlay(ctx, currentTimestamp, config);
 
-        await videoSource.add(currentTimestamp, frameDurationSecs, {
+        // 🧠 CREACIÓN Y ENVÍO DEL FRAME NATIVO (Sin await bloqueante)
+        const vFrame = new VideoFrame(canvas, {
+            timestamp: Math.round(elapsedMs * 1000), // WebCodecs exige microsegundos
+            duration: Math.round(frameDurationMs * 1000)
+        });
+
+        videoEncoder.encode(vFrame, {
             keyFrame: isKeyFrame
         });
+        vFrame.close(); // Liberamos memoria inmediatamente
+        frameIndex++;
+
+        // Respiración asíncrona para no congelar los mensajes del Worker
+        if (isKeyFrame) {
+            await new Promise(r => setTimeout(r, 0));
+        }
     }
 
-    // 5. Finalizar empaquetado en RAM de forma instantánea
+    // 5. Flush y Finalización
+    await videoEncoder.flush();
+    videoEncoder.close();
     await output.finalize();
     const finalBuffer = output.target.buffer;
 
