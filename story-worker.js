@@ -119,10 +119,14 @@ async function executeExportPipeline(config) {
         desynchronized: true
     });
 
-    for (let i = 0; i < workerState.cacheTotalFrames; i++) {
+    // 🧠 CACHÉ CIRCULAR OPTIMIZADA: Limitamos el Warm-up máximo a 60 frames (1 segundo) para blindar la VRAM del móvil
+    const maxCacheLimit = Math.min(workerState.cacheTotalFrames, config.fps);
+    workerState.cacheTotalFrames = maxCacheLimit; // Forzamos el ciclo al segundo exacto
+
+    for (let i = 0; i < maxCacheLimit; i++) {
         const simSeconds = i / config.fps;
         updateAudioSimulation(i, config.fps);
-        renderFrameOptimized(warmUpCanvas, warmUpCtx, i, simSeconds, config, preRenderedBgBitmap, preRenderedVinylBitmap, true); // true = Activa isWarmup
+        renderFrameOptimized(warmUpCanvas, warmUpCtx, i, simSeconds, config, preRenderedBgBitmap, preRenderedVinylBitmap, true);
         workerState.cachedFrames.push(warmUpCanvas.transferToImageBitmap());
     }
     // Reiniciamos el simulador para evitar desincronización de ondas en el render final
@@ -222,16 +226,18 @@ async function executeExportPipeline(config) {
         // ⏱️ CARGA DINÁMICA AISLADA
         renderDynamicOverlay(ctx, currentTimestamp, config);
 
-        // 🧠 CREACIÓN Y ENVÍO DEL FRAME NATIVO (Sin await bloqueante)
-        const vFrame = new VideoFrame(canvas, {
-            timestamp: Math.round(elapsedMs * 1000), // WebCodecs exige microsegundos
+        // 🚀 BYPASS DE READBACK SENIOR: Extraemos por transferencia directa sin clonar el contexto entero
+        const tempBmp = canvas.transferToImageBitmap();
+        const vFrame = new VideoFrame(tempBmp, {
+            timestamp: Math.round(elapsedMs * 1000),
             duration: Math.round(frameDurationMs * 1000)
         });
+        tempBmp.close(); // Destruimos el bitmap temporal de inmediato para evitar thrashing de memoria
 
         videoEncoder.encode(vFrame, {
             keyFrame: isKeyFrame
         });
-        vFrame.close(); // Liberamos memoria inmediatamente
+        vFrame.close();
         frameIndex++;
 
         // Respiración asíncrona para no congelar los mensajes del Worker
