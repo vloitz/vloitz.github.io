@@ -204,8 +204,8 @@ async function executeExportPipeline(config) {
 
     while (frameIndex <= totalFrames) {
         // 🚦 CORTAFUEGOS TÉRMICO: Si el chip está saturado, pausamos el bucle milisegundos
-        if (videoEncoder.encodeQueueSize >= 12) {
-            await new Promise(r => setTimeout(r, 5));
+        if (videoEncoder.encodeQueueSize >= 30) {
+            await new Promise(r => setTimeout(r, 10));
             continue;
         }
 
