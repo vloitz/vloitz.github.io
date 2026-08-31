@@ -129,7 +129,7 @@ async function encodeFrame(data) {
     videoEncoder.encode(frame, {
         keyFrame
     });
-    frame.close(); // solo cerramos el frame recibido
+    frame.close();
 
     frameIndex++;
 
@@ -148,10 +148,6 @@ async function encodeFrame(data) {
     if (frameIndex >= totalFrames) {
         self.postMessage({
             type: 'ALL_FRAMES_SENT'
-        });
-    } else {
-        self.postMessage({
-            type: 'NEXT_FRAME'
         });
     }
 }
