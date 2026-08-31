@@ -145,10 +145,24 @@ async function encodeFrame(data) {
         });
     }
 
+    // 🚦 CONTROL DE FLUJO: Solo enviar NEXT_FRAME si la cola no está llena
     if (frameIndex >= totalFrames) {
         self.postMessage({
             type: 'ALL_FRAMES_SENT'
         });
+    } else if (videoEncoder.encodeQueueSize < 20) {
+        self.postMessage({
+            type: 'NEXT_FRAME'
+        });
+    } else {
+        // Si la cola está llena, esperar y reintentar
+        setTimeout(() => {
+            if (frameIndex < totalFrames) {
+                self.postMessage({
+                    type: 'NEXT_FRAME'
+                });
+            }
+        }, 10);
     }
 }
 
