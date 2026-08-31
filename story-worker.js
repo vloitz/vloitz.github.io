@@ -10,7 +10,7 @@ import {
 let workerState = {
     coverBitmap: null,
     audioData: new Array(20).fill(5),
-    cacheTotalFrames: 60 // Variable maestra para el Bucle Dinámico Perfecto
+    cacheTotalFrames: 30 // ← fijamos 30 frames (1 segundo a 30fps) para limitar memoria
 };
 
 // ==========================================================================
@@ -52,15 +52,17 @@ async function executeExportPipeline(config) {
         desynchronized: true
     });
 
-    // 🧠 CÁLCULO DE ARQUITECTURA: Tamaño Dinámico de la Caché (Bucle de 360 grados)
+    ctx.imageSmoothingEnabled = false;
+
+    // 🧠 CÁLCULO DE ARQUITECTURA: Tamaño Dinámico de la Caché (máximo 30 frames)
     const currentVinylSpeed = config.vinylSpeed !== undefined ? config.vinylSpeed : 1.0;
     if (config.vinylMode === 2 && currentVinylSpeed > 0) {
-        // Fórmula Senior: Fotogramas exactos para un ciclo completo basado en los FPS del usuario
         workerState.cacheTotalFrames = Math.ceil(config.fps * (1 / (0.08 * currentVinylSpeed)));
     } else {
-        // Fallback matemático de 1 segundo exacto si no hay vinilo giratorio
         workerState.cacheTotalFrames = config.fps;
     }
+    // ✅ FORZAMOS LÍMITE MÁXIMO DE 30 FRAMES PARA EVITAR SATURACIÓN DE VRAM
+    workerState.cacheTotalFrames = Math.min(workerState.cacheTotalFrames, 30);
 
     // Límite de seguridad de RAM: Si el ciclo completo es mayor que la duración del video, cacheamos solo el total del video
     const totalVideoFrames = config.durationSeconds * config.fps;
@@ -119,6 +121,8 @@ async function executeExportPipeline(config) {
         desynchronized: true
     });
 
+    warmUpCtx.imageSmoothingEnabled = false;
+
     // 🧠 CACHÉ CIRCULAR OPTIMIZADA: Limitamos el Warm-up máximo a 60 frames (1 segundo) para blindar la VRAM del móvil
     const maxCacheLimit = Math.min(workerState.cacheTotalFrames, config.fps);
     workerState.cacheTotalFrames = maxCacheLimit; // Forzamos el ciclo al segundo exacto
@@ -160,11 +164,12 @@ async function executeExportPipeline(config) {
     });
 
     videoEncoder.configure({
-        codec: 'avc1.42001E', // H.264
+        codec: 'avc1.42001E',
         width: config.width || 360,
         height: config.height || 640,
-        bitrate: 10_000_000,
-        framerate: config.fps
+        bitrate: 800_000,
+        framerate: config.fps,
+        hardwareAcceleration: 'require'
     });
 
     // 3. Inyección robusta de paquetes de audio serializados
@@ -199,13 +204,13 @@ async function executeExportPipeline(config) {
 
     while (frameIndex <= totalFrames) {
         // 🚦 CORTAFUEGOS TÉRMICO: Si el chip está saturado, pausamos el bucle milisegundos
-        if (videoEncoder.encodeQueueSize >= 5) {
-            await new Promise(r => setTimeout(r, 10));
+        if (videoEncoder.encodeQueueSize >= 12) {
+            await new Promise(r => setTimeout(r, 5));
             continue;
         }
 
         const currentTimestamp = frameIndex * (1 / fps);
-        const isKeyFrame = (frameIndex % fps === 0);
+        const isKeyFrame = (frameIndex % (fps * 5) === 0);
         let elapsedMs = frameIndex * frameDurationMs;
 
         if (frameIndex % 10 === 0) {
@@ -227,12 +232,10 @@ async function executeExportPipeline(config) {
         renderDynamicOverlay(ctx, currentTimestamp, config);
 
         // 🚀 BYPASS DE READBACK SENIOR: Extraemos por transferencia directa sin clonar el contexto entero
-        const tempBmp = canvas.transferToImageBitmap();
-        const vFrame = new VideoFrame(tempBmp, {
+        const vFrame = new VideoFrame(canvas, {
             timestamp: Math.round(elapsedMs * 1000),
             duration: Math.round(frameDurationMs * 1000)
         });
-        tempBmp.close(); // Destruimos el bitmap temporal de inmediato para evitar thrashing de memoria
 
         videoEncoder.encode(vFrame, {
             keyFrame: isKeyFrame
@@ -240,10 +243,6 @@ async function executeExportPipeline(config) {
         vFrame.close();
         frameIndex++;
 
-        // Respiración asíncrona para no congelar los mensajes del Worker
-        if (isKeyFrame) {
-            await new Promise(r => setTimeout(r, 0));
-        }
     }
 
     // 5. Flush y Finalización
