@@ -10,7 +10,8 @@ import {
 
 let workerState = {
     coverBitmap: null,
-    audioData: new Array(20).fill(5)
+    audioData: new Array(20).fill(5),
+    cacheTotalFrames: 60 // Variable maestra para el Bucle Dinámico Perfecto
 };
 
 // ==========================================================================
@@ -52,6 +53,22 @@ async function executeExportPipeline(config) {
         desynchronized: true
     });
 
+    // 🧠 CÁLCULO DE ARQUITECTURA: Tamaño Dinámico de la Caché (Bucle de 360 grados)
+    const currentVinylSpeed = config.vinylSpeed !== undefined ? config.vinylSpeed : 1.0;
+    if (config.vinylMode === 2 && currentVinylSpeed > 0) {
+        // Fórmula Senior: Fotogramas exactos para un ciclo completo basado en los FPS del usuario
+        workerState.cacheTotalFrames = Math.ceil(config.fps * (1 / (0.08 * currentVinylSpeed)));
+    } else {
+        // Fallback matemático de 1 segundo exacto si no hay vinilo giratorio
+        workerState.cacheTotalFrames = config.fps;
+    }
+
+    // Límite de seguridad de RAM: Si el ciclo completo es mayor que la duración del video, cacheamos solo el total del video
+    const totalVideoFrames = config.durationSeconds * config.fps;
+    if (workerState.cacheTotalFrames > totalVideoFrames) {
+        workerState.cacheTotalFrames = totalVideoFrames;
+    }
+
     // ⚡ PRE-CACHÉ 1: Fondo inmersivo con blur UNA SOLA VEZ
     let preRenderedBgBitmap = null;
     if (config.immersiveBg && workerState.coverBitmap) {
@@ -88,6 +105,29 @@ async function executeExportPipeline(config) {
         }
         preRenderedVinylBitmap = vCanvas.transferToImageBitmap();
     }
+
+    // 🚀 FASE DE WARM-UP: Pre-renderizado del Bucle Matemático Perfecto a RAM
+    self.postMessage({
+        type: 'EXPORT_PROGRESS',
+        progress: 0,
+        text: `🔥 Generando Caché Temporal (${workerState.cacheTotalFrames} frames)...`
+    });
+
+    workerState.cachedFrames = [];
+    const warmUpCanvas = new OffscreenCanvas(config.width || 360, config.height || 640);
+    const warmUpCtx = warmUpCanvas.getContext('2d', {
+        alpha: false,
+        desynchronized: true
+    });
+
+    for (let i = 0; i < workerState.cacheTotalFrames; i++) {
+        const simSeconds = i / config.fps;
+        updateAudioSimulation(i, config.fps);
+        renderFrameOptimized(warmUpCanvas, warmUpCtx, i, simSeconds, config, preRenderedBgBitmap, preRenderedVinylBitmap, true); // true = Activa isWarmup
+        workerState.cachedFrames.push(warmUpCanvas.transferToImageBitmap());
+    }
+    // Reiniciamos el simulador para evitar desincronización de ondas en el render final
+    workerState.audioData.fill(5);
 
     // 1. Configuración de Mediabunny con BufferTarget en RAM (Velocidad extrema)
     const output = new Output({
@@ -163,8 +203,12 @@ async function executeExportPipeline(config) {
             });
         }
 
-        updateAudioSimulation(frameIndex, fps);
-        renderFrameOptimized(canvas, ctx, frameIndex, currentTimestamp, config, preRenderedBgBitmap, preRenderedVinylBitmap);
+        // 🚀 BITBLT OVERDRIVE: Estampar el fotograma cacheado en O(1) usando el residuo del bucle perfecto
+        const cachedIndex = frameIndex % workerState.cacheTotalFrames;
+        ctx.drawImage(workerState.cachedFrames[cachedIndex], 0, 0);
+
+        // ⏱️ CARGA DINÁMICA AISLADA: Dibujar únicamente la barra de progreso y el cronómetro
+        renderDynamicOverlay(ctx, currentTimestamp, config);
 
         await videoSource.add(currentTimestamp, frameDurationSecs, {
             keyFrame: isKeyFrame
@@ -230,11 +274,23 @@ function drawFitText(ctx, text, x, y, maxWidth, initialSize) {
 }
 
 function updateAudioSimulation(frame, fps) {
-    const isKick = frame % (fps === 15 ? 12 : 24) === 0;
+    const cacheFrames = workerState.cacheTotalFrames;
+    // Theta garantiza un ciclo matemático cerrado de 0 a 2*PI (360 grados) ajustado al límite de la caché
+    const theta = ((frame % cacheFrames) / cacheFrames) * Math.PI * 2;
+
+    // K simula la velocidad original (~0.2 radianes por frame) pero de forma predecible
+    const K = Math.max(1, Math.round(cacheFrames / 30));
+
+    // Kicks matemáticamente sincronizados al bucle en lugar de usar un módulo fijo
+    const kickPulse = Math.pow(Math.sin(theta * (K * 2)), 8);
+
     for (let i = 0; i < 20; i++) {
-        let targetHeight = 5 + Math.abs(Math.sin(frame * 0.2 + i) * 15) + Math.random() * 10;
-        if (isKick && i > 13) targetHeight += 30;
-        if (i > 4 && i < 12) targetHeight += Math.random() * 15;
+        // Reemplazamos Math.random() por un pseudo-random trigonométrico para garantizar el bucle perfecto sin saltos
+        const pseudoRandom = Math.abs(Math.sin(theta * (K * 1.5) + (i * 2))) * 10;
+        let targetHeight = 5 + Math.abs(Math.sin((theta * K) + i) * 15) + pseudoRandom;
+
+        if (kickPulse > 0.8 && i > 13) targetHeight += 30 * kickPulse;
+        if (i > 4 && i < 12) targetHeight += pseudoRandom * 1.5;
 
         if (targetHeight > workerState.audioData[i]) {
             workerState.audioData[i] = targetHeight;
@@ -244,7 +300,7 @@ function updateAudioSimulation(frame, fps) {
     }
 }
 
-function renderFrameOptimized(canvas, ctx, frameIndex, secondsElapsed, config, preRenderedBg, preRenderedVinyl) {
+function renderFrameOptimized(canvas, ctx, frameIndex, secondsElapsed, config, preRenderedBg, preRenderedVinyl, isWarmup = false) {
     const w = config.width;
     const h = config.height;
     const coverImg = workerState.coverBitmap;
@@ -380,6 +436,8 @@ function renderFrameOptimized(canvas, ctx, frameIndex, secondsElapsed, config, p
         ctx.fillRect(startBarX + (i * (barWidth + gap)), barsBaseY - height, barWidth, height);
     }
 
+    if (isWarmup) return; // 🧠 CORTAFUEGOS SENIOR: En fase de pre-caché, no dibujamos ni procesamos el progreso lineal ni el cronómetro variable.
+
     const progY = barsBaseY + 10;
     ctx.fillStyle = "#333";
     ctx.fillRect(startBarX, progY, imgSize, 3);
@@ -393,6 +451,65 @@ function renderFrameOptimized(canvas, ctx, frameIndex, secondsElapsed, config, p
         ctx.fill();
     }
 
+    const timeY = barsBaseY + 10 + 15;
+    ctx.fillStyle = "#666";
+    ctx.font = "400 9px Inter, sans-serif";
+    ctx.textAlign = "left";
+
+    const m = Math.floor(secondsElapsed / 60);
+    const s = Math.floor(secondsElapsed % 60);
+    ctx.fillText(`${m}:${s.toString().padStart(2, '0')}`, startBarX, timeY);
+
+    ctx.textAlign = "right";
+    ctx.fillText("HIFI", startBarX + imgSize, timeY);
+
+    const badgeY = timeY + 5;
+    ctx.textAlign = "center";
+    ctx.strokeStyle = neonColor;
+    ctx.lineWidth = 1;
+    ctx.strokeRect((w - 60) / 2, badgeY, 60, 16);
+    ctx.fillStyle = neonColor;
+    ctx.font = "700 9px Inter, sans-serif";
+    ctx.fillText("FLAC • HIFI", w / 2, badgeY + 11);
+}
+
+// ==========================================================================
+// ⚡ MÓDULO DE CARGA DINÁMICA AISLADA (Tiempo Real Ultraligero)
+// ==========================================================================
+function renderDynamicOverlay(ctx, secondsElapsed, config) {
+    const w = config.width;
+    const h = config.height;
+    const cardW = w * 0.90;
+    const cardH = h * 0.75;
+    const cardY = (h - cardH) / 2;
+    const imgSize = cardW * 0.85;
+
+    // Recalcular posiciones estáticas base
+    const imgY = cardY + 25;
+    let cursorY = imgY + imgSize + 25;
+    cursorY += 20; // NOW PLAYING
+    cursorY += 18; // TITLE
+
+    const startBarX = (w - (w * 0.90 * 0.85)) / 2;
+    const barsBaseY = cursorY + 40;
+    const neonColor = config.brandColorHex || '#1DB954';
+
+    // 1. Barra de progreso base
+    const progY = barsBaseY + 10;
+    ctx.fillStyle = "#333";
+    ctx.fillRect(startBarX, progY, imgSize, 3);
+    const progress = Math.min(1, secondsElapsed / config.durationSeconds);
+
+    // 2. Progreso iluminado (Neón)
+    if (neonColor !== 'transparent') {
+        ctx.fillStyle = neonColor;
+        ctx.fillRect(startBarX, progY, imgSize * progress, 3);
+        ctx.beginPath();
+        ctx.arc(startBarX + (imgSize * progress), progY + 1.5, 3, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    // 3. Textos de Tiempo y Tags (Única capa de texto real-time)
     const timeY = barsBaseY + 10 + 15;
     ctx.fillStyle = "#666";
     ctx.font = "400 9px Inter, sans-serif";
