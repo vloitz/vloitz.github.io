@@ -102,7 +102,7 @@ async function initPipeline(cfg) {
         codec: 'avc1.4D401E', // Main Profile (soporte CABAC, mejor calidad a bajo bitrate)
         width: cfg.width || 360,
         height: cfg.height || 640,
-        bitrate: 1_000_000, // 1 mbps para un equilibrio calidad/tamaño
+        bitrate: 2_000_000, // 1 mbps para un equilibrio calidad/tamaño
         framerate: cfg.fps,
         hardwareAcceleration: 'prefer-software'
     });
