@@ -173,7 +173,7 @@ async function executeExportPipeline(config) {
         height: config.height || 640,
         bitrate: 300_000,
         framerate: config.fps,
-        hardwareAcceleration: 'prefer-hardware'
+        hardwareAcceleration: 'no-preference'
     });
 
     // 3. Inyección robusta de paquetes de audio serializados
