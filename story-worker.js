@@ -167,7 +167,7 @@ async function executeExportPipeline(config) {
         codec: 'avc1.42001E',
         width: config.width || 360,
         height: config.height || 640,
-        bitrate: 800_000,
+        bitrate: 300_000,
         framerate: config.fps,
         hardwareAcceleration: 'prefer-hardware'
     });
@@ -203,10 +203,9 @@ async function executeExportPipeline(config) {
     let frameIndex = 0;
 
     while (frameIndex <= totalFrames) {
-        // 🚦 CORTAFUEGOS TÉRMICO: Si el chip está saturado, pausamos el bucle milisegundos
-        if (videoEncoder.encodeQueueSize >= 30) {
-            await new Promise(r => setTimeout(r, 10));
-            continue;
+        // 🚦 ESPERA INTELIGENTE: Si la cola supera 25, esperamos hasta que baje a 15
+        while (videoEncoder.encodeQueueSize >= 25) {
+            await new Promise(r => setTimeout(r, 5)); // Espera activa pero corta
         }
 
         const currentTimestamp = frameIndex * (1 / fps);
