@@ -1,0 +1,29 @@
+{
+    "workbench.colorCustomizations": {
+        "[One Dark Pro Night Flat]": {
+            "editorBracketHighlight.foreground1": "#e06c75",
+            "editorBracketHighlight.foreground2": "#98c379",
+            "editorBracketHighlight.foreground3": "#61afef",
+            "editorBracketHighlight.foreground4": "#e5c07b",
+            "editorBracketHighlight.foreground5": "#c678dd",
+            "editorBracketHighlight.foreground6": "#56b6c2",
+            "editorBracketHighlight.unexpectedBracket.foreground": "#ff0000",
+            "editorBracketPairGuide.activeBackground1": "#e06c7570",
+            "editorBracketPairGuide.activeBackground2": "#98c37970",
+            "editorBracketPairGuide.activeBackground3": "#61afef70",
+            "editorBracketPairGuide.activeBackground4": "#e5c07b70",
+            "editorBracketPairGuide.activeBackground5": "#c678dd70",
+            "editorBracketPairGuide.activeBackground6": "#56b6c270",
+            "editorBracketPairGuide.background1": "#e06c751A",
+            "editorBracketPairGuide.background2": "#98c3791A",
+            "editorBracketPairGuide.background3": "#61afef1A",
+            "editorBracketPairGuide.background4": "#e5c07b1A",
+            "editorBracketPairGuide.background5": "#c678dd1A",
+            "editorBracketPairGuide.background6": "#56b6c21A",
+            "editorIndentGuide.background1": "#4b526320",
+            "editorIndentGuide.activeBackground1": "#abb2bf50"
+        },
+        "minimap.background": "#00000000",
+        "scrollbar.shadow": "#00000000"
+    }
+}

@@ -1,0 +1,28 @@
+# ==========================================================================
+# VLOITZ AUDIO & MEDIA (IGNORADOS)
+# ==========================================================================
+
+# Ignorar la bóveda masiva de descargas y migraciones
+BETA_TEST/
+
+# Ignorar estrictamente todos los formatos de fragmentos
+*.m4s
+*.enc
+*.mp4
+
+# Ignorar cach�s y bases de datos locales si se generan
+*.db
+*.sqlite
+
+# ==========================================================================
+# LOGS Y TEMPORALES
+# ==========================================================================
+*console*.txt
+datos de consola*.txt
+
+# ==========================================================================
+# NODE & DEPENDENCIAS
+# ==========================================================================
+node_modules/
+package-lock.json
+
