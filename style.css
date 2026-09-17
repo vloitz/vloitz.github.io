@@ -3870,5 +3870,34 @@ span#currentTime {
 
 /* END [ VLOITZ LASER TUTORIAL HUD ] (Mind-Reading Education) */
 
+/* ==========================================================================
+   [ CORRECCIÓN MÓVIL ] Desactivar Glassmorphism (Ahorro GPU y Estética)
+   ========================================================================== */
+@media (max-width: 768px) {
+
+    /* 1. Unificamos el fondo de los tracklists con un tono negro-azulado ultra profundo y limpio */
+    .current-tracklist-container,
+    .tracklist-container {
+        background: #0D131A !important;
+        /* Mismo tono exacto del body (--dark-bg) */
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        box-shadow: none !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+    }
+
+    /* 2. Reproductor Principal: Sincronizamos la capa interna para que funda perfecto con la carátula */
+    .player-card {
+        background: transparent !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        box-shadow: none !important;
+        border-top: none !important;
+    }
+
+    .player-details {
+        background: linear-gradient(180deg, rgba(13, 19, 26, 0.4) 0%, rgba(13, 19, 26, 0.85) 100%) !important;
+    }
+}
 
 /* --- FIN DEL ARCHIVO --- */
