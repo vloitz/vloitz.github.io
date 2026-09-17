@@ -53,6 +53,25 @@ html {
     background-color: var(--light-bg);
     background-size: cover;
     background-position: 0% 13%;
+    position: relative;
+    overflow: hidden;
+}
+
+/* hero video · capa animada encima de la background-image del banner.
+   - position:absolute + inset:0 → ocupa todo el banner.
+   - object-fit:cover → escala sin distorsión (crop igual que background-image).
+   - z-index:1 → encima del fondo, debajo del overlay/bio.
+   - solo desktop: el html no lo carga en móvil por matchmedia en el js. */
+.vloitz-hero-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    z-index: 1;
+    background: transparent;
 }
 
 .profile-info {
@@ -1012,6 +1031,16 @@ span#currentTime {
         /* Centrar la imagen en el nuevo espacio */
     }
 
+    /* Hero video · solo desktop.
+       El <video> se oculta en móvil por dos razones:
+       1) El atributo HTML `poster=` se muestra nativo aunque el JS no lo active.
+       2) En móvil la portada es WebGL particles (portada_visual.js), no video.
+       Se oculta acá (no con display:none en el HTML) para no dejar un <video>
+       cargando metadata en vano si algún día se accede desde tablet grande. */
+    .vloitz-hero-video {
+        display: none !important;
+    }
+
     .profile-info {
         flex-direction: column;
         align-items: center;
@@ -1390,6 +1419,21 @@ span#currentTime {
     .share-btn-floating {
         position: static !important;
         flex-shrink: 0;
+    }
+
+    /* Hero gradient · solo desktop (móvil usa WebGL particles, no video).
+       Funde el video del hero con el body para eliminar la costura visual.
+       El color final es #0D131A (mismo del body). El degradado se controla
+       desde JS (hero-flags.js) via la variable CSS --hero-gradient.
+       Si VLOITZ_HERO_FLAGS.GRADIENT_ENABLED = false, la variable queda
+       en 'none' y este ::after no pinta nada. */
+    .profile-banner::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 2;
+        background: var(--hero-gradient, none);
     }
 
 }
@@ -3810,5 +3854,6 @@ span#currentTime {
 }
 
 /* END [ VLOITZ LASER TUTORIAL HUD ] (Mind-Reading Education) */
+
 
 /* --- FIN DEL ARCHIVO --- */

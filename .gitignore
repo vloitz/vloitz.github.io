@@ -9,6 +9,9 @@ BETA_TEST/
 *.m4s
 *.enc
 *.mp4
+# Excepción: el video del hero SÍ va a GitHub Pages
+!hero/
+!hero/*.mp4
 
 # Ignorar cach�s y bases de datos locales si se generan
 *.db
