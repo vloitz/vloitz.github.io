@@ -5,6 +5,249 @@
     },
     "sets": [
         {
+            "id": "GDL014",
+            "title": "GridLoock Groovy 014 — High Harmonic Signal 014",
+            "server": "CF",
+            "date": "2026-10-14 20:10:22",
+            "youtube_sync": {
+                "video_id": "",
+                "offset_ms": 0
+            },
+            "tracklist": [
+                {
+                    "time": "0:00",
+                    "emoji": "🎛️",
+                    "title": "Overt - Reset",
+                    "label": "MixCult Digital",
+                    "cover_url": "47188384-48b5-bb1a-1355-fe4df51d3561"
+                },
+                {
+                    "time": "4:05",
+                    "emoji": "🪩",
+                    "title": "Martin Luciuk - Soulseek",
+                    "label": "Fri By Frikardo",
+                    "cover_url": "283687d3-908f-b129-26f4-bbf8cb59c601"
+                },
+                {
+                    "time": "8:32",
+                    "emoji": "🚀",
+                    "title": "Vibratum - The Rhythm",
+                    "label": "4TUNE",
+                    "cover_url": "ec88452c-cc37-b24d-fd7c-ad1215a30b0b"
+                },
+                {
+                    "time": "12:52",
+                    "emoji": "🎹",
+                    "title": "Monolithic, Lounge 2 Function - Lose Yourself With Me",
+                    "label": "Platonic Solids",
+                    "cover_url": "e193145e-4277-bfec-2f03-230b06219fe3"
+                },
+                {
+                    "time": "15:55",
+                    "emoji": "💿",
+                    "title": "Maco - Growin'",
+                    "label": "BienAimer Music",
+                    "cover_url": "030e07d4-9677-b569-22b2-20d1285b07c2"
+                },
+                {
+                    "time": "20:30",
+                    "emoji": "🎚️",
+                    "title": "Brandub - Imagine",
+                    "label": "Sustain",
+                    "cover_url": "b68f6a6b-addc-b7d1-ff39-0db3f1383359"
+                },
+                {
+                    "time": "23:00",
+                    "emoji": "📻",
+                    "title": "Retromigration - Choices",
+                    "label": "Wolf Music Recordings",
+                    "cover_url": "f518cf3a-1a0e-b41f-1009-7fada0edc13c"
+                },
+                {
+                    "time": "26:18",
+                    "emoji": "⚡",
+                    "title": "Drito Scaletta - Opss",
+                    "label": "Big Bang Records",
+                    "cover_url": "7caebb08-9561-bd3f-fc4b-47b9d41aeed1"
+                },
+                {
+                    "time": "30:33",
+                    "emoji": "🌀",
+                    "title": "Matt Hudson - That Feeling",
+                    "label": "Big Love Trax",
+                    "cover_url": "01c340bd-be67-b227-f8b8-cc4df26a9ecc"
+                },
+                {
+                    "time": "34:38",
+                    "emoji": "🛰️",
+                    "title": "Format Groove - Antimatter",
+                    "label": "Bomba Room",
+                    "cover_url": "bc0537f0-38c3-b993-269d-9dd6feb5450d"
+                },
+                {
+                    "time": "37:31",
+                    "emoji": "🎧",
+                    "title": "Stanny Abram, GB Ground - The Call",
+                    "label": "Marba Records",
+                    "cover_url": "c41a2f4f-10ef-bce7-0c6f-c681bdc9abb2"
+                },
+                {
+                    "time": "41:13",
+                    "emoji": "🛸",
+                    "title": "DJ Meri - Not A Dream",
+                    "label": "Big Love Music",
+                    "cover_url": "bc0ffeae-08f1-b9ea-1cb0-339c0b172b22"
+                },
+                {
+                    "time": "44:32",
+                    "emoji": "🔥",
+                    "title": "Alexny - Like To Party",
+                    "label": "LW Recordings",
+                    "cover_url": "775e61e8-4983-b5e1-042a-6013ce5db00b"
+                },
+                {
+                    "time": "47:50",
+                    "emoji": "🔊",
+                    "title": "Simon Adams - The Rooster",
+                    "label": "VOB Records",
+                    "cover_url": "09b029b8-1bf6-b256-f501-f93aaa0e2046"
+                },
+                {
+                    "time": "50:22",
+                    "emoji": "🎶",
+                    "title": "Veive - You & You",
+                    "label": "Kuskus",
+                    "cover_url": "b5a89ea6-6a26-be73-2e11-29905db6f384"
+                },
+                {
+                    "time": "53:41",
+                    "emoji": "🌌",
+                    "title": "Alter Ogi - Meleda",
+                    "label": "MUFUME",
+                    "cover_url": "8156e02b-f041-b4ba-04cb-7c9bc8805bc5"
+                },
+                {
+                    "time": "56:59",
+                    "emoji": "🎛️",
+                    "title": "DaGroove (ES) - A.N.A.",
+                    "label": "Onako Records",
+                    "cover_url": "d796d4a1-ee3f-b085-1a19-4ebf37cd2e97"
+                },
+                {
+                    "time": "60:14",
+                    "emoji": "🪩",
+                    "title": "Amps - Feel The House Music",
+                    "label": "NAIMA",
+                    "cover_url": "bbae1eeb-c669-b2bb-1317-698917acafa4"
+                },
+                {
+                    "time": "62:58",
+                    "emoji": "🚀",
+                    "title": "Seemless - Show Me",
+                    "label": "Rewind Ltd",
+                    "cover_url": "0a7c2cfb-ef1a-b17f-f58d-b614c5ec1fd2"
+                },
+                {
+                    "time": "66:59",
+                    "emoji": "🎹",
+                    "title": "Disco Yams - Your Love",
+                    "label": "Groovy Riddim Records",
+                    "cover_url": "b4d76221-2599-b927-10e4-b9ce5b00ea63"
+                },
+                {
+                    "time": "71:28",
+                    "emoji": "💿",
+                    "title": "ATTICUS - Alright",
+                    "label": "Guestlist Records (CA)",
+                    "cover_url": "658c874c-3a20-b46d-2ae0-bd64f20489af"
+                },
+                {
+                    "time": "73:52",
+                    "emoji": "🎚️",
+                    "title": "Parla - True Love",
+                    "label": "Jackies Music Records",
+                    "cover_url": "719a2c24-102c-b134-2401-9e6b3dec1b5e"
+                },
+                {
+                    "time": "75:51",
+                    "emoji": "📻",
+                    "title": "Stanny Abram, Mikel Wonic - Paradise",
+                    "label": "Marba Records",
+                    "cover_url": "76e2c592-fcf3-b2db-243f-d0b637e249c9"
+                },
+                {
+                    "time": "78:25",
+                    "emoji": "⚡",
+                    "title": "Julian Collazos - Bombastik",
+                    "label": "Duff Music",
+                    "cover_url": "e8d2baf2-1261-bb17-1074-316d036b54ee"
+                },
+                {
+                    "time": "81:10",
+                    "emoji": "🌀",
+                    "title": "Soulsearcher, RUZE, Chesster - Feelin' Love",
+                    "label": "Soulfuric Deep",
+                    "cover_url": "b34d4170-d972-b94d-1f13-ec27f56604f2"
+                },
+                {
+                    "time": "84:51",
+                    "emoji": "🛰️",
+                    "title": "Qubiko - Flabber",
+                    "label": "Umani Wax",
+                    "cover_url": "6c2b9ccf-8189-baf0-297a-e9d0d3837774"
+                },
+                {
+                    "time": "87:14",
+                    "emoji": "🎧",
+                    "title": "Alberto Bermejo - Solara",
+                    "label": "Eleven Paradise Records",
+                    "cover_url": "3e7f8dfe-c33d-b5e3-035e-0e1a3b8b4f34"
+                },
+                {
+                    "time": "92:08",
+                    "emoji": "🛸",
+                    "title": "Banana Groovz - Ya & Me",
+                    "label": "Outer Waves Records",
+                    "cover_url": "e31fd55a-37db-b947-2160-92c6d992c283"
+                },
+                {
+                    "time": "97:03",
+                    "emoji": "🔥",
+                    "title": "Steve End - Dreamer",
+                    "label": "MoodyHouse Recordings",
+                    "cover_url": "22019193-0954-b55a-f16a-c6c6be943b0c"
+                },
+                {
+                    "time": "100:36",
+                    "emoji": "🔊",
+                    "title": "El Kazed - Stand Grooves",
+                    "label": "Smallville Records",
+                    "cover_url": "725a206c-f72f-b88e-00e5-bd6d6e49e4aa"
+                },
+                {
+                    "time": "103:24",
+                    "emoji": "🎶",
+                    "title": "Trace (UZ) - We Gonna Do",
+                    "label": "Deeperfect",
+                    "cover_url": "ab9e4389-99b0-b604-2428-b798d09b4fc0"
+                },
+                {
+                    "time": "107:39",
+                    "emoji": "🌌",
+                    "title": "Fernando Ortega, Vittorio Brena - Passion",
+                    "label": "Snake Beat",
+                    "cover_url": "366855c4-5575-b7fb-2f32-b498d7bedade"
+                },
+                {
+                    "time": "110:24",
+                    "emoji": "🎛️",
+                    "title": "Kolter - Trapped",
+                    "label": "Koltrax",
+                    "cover_url": "f6075247-43ad-ba5b-19ce-944b0d03e1a8"
+                }
+            ]
+        },
+        {
             "id": "GDL013",
             "title": "GridLoock Groovy 013 — High Harmonic Signal 013",
             "server": "CF",
@@ -1571,7 +1814,7 @@
         {
             "id": "GDL004",
             "title": "GridLoock Groovy 004",
-            "server": "CF",
+            "server": "HF",
             "date": "2026-02-23 16:21:05",
             "tracklist": [
                 {
