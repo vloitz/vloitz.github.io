@@ -1,6 +1,6 @@
 {
     "aegis_version": "2.0",
-    "build_timestamp": "2026-10-20T15:56:21.044Z",
+    "build_timestamp": "2026-10-20T16:34:34.050Z",
     "vault_assets": [
         "app.js",
         "body-particles.js",
@@ -42,17 +42,5 @@
             "type": "worker"
         }
     ],
-    "routing": [
-        {
-            "id": "custom-remote-assets",
-            "match_hostname": "r2.dev",
-            "match_path": "\\.m4s$",
-            "transform": "/v-enc/",
-            "crypto": {
-                "algorithm": "xor-multibyte",
-                "key_utf8": "vloitz_key_2026",
-                "bytes_to_decrypt": 100
-            }
-        }
-    ]
+    "routing": []
 }
