@@ -1,0 +1,58 @@
+{
+    "aegis_version": "2.0",
+    "build_timestamp": "2026-10-20T07:31:14.845Z",
+    "vault_assets": [
+        "app.js",
+        "body-particles.js",
+        "calibradores.js",
+        "hero.js",
+        "portada_visual.js",
+        "story.js",
+        "story-worker.js"
+    ],
+    "local_scripts": [
+        {
+            "filename": "app.js",
+            "type": "script"
+        },
+        {
+            "filename": "body-particles.js",
+            "type": "script"
+        },
+        {
+            "filename": "calibradores.js",
+            "type": "script"
+        },
+        {
+            "filename": "hero.js",
+            "type": "script"
+        },
+        {
+            "filename": "portada_visual.js",
+            "type": "script"
+        },
+        {
+            "filename": "story.js",
+            "type": "script"
+        }
+    ],
+    "local_workers": [
+        {
+            "filename": "story-worker.js",
+            "type": "worker"
+        }
+    ],
+    "routing": [
+        {
+            "id": "custom-remote-assets",
+            "match_hostname": "r2.dev",
+            "match_path": "\\.m4s$",
+            "transform": "/v-enc/",
+            "crypto": {
+                "algorithm": "xor-multibyte",
+                "key_utf8": "vloitz_key_2026",
+                "bytes_to_decrypt": 100
+            }
+        }
+    ]
+}

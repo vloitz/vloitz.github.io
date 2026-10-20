@@ -1,0 +1,34 @@
+{
+    "_comment": "Contrato generado automáticamente por Aegis Oracle V3.0",
+    "encrypt": [
+        "app.js",
+        "body-particles.js",
+        "calibradores.js",
+        "hero.js",
+        "portada_visual.js",
+        "story.js"
+    ],
+    "exclude": [
+        "sw.js"
+    ],
+    "workers": [
+        "story-worker.js"
+    ],
+    "options": {
+        "xor_key": 90,
+        "out_dir": "./Build"
+    },
+    "routing": [
+        {
+            "id": "custom-remote-assets",
+            "match_hostname": "r2.dev",
+            "match_path": "\\.m4s$",
+            "transform": "/v-enc/",
+            "crypto": {
+                "algorithm": "xor-multibyte",
+                "key_utf8": "vloitz_key_2026",
+                "bytes_to_decrypt": 100
+            }
+        }
+    ]
+}

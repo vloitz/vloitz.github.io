@@ -1,0 +1,2 @@
+// AEGIS-STUB-v1
+(async()=>{try{const m=await import('/aegis-sdk.js');const A=m.Aegis||window.Aegis;if(!A){console.error('[Aegis Stub] SDK no disponible');return;}await A.ready;await A.injectScript('body-particles.js');}catch(e){console.error('[Aegis Stub] Fallo en body-particles.js:',e);}})();
