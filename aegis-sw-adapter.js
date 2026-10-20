@@ -4,7 +4,7 @@
 self.AegisAdapter = (function() {
     let manifest = null;
     const AEGIS_VAULT = 'aegis-engine-vault';
-    const wasmVersionUrl = '/bin/aegis_engine.wasm?v=718384';
+    const wasmVersionUrl = '/bin/aegis_engine.wasm?v=099187';
 
     // 🚀 AUTO-CACHÉ UNIVERSAL: Guarda el Wasm en una bóveda separada
     const cacheWasm = async () => {

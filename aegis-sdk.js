@@ -7,7 +7,7 @@ class AegisShield {
         if (!document.querySelector('link[href*="aegis_engine.wasm"]')) {
             const preloadWasm = document.createElement('link');
             preloadWasm.rel = 'preload';
-            preloadWasm.href = '/bin/aegis_engine.wasm?v=718384';
+            preloadWasm.href = '/bin/aegis_engine.wasm?v=099187';
             preloadWasm.as = 'fetch';
             preloadWasm.type = 'application/wasm';
             preloadWasm.crossOrigin = 'anonymous';
@@ -22,7 +22,7 @@ class AegisShield {
         this.engine = await loadAegisEngine({
             locateFile: (path) => {
                 if (path.includes('.wasm')) {
-                    return '/bin/' + path + '?v=718384';
+                    return '/bin/' + path + '?v=099187';
                 }
                 return path;
             }
@@ -183,7 +183,6 @@ class AegisShield {
                 'var _origAdd = document.addEventListener;' +
                 'document.addEventListener = function(type, listener, opts){' +
                     'if (type === "DOMContentLoaded") {' +
-                        '// Damos 10ms de respiro para que CDNs terminen de cargar' +
                         'setTimeout(function() {' +
                             'try { listener.call(document, new Event("DOMContentLoaded")); } catch(e) { console.error(e); }' +
                         '}, 10);' +
