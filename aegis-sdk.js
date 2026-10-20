@@ -7,7 +7,7 @@ class AegisShield {
         if (!document.querySelector('link[href*="aegis_engine.wasm"]')) {
             const preloadWasm = document.createElement('link');
             preloadWasm.rel = 'preload';
-            preloadWasm.href = '/bin/aegis_engine.wasm?v=054776';
+            preloadWasm.href = '/bin/aegis_engine.wasm?v=718384';
             preloadWasm.as = 'fetch';
             preloadWasm.type = 'application/wasm';
             preloadWasm.crossOrigin = 'anonymous';
@@ -22,7 +22,7 @@ class AegisShield {
         this.engine = await loadAegisEngine({
             locateFile: (path) => {
                 if (path.includes('.wasm')) {
-                    return '/bin/' + path + '?v=054776';
+                    return '/bin/' + path + '?v=718384';
                 }
                 return path;
             }
@@ -176,15 +176,17 @@ class AegisShield {
         }
 
         let wrappedCode = code;
-        // 🚀 FIX DEFINITIVO: Solo disparamos el shim si la página está 100% completa.
-        // Si está en "interactive", significa que los scripts 'defer' (como WaveSurfer)
-        // aún se están ejecutando. Dejar que el evento natural ocurra respeta el orden.
-        if (document.readyState === 'complete') {
+        // 🚀 FIX MAESTRO: Se activa en "interactive" o "complete", pero espera un tick
+        // para que librerías externas (como WaveSurfer) terminen de registrarse.
+        if (document.readyState !== 'loading') {
             wrappedCode = '(function(){' +
                 'var _origAdd = document.addEventListener;' +
                 'document.addEventListener = function(type, listener, opts){' +
                     'if (type === "DOMContentLoaded") {' +
-                        'try { listener.call(document, new Event("DOMContentLoaded")); } catch(e) { console.error(e); }' +
+                        '// Damos 10ms de respiro para que CDNs terminen de cargar' +
+                        'setTimeout(function() {' +
+                            'try { listener.call(document, new Event("DOMContentLoaded")); } catch(e) { console.error(e); }' +
+                        '}, 10);' +
                     '} else {' +
                         'return _origAdd.call(document, type, listener, opts);' +
                     '}' +
