@@ -1,5 +1,5 @@
 importScripts('/aegis-sw-adapter.js');
-const CACHE_NAME = 'vloitz-app-v72.4';
+const CACHE_NAME = 'vloitz-app-v72.5';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache-v2'; // Bóveda de 2s para Latencia Cero
 
 // === CACHES DEL HERO VIDEO ===
@@ -370,9 +370,16 @@ self.addEventListener('fetch', (e) => {
                         }
                     }
                     return networkResponse;
-                }).catch(() => {});
+                }).catch((err) => {
+                    console.error('[SW] Error crítico cargando sets.json:', err);
+                    return new Response('{"error": "Network failed"}', {
+                        status: 503,
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                });
 
-                // ENTREGAMOS EL CACHÉ AL INSTANTE (0ms de espera para el usuario)
                 return cachedResponse || fetchPromise;
             })
         );
