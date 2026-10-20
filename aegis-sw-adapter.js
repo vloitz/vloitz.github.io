@@ -4,7 +4,7 @@
 self.AegisAdapter = (function() {
     let manifest = null;
     const AEGIS_VAULT = 'aegis-engine-vault';
-    const wasmVersionUrl = '/bin/aegis_engine.wasm?v=071900';
+    const wasmVersionUrl = '/bin/aegis_engine.wasm?v=429939';
 
     // 🚀 AUTO-CACHÉ UNIVERSAL: Guarda el Wasm en una bóveda separada
     const cacheWasm = async () => {
@@ -63,6 +63,13 @@ self.AegisAdapter = (function() {
                     })
                 );
                 return true;
+            }
+
+            // 🛑 FIX MAESTRO: Si el usuario borró el routing, Aegis NO debe interceptar .m4s
+            // Esto permite que el VloitzNetworkCore (o el sw.js nativo) maneje el audio.
+            const hasRouting = false;
+            if (!hasRouting) {
+                return false; // Ignoramos el audio. Vloitz toma el control total.
             }
 
             // El adapter solo maneja segmentos de audio remotos.
