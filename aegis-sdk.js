@@ -7,7 +7,7 @@ class AegisShield {
         if (!document.querySelector('link[href*="aegis_engine.wasm"]')) {
             const preloadWasm = document.createElement('link');
             preloadWasm.rel = 'preload';
-            preloadWasm.href = '/bin/aegis_engine.wasm?v=010998';
+            preloadWasm.href = '/bin/aegis_engine.wasm?v=808531';
             preloadWasm.as = 'fetch';
             preloadWasm.type = 'application/wasm';
             preloadWasm.crossOrigin = 'anonymous';
@@ -22,7 +22,7 @@ class AegisShield {
         this.engine = await loadAegisEngine({
             locateFile: (path) => {
                 if (path.includes('.wasm')) {
-                    return '/bin/' + path + '?v=010998';
+                    return '/bin/' + path + '?v=808531';
                 }
                 return path;
             }
@@ -178,10 +178,18 @@ class AegisShield {
         // 🔑 FIX UNIVERSAL: Forzar orden de ejecución (equivalente a defer nativo)
         script.async = false;
 
+        // 🚀 SOLUCIÓN DEFINITIVA: Esperar a que la página esté 100% cargada.
+        // window.load se dispara después de que TODOS los CDNs y scripts defer hayan terminado.
+        if (document.readyState !== 'complete') {
+            await new Promise(resolve => {
+                window.addEventListener('load', resolve, { once: true });
+            });
+        }
+
         let wrappedCode = code;
 
-        // 🚀 SHIM RESTAURADO: Si la página ya cargó (readyState distinto de loading),
-        // forzamos el evento DOMContentLoaded para que la app arranque.
+        // 🚀 SHIM RESTAURADO: Si la página ya cargó, forzamos el evento DOMContentLoaded
+        // para que el listener de app.js se ejecute (ya que el evento nativo ya pasó).
         if (document.readyState !== 'loading') {
             wrappedCode = '(function(){' +
                 'var _origAdd = document.addEventListener;' +
