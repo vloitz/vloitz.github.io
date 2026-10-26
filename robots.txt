@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://vloitz.github.io/sitemap.xml

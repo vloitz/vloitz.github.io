@@ -1,0 +1,21 @@
+{
+    "_comment": "Contrato generado automáticamente por Aegis Oracle V3.0",
+    "encrypt": [
+        "app.js",
+        "body-particles.js",
+        "calibradores.js",
+        "hero.js",
+        "portada_visual.js",
+        "story.js"
+    ],
+    "exclude": [
+        "sw.js"
+    ],
+    "workers": [
+        "story-worker.js"
+    ],
+    "options": {
+        "xor_key": 90,
+        "out_dir": "./Build"
+    }
+}
