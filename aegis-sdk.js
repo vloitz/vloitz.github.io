@@ -7,7 +7,7 @@ class AegisShield {
         if (!document.querySelector('link[href*="aegis_engine.wasm"]')) {
             const preloadWasm = document.createElement('link');
             preloadWasm.rel = 'preload';
-            preloadWasm.href = '/bin/aegis_engine.wasm?v=405558';
+            preloadWasm.href = '/bin/aegis_engine.wasm?v=729176';
             preloadWasm.as = 'fetch';
             preloadWasm.type = 'application/wasm';
             preloadWasm.crossOrigin = 'anonymous';
@@ -28,7 +28,7 @@ class AegisShield {
         this.engine = await loadAegisEngine({
             locateFile: (path) => {
                 if (path.includes('.wasm')) {
-                    return '/bin/' + path + '?v=405558';
+                    return '/bin/' + path + '?v=729176';
                 }
                 return path;
             }
@@ -184,8 +184,28 @@ class AegisShield {
             script.type = 'module';
         }
 
-        // Inyección atómica (heredada de la tarea defer del centinela)
-        script.textContent = code;
+        let wrappedCode = code;
+
+        // 🚀 SHIM DE SINCRONIZACIÓN: Como el Centinela es asíncrono (await Wasm),
+        // es posible que el DOMContentLoaded ya se haya disparado.
+        // Este shim garantiza que el código de inicialización se ejecute de todos modos.
+        if (document.readyState !== 'loading') {
+            wrappedCode = '(function(){' +
+                'var _origAdd = document.addEventListener;' +
+                'document.addEventListener = function(type, listener, opts){' +
+                    'if (type === "DOMContentLoaded") {' +
+                        'setTimeout(function() {' +
+                            'try { listener.call(document, new Event("DOMContentLoaded")); } catch(e) { console.error(e); }' +
+                        '}, 10);' +
+                    '} else {' +
+                        'return _origAdd.call(document, type, listener, opts);' +
+                    '}' +
+                '};' +
+                'setTimeout(function(){ document.addEventListener = _origAdd; }, 0);' +
+            '})();' + '\n' + code;
+        }
+
+        script.textContent = wrappedCode;
         document.head.appendChild(script);
         console.log('[🛡️ AegisWasm] Payload ejecutado desde Centinela: ' + filename);
     }
