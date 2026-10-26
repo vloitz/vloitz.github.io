@@ -1,5 +1,5 @@
 importScripts('/aegis-sw-adapter.js');
-const CACHE_NAME = 'vloitz-app-v75.9';
+const CACHE_NAME = 'vloitz-app-v76.2';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache-v2'; // Bóveda de 2s para Latencia Cero
 
 // === CACHES DEL HERO VIDEO ===
@@ -489,7 +489,8 @@ self.addEventListener('fetch', (e) => {
 
 
     // --- INICIO: INTERCEPTOR DE BÓVEDA TÁCTICA (Caja Negra Vloitz) ---
-    if (e.request.url.includes('.m4s') && e.request.url.includes('pub-1bd5ca00f737488cae44be74016d8499.r2.dev')) {
+    // 🛡️ FIX: Añadimos 'init.mp4' para que también se desencripte y cachee.
+    if ((e.request.url.includes('.m4s') || e.request.url.includes('init.mp4')) && e.request.url.includes('pub-1bd5ca00f737488cae44be74016d8499.r2.dev')) {
         e.respondWith(
             async function() {
                 try {
@@ -509,7 +510,8 @@ self.addEventListener('fetch', (e) => {
 
                     // 2. Si no está en caché, construimos la ruta blindada (.enc)
                     const fileName = e.request.url.split('/').pop();
-                    const encUrl = e.request.url.replace(/\/([^\/]+\.m4s)$/, '/v-enc/$1.enc');
+                    // 🛡️ FIX: Acepta .m4s y .mp4 para la ruta encriptada
+                    const encUrl = e.request.url.replace(/\/([^\/]+\.(m4s|mp4))$/, '/v-enc/$1.enc');
 
                     // Intentamos obtener el archivo encriptado
                     const encResponse = await fetch(encUrl);
@@ -550,9 +552,17 @@ self.addEventListener('fetch', (e) => {
 
                         return finalResponse;
                     } else {
-                        // 4. Fallback de Seguridad: Si da 404 el .enc, pedimos el original y lo devolvemos INTACTO
-                        console.warn(`%c[Vloitz Crypto] ⚠️ Archivo blindado no encontrado. Usando original: ${fileName}`, "color: #ffb703; font-weight: bold;");
-                        return fetch(e.request);
+                        // 4. Fallback de Seguridad: Si da 404 el .enc, pedimos el original y LO GUARDAMOS EN CACHÉ
+                        console.warn(`%c[Vloitz Crypto] ⚠️ Archivo blindado no encontrado. Usando original y cacheando: ${fileName}`, "color: #ffb703; font-weight: bold;");
+                        const originalResponse = await fetch(e.request);
+                        if (originalResponse.ok) {
+                            const cacheToSave = await caches.open(PRELOAD_CACHE_NAME);
+                            const cleanGetRequest = new Request(e.request.url, {
+                                method: 'GET'
+                            });
+                            await cacheToSave.put(cleanGetRequest, originalResponse.clone());
+                        }
+                        return originalResponse;
                     }
                 } catch (err) {
                     console.error("[Vloitz Crypto] Fallo crítico de red. Activando puente de emergencia al original.", err);
@@ -564,9 +574,9 @@ self.addEventListener('fetch', (e) => {
     }
     // --- FIN: INTERCEPTOR DE BÓVEDA TÁCTICA ---
 
-    // --- INICIO: INTERCEPTOR DE BÓVEDA HF (Fragmentos .m4s) ---
-    // Solo interceptamos si es un pedacito de audio y viene de nuestros Workers (Túneles HF)
-    if (e.request.url.includes('workers.dev') && e.request.url.includes('.m4s')) {
+    // --- INICIO: INTERCEPTOR DE BÓVEDA HF (Fragmentos .m4s e init.mp4) ---
+    // Solo interceptamos si es un pedacito de audio o el init.mp4 y viene de nuestros Workers (Túneles HF)
+    if (e.request.url.includes('workers.dev') && (e.request.url.includes('.m4s') || e.request.url.includes('init.mp4'))) {
         e.respondWith(
             async function() {
                 try {
@@ -585,6 +595,7 @@ self.addEventListener('fetch', (e) => {
                     const fileName = pathParts.pop(); // ej. "seg-1.m4s"
                     const setId = pathParts.pop(); // ej. "JRG004"
 
+                    // 🛡️ FIX: Acepta .m4s y .mp4 para la ruta encriptada
                     const encUrl = `${originalUrl.origin}/${setId}/v-enc/${fileName}.enc`;
 
                     // 3. Descargar el fragmento blindado a través del Proxy
