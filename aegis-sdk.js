@@ -7,13 +7,19 @@ class AegisShield {
         if (!document.querySelector('link[href*="aegis_engine.wasm"]')) {
             const preloadWasm = document.createElement('link');
             preloadWasm.rel = 'preload';
-            preloadWasm.href = '/bin/aegis_engine.wasm?v=808531';
+            preloadWasm.href = '/bin/aegis_engine.wasm?v=405558';
             preloadWasm.as = 'fetch';
             preloadWasm.type = 'application/wasm';
             preloadWasm.crossOrigin = 'anonymous';
             document.head.appendChild(preloadWasm);
         }
         this.ready = this.init();
+
+        // 🚀 NOTIFICAR AL CENTINELA CUANDO EL MOTOR ESTÉ LISTO
+        this.ready.then(() => {
+            window.dispatchEvent(new Event('aegis-ready'));
+        });
+
     }
 
     async init() {
@@ -22,7 +28,7 @@ class AegisShield {
         this.engine = await loadAegisEngine({
             locateFile: (path) => {
                 if (path.includes('.wasm')) {
-                    return '/bin/' + path + '?v=808531';
+                    return '/bin/' + path + '?v=405558';
                 }
                 return path;
             }
@@ -163,52 +169,30 @@ class AegisShield {
         return rawCode;
     }
 
-    async injectScript(filename, isModule = false) {
+    // 🚀 PATRÓN CENTINELA: Inyección atómica desde el sentinel (defer nativo)
+    async executeTargetPayload(filename) {
         const code = await this._getRawAsset(filename);
-        if (!code) return;
+        if (!code) {
+            console.error('[🛡️ AegisWasm] Payload no encontrado:', filename);
+            return;
+        }
 
         const script = document.createElement('script');
 
-        // 🚀 SMART MODULE DETECTION: Si el código tiene imports o exports, forzamos type="module"
-        const isESModule = isModule || /(^|\n)\s*(import|export)\s/.test(code);
+        const isESModule = /(^|\n)\s*(import|export)\s/.test(code);
         if (isESModule) {
             script.type = 'module';
         }
 
-        // 🔑 FIX UNIVERSAL: Forzar orden de ejecución (equivalente a defer nativo)
-        script.async = false;
-
-        // 🚀 SOLUCIÓN DEFINITIVA: Esperar a que la página esté 100% cargada.
-        // window.load se dispara después de que TODOS los CDNs y scripts defer hayan terminado.
-        if (document.readyState !== 'complete') {
-            await new Promise(resolve => {
-                window.addEventListener('load', resolve, { once: true });
-            });
-        }
-
-        let wrappedCode = code;
-
-        // 🚀 SHIM RESTAURADO: Si la página ya cargó, forzamos el evento DOMContentLoaded
-        // para que el listener de app.js se ejecute (ya que el evento nativo ya pasó).
-        if (document.readyState !== 'loading') {
-            wrappedCode = '(function(){' +
-                'var _origAdd = document.addEventListener;' +
-                'document.addEventListener = function(type, listener, opts){' +
-                    'if (type === "DOMContentLoaded") {' +
-                        'setTimeout(function() {' +
-                            'try { listener.call(document, new Event("DOMContentLoaded")); } catch(e) { console.error(e); }' +
-                        '}, 10);' +
-                    '} else {' +
-                        'return _origAdd.call(document, type, listener, opts);' +
-                    '}' +
-                '};' +
-                'setTimeout(function(){ document.addEventListener = _origAdd; }, 0);' +
-            '})();' + '\n' + code;
-        }
-
-        script.textContent = wrappedCode;
+        // Inyección atómica (heredada de la tarea defer del centinela)
+        script.textContent = code;
         document.head.appendChild(script);
-        console.log('[🛡️ AegisWasm] Inyección fantasma completada: ' + filename);
+        console.log('[🛡️ AegisWasm] Payload ejecutado desde Centinela: ' + filename);
+    }
+
+    // Método legacy para compatibilidad con micro-stubs
+    async injectScript(filename, isModule = false) {
+        return this.executeTargetPayload(filename);
     }
 
     async createSecureWorker(filename) {

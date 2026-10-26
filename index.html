@@ -2,6 +2,8 @@
 <html lang="es">
 
 <head>
+    <script type="module" src="/aegis-sdk.js"></script>
+
 
     <script>
         if ('scrollRestoration' in history) {
@@ -840,11 +842,11 @@
         }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest" defer></script>
-    <script src="/portada_visual.js"></script>
+    <script defer src="/aegis-sentinel.js" data-target="portada_visual.js"></script>
     <!-- body-particles.js removido para inyección diferida en app.js -->
-    <script src="/hero.js?v=1"></script>
-    <script src="/app.js?v=44.7"></script>
-    <script src="/calibradores.js"></script>
+    <script defer src="/aegis-sentinel.js" data-target="hero.js"></script>
+    <script defer src="/aegis-sentinel.js" data-target="app.js"></script>
+    <script defer src="/aegis-sentinel.js" data-target="calibradores.js"></script>
 
     <div id="storyOverlay">
         <button class="story-close-global" id="stCloseBtn">&times;</button>
