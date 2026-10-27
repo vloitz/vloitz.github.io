@@ -1,5 +1,5 @@
 importScripts('/aegis-sw-adapter.js');
-const CACHE_NAME = 'vloitz-app-v76.3';
+const CACHE_NAME = 'vloitz-app-v76.4';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache-v2'; // Bóveda de 2s para Latencia Cero
 
 // === CACHES DEL HERO VIDEO ===
@@ -36,6 +36,96 @@ const ASSETS_TO_CACHE = [
     'https://unpkg.com/wavesurfer.js@7.7.5/dist/plugins/regions.min.js',
     'https://cdn.jsdelivr.net/npm/hls.js@latest'
 ];
+
+
+// =================================================================
+// 🧾 VLOITZ STORAGE LEDGER (Libro Contable de Caché)
+// =================================================================
+let storageLedger = {}; // { setId: { totalBytes, lastAccess, fragments: { url: size } } }
+let activeSetId = null; // El set que se está reproduciendo actualmente
+
+// Carga el libro desde IndexedDB al arrancar el SW (si existe)
+async function loadLedger() {
+    try {
+        const cache = await caches.open('vloitz-ledger-cache');
+        const res = await cache.match('/ledger.json');
+        if (res) {
+            storageLedger = await res.json();
+            console.log('[Ledger] 📖 Libro contable recuperado:', Object.keys(storageLedger).length, 'sets');
+        }
+    } catch (e) {
+        console.warn('[Ledger] No se pudo cargar el libro (se creará uno nuevo).');
+    }
+}
+
+// Guarda el libro en caché (debounced para no saturar I/O)
+let ledgerSaveTimer = null;
+
+function saveLedgerDebounced() {
+    if (ledgerSaveTimer) clearTimeout(ledgerSaveTimer);
+    ledgerSaveTimer = setTimeout(async () => {
+        try {
+            const cache = await caches.open('vloitz-ledger-cache');
+            const response = new Response(JSON.stringify(storageLedger), {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            await cache.put('/ledger.json', response);
+        } catch (e) {
+            console.warn('[Ledger] Error al guardar el libro:', e);
+        }
+    }, 2000); // Guardar cada 2s máximo
+}
+
+// Actualiza el libro cuando se guarda un fragmento
+function ledgerAdd(setId, url, size) {
+    if (!storageLedger[setId]) {
+        storageLedger[setId] = {
+            totalBytes: 0,
+            lastAccess: Date.now(),
+            fragments: {}
+        };
+    }
+    storageLedger[setId].fragments[url] = size;
+    storageLedger[setId].totalBytes += size;
+    storageLedger[setId].lastAccess = Date.now();
+    saveLedgerDebounced();
+
+    // 🧹 Disparar el LRU en tiempo muerto para no bloquear el audio
+    if ('requestIdleCallback' in self) {
+        requestIdleCallback(() => enforceLRU(), {
+            timeout: 5000
+        });
+    } else {
+        setTimeout(() => enforceLRU(), 3000);
+    }
+}
+
+// Actualiza el libro cuando se borra un fragmento
+function ledgerRemove(setId, url) {
+    if (storageLedger[setId] && storageLedger[setId].fragments[url]) {
+        const size = storageLedger[setId].fragments[url];
+        delete storageLedger[setId].fragments[url];
+        storageLedger[setId].totalBytes -= size;
+        if (storageLedger[setId].totalBytes <= 0) {
+            delete storageLedger[setId];
+        }
+        saveLedgerDebounced();
+    }
+}
+
+// Actualiza el timestamp de acceso (para el LRU)
+function ledgerTouch(setId) {
+    if (storageLedger[setId]) {
+        storageLedger[setId].lastAccess = Date.now();
+        saveLedgerDebounced();
+    }
+}
+
+// Inicializar el libro al arrancar
+loadLedger();
+// =================================================================
 
 // --- INICIO: MOTOR DE BASE DE DATOS (VLOITZ VAULT DB) ---
 const DB_NAME = 'vloitz_vault_db';
@@ -79,6 +169,158 @@ const TIER_LIMITS = {
     'ALTA/PC': 300 // ~5 horas o set completo (PC / Gama Alta)
 };
 
+// 📊 PRESUPUESTO MATEMÁTICO DE AUDIO (Fase 2.3)
+const OPUS_SET_SIZE_MB = 288; // 2 horas OPUS 320kbps
+const INITIALS_CATALOG_MB = 200; // Iniciales de todos los sets
+const CRITICAL_MARGIN_MB = 50; // Margen para IndexedDB/localStorage
+const MIN_SURVIVAL_MB = INITIALS_CATALOG_MB + OPUS_SET_SIZE_MB; // 488 MB
+let storageMode = 'NORMAL'; // 'NORMAL' | 'SURVIVAL' | 'FALLBACK'
+
+async function updateStorageMode() {
+    const {
+        mode
+    } = await calculateAudioBudget();
+    storageMode = mode;
+    if (mode === 'SURVIVAL') {
+        console.warn('[Storage] 🆘 Modo Supervivencia activo: No se cachearán sets completos.');
+    }
+}
+
+async function calculateAudioBudget() {
+    try {
+        // 1. Obtener cuota real del dispositivo
+        const estimate = await navigator.storage.estimate();
+        const quotaMB = (estimate.quota || 0) / (1024 * 1024);
+        const usageMB = (estimate.usage || 0) / (1024 * 1024);
+
+        // 2. Definir presupuesto base según gama (B_base)
+        let baseBudgetMB = 0;
+        if (performanceTier === 'BAJA') baseBudgetMB = INITIALS_CATALOG_MB + (1 * OPUS_SET_SIZE_MB); // 488 MB
+        else if (performanceTier === 'MEDIA') baseBudgetMB = INITIALS_CATALOG_MB + (2 * OPUS_SET_SIZE_MB); // 776 MB
+        else baseBudgetMB = INITIALS_CATALOG_MB + (4 * OPUS_SET_SIZE_MB); // 1352 MB
+
+        // 3. Calcular límite físico (80% de lo disponible menos metadatos críticos)
+        const safeAvailableMB = (quotaMB * 0.8) - usageMB - CRITICAL_MARGIN_MB;
+
+        // 4. Aplicar clamp (B_audio = min(B_base, límite físico))
+        let finalBudgetMB = Math.min(baseBudgetMB, safeAvailableMB);
+
+        // 🚨 FIX FLAC: Si el set activo pesa más que el presupuesto, activar Supervivencia
+        if (activeSetId && storageLedger[activeSetId]) {
+            const activeSetMB = storageLedger[activeSetId].totalBytes / (1024 * 1024);
+            if (activeSetMB > finalBudgetMB) {
+                console.warn(`%c[Storage] 🚨 El set activo (${activeSetMB.toFixed(0)} MB) supera el presupuesto (${finalBudgetMB.toFixed(0)} MB). Forzando Modo Supervivencia.`, "color: #ffaa00; font-weight: bold;");
+                storageMode = 'SURVIVAL';
+                return {
+                    budgetMB: finalBudgetMB,
+                    mode: 'SURVIVAL'
+                };
+            }
+        }
+
+        // 5. Modo Supervivencia (Si el presupuesto es menor al mínimo vital)
+        if (finalBudgetMB < MIN_SURVIVAL_MB) {
+            console.warn(`%c[Storage Alert] 🆘 Presupuesto (${finalBudgetMB.toFixed(0)} MB) menor al mínimo vital (${MIN_SURVIVAL_MB} MB). Modo Supervivencia activado.`, "background: #FF0000; color: white; font-weight: bold;");
+            storageMode = 'SURVIVAL';
+            return {
+                budgetMB: finalBudgetMB,
+                mode: 'SURVIVAL'
+            };
+        }
+        storageMode = 'NORMAL';
+
+        console.log(`%c[Storage] 📊 Presupuesto calculado: ${finalBudgetMB.toFixed(0)} MB (Gama: ${performanceTier})`, "color: #00FF00; font-weight: bold;");
+        return {
+            budgetMB: finalBudgetMB,
+            mode: 'NORMAL'
+        };
+    } catch (e) {
+        console.warn('[Storage] Error al calcular presupuesto (fallback a 300MB):', e);
+        return {
+            budgetMB: 300,
+            mode: 'FALLBACK'
+        };
+    }
+}
+
+// 🧹 ALGORITMO DE PURGA LRU (Fase 2.4)
+let isPurging = false;
+async function enforceLRU() {
+    if (isPurging) return;
+    isPurging = true;
+
+    try {
+        const {
+            budgetMB,
+            mode
+        } = await calculateAudioBudget();
+        const budgetBytes = budgetMB * 1024 * 1024;
+
+        // Calcular peso total actual según el libro contable
+        let totalBytes = 0;
+        for (const setId in storageLedger) {
+            totalBytes += storageLedger[setId].totalBytes;
+        }
+
+        // Si estamos por debajo del presupuesto, no hacemos nada
+        if (totalBytes <= budgetBytes) {
+            isPurging = false;
+            return;
+        }
+
+        // 🚨 FIX FLAC: Log informativo si estamos en supervivencia
+        if (storageMode === 'SURVIVAL') {
+            console.warn('[LRU] Modo Supervivencia activo. El set activo excede el presupuesto. Purgando solo sets inactivos.');
+        }
+
+        console.warn(`%c[LRU] 🚨 Presupuesto superado: ${(totalBytes/1048576).toFixed(0)} MB de ${budgetMB.toFixed(0)} MB. Iniciando purga...`, "color: #ffaa00; font-weight: bold;");
+
+        // Filtrar sets candidatos (excluyendo el set activo)
+        const candidates = Object.keys(storageLedger)
+            .filter(setId => setId !== activeSetId)
+            .map(setId => ({
+                setId,
+                lastAccess: storageLedger[setId].lastAccess,
+                fragments: storageLedger[setId].fragments
+            }))
+            .sort((a, b) => a.lastAccess - b.lastAccess); // El más viejo primero
+
+        const cache = await caches.open(PRELOAD_CACHE_NAME);
+
+        for (const candidate of candidates) {
+            if (totalBytes <= budgetBytes) break; // Ya hicimos espacio
+
+            // En el set candidato, buscar fragmentos que NO sean iniciales
+            const fragmentsToDelete = Object.keys(candidate.fragments).filter(url => {
+                // Protegemos init.mp4 y los primeros segmentos (seg-0, seg-1)
+                return !url.includes('init.mp4') && !url.includes('seg-0.m4s') && !url.includes('seg-1.m4s');
+            });
+
+            for (const url of fragmentsToDelete) {
+                const size = candidate.fragments[url];
+                // 🛡️ FIX: Distinguir Cache API (R2) vs IndexedDB (HF)
+                if (url.includes('workers.dev')) {
+                    await deleteFragmentFromDB(url); // HF → IndexedDB
+                } else {
+                    await cache.delete(url); // R2 → Cache API
+                }
+                ledgerRemove(candidate.setId, url);
+                totalBytes -= size;
+
+                if (totalBytes <= budgetBytes) break;
+            }
+
+            console.log(`%c[LRU] 🗑️ Purgado parcial del set: ${candidate.setId}`, "color: #ff5555; font-size: 10px;");
+        }
+
+        console.log(`%c[LRU] ✅ Purga completada. Peso actual: ${(totalBytes/1048576).toFixed(0)} MB`, "color: #00FF00; font-weight: bold;");
+
+    } catch (e) {
+        console.error('[LRU] Error durante la purga:', e);
+    } finally {
+        isPurging = false;
+    }
+}
 
 // Promesa envolvente para manejar IndexedDB dentro del Service Worker
 function openDB() {
@@ -180,6 +422,23 @@ async function saveFragmentToDB(url, blob) {
     }
 }
 
+
+// 🗑️ Borra un fragmento de IndexedDB (HF) para el LRU
+async function deleteFragmentFromDB(url) {
+    try {
+        const db = await openDB();
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction(STORE_NAME, 'readwrite');
+            const store = transaction.objectStore(STORE_NAME);
+            const request = store.delete(url);
+            request.onsuccess = () => resolve(true);
+            request.onerror = () => reject(request.error);
+        });
+    } catch (e) {
+        console.warn('[Vloitz Cache] Error al borrar fragmento de IndexedDB:', e);
+    }
+}
+
 // Función para buscar un fragmento en el disco antes de usar internet
 async function getFragmentFromDB(url) {
     try {
@@ -268,6 +527,14 @@ self.addEventListener('message', (event) => {
             `%c[Vloitz Cache] 🧠 Escudo Adaptativo: Nivel ${performanceTier} detectado. Límite de seguridad: ${cacheLimit} fragmentos. (iOS: ${isIOSDevice})`,
             "background: #121212; color: #FF00FF; font-weight: bold; padding: 2px 4px; border: 1px solid #FF00FF; border-radius: 3px;"
         );
+    }
+
+    // 🧾 Receptor de Set Activo (Protege el LRU y actualiza el Ledger)
+    if (event.data.type === 'SET_ACTIVE_SET') {
+        activeSetId = event.data.setId;
+        ledgerTouch(activeSetId);
+        updateStorageMode().catch(e => console.warn('[Storage] Error al actualizar modo:', e));
+        console.log(`[Ledger] 🎯 Set activo actualizado: ${activeSetId}`);
     }
 
     // 2. Receptor de Actualización Forzada (Nuevo - Conectado al botón del Toast)
@@ -541,11 +808,20 @@ self.addEventListener('fetch', (e) => {
                         // 💡 FIX SENIOR: Guardar automáticamente en la Bóveda Táctica (PRELOAD_CACHE_NAME)
                         // Forzando el método GET para evitar errores con peticiones HEAD o personalizadas.
                         try {
-                            const cacheToSave = await caches.open(PRELOAD_CACHE_NAME);
-                            const cleanGetRequest = new Request(e.request.url, {
-                                method: 'GET'
-                            });
-                            await cacheToSave.put(cleanGetRequest, finalResponse.clone());
+                            // 🆘 Si estamos en modo supervivencia, NO guardamos en caché
+                            if (storageMode !== 'SURVIVAL') {
+                                const cacheToSave = await caches.open(PRELOAD_CACHE_NAME);
+                                const cleanGetRequest = new Request(e.request.url, {
+                                    method: 'GET'
+                                });
+                                await cacheToSave.put(cleanGetRequest, finalResponse.clone());
+
+                                // 🧾 ACTUALIZAR LIBRO CONTABLE (R2)
+                                const urlObj = new URL(e.request.url);
+                                const pathParts = urlObj.pathname.split('/').filter(Boolean);
+                                const setId = pathParts[0];
+                                ledgerAdd(setId, e.request.url, decryptedBuffer.byteLength);
+                            }
                         } catch (cacheErr) {
                             console.warn("[Vloitz Cache] No se pudo auto-guardar el fragmento R2 al vuelo:", cacheErr);
                         }
@@ -620,8 +896,15 @@ self.addEventListener('fetch', (e) => {
                     });
 
                     // 5. Guardar el archivo LIMPIO en IndexedDB para futuras reproducciones (Excepto en iOS)
-                    if (!isIOSDevice) {
+                    // 🆘 Si estamos en modo supervivencia, NO guardamos en caché
+                    if (!isIOSDevice && storageMode !== 'SURVIVAL') {
                         saveFragmentToDB(e.request.url, rawBlob);
+
+                        // 🧾 ACTUALIZAR LIBRO CONTABLE (HF)
+                        const urlObj = new URL(e.request.url);
+                        const pathParts = urlObj.pathname.split('/').filter(Boolean);
+                        const setId = pathParts[0];
+                        ledgerAdd(setId, e.request.url, rawBlob.size);
                     }
 
                     // 6. Inyectar el audio puro al reproductor HLS
