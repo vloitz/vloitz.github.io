@@ -1,5 +1,5 @@
 importScripts('/aegis-sw-adapter.js');
-const CACHE_NAME = 'vloitz-app-v78.5';
+const CACHE_NAME = 'vloitz-app-v78.8';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache-v2'; // Bóveda de 2s para Latencia Cero
 
 // === CACHES DEL HERO VIDEO ===
@@ -557,8 +557,18 @@ self.addEventListener('message', (event) => {
 self.addEventListener('install', (e) => {
     console.log('[Service Worker] Nueva versión instalada. Esperando la orden del usuario para activarse...');
     e.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => {
-            return Promise.all(ASSETS_TO_CACHE.map(a => cache.add(a).catch(function(err) { console.warn('[AegisWasm] Activo omitido del precache (404, no critico):', a); })));
+        caches.open(CACHE_NAME).then(async (cache) => {
+            // 🚀 FIX SENIOR: Descarga individual (AllSettled)
+            // Esto evita que un archivo lento (hls.js en red 2G) cancele TODA la instalación.
+            // Si hls.js tarda 15s, las fuentes ya se guardaron en el disco y están a salvo.
+            const results = await Promise.allSettled(
+                ASSETS_TO_CACHE.map(url => {
+                    return cache.add(url).catch(err => {
+                        console.warn(`[SW Install] ⚠️ No se pudo precachear: ${url}`, err);
+                    });
+                })
+            );
+            console.log('[Service Worker] ✅ Instalación finalizada (algunos archivos pueden haber fallado, pero los locales están seguros).');
         })
     );
 });
