@@ -4,17 +4,13 @@
 self.AegisAdapter = (function() {
     let manifest = null;
     const AEGIS_VAULT = 'aegis-engine-vault';
-    const wasmVersionUrl = '/bin/aegis_engine.wasm?v=961444';
+    const wasmVersionUrl = '/bin/aegis_engine.wasm?v=240387';
 
-    // 🚀 AUTO-CACHÉ UNIVERSAL: Guarda el Wasm en una bóveda separada
-    const cacheWasm = async () => {
-        try {
-            const cache = await caches.open(AEGIS_VAULT);
-            const response = await fetch(wasmVersionUrl);
-            if (response.ok) await cache.put(wasmVersionUrl, response);
-        } catch (e) { /* Silencioso */ }
-    };
-    cacheWasm(); // Ejecuta la caché en segundo plano al arrancar
+    // 🚀 FIX v3.2: cacheWasm() ELIMINADO.
+    // Motivo: cacheWasm() ejecuta un fetch + put en background que compite
+    // con el cache.match() del SDK en el Cache API, causando que el hit
+    // se bloquee hasta 13+ segundos cuando el .wasm ya estaba en caché.
+    // El cacheo ahora se hace en el handler de .wasm (store-on-miss, ver abajo).
 
     // ⏳ Promesa única de carga
     const manifestReady = fetch('/aegis.manifest.json', { cache: 'no-store' })
