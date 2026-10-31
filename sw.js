@@ -1,5 +1,5 @@
 importScripts('/aegis-sw-adapter.js');
-const CACHE_NAME = 'vloitz-app-v78.8';
+const CACHE_NAME = 'vloitz-app-v78.9';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache-v2'; // Bóveda de 2s para Latencia Cero
 
 // === CACHES DEL HERO VIDEO ===
@@ -814,7 +814,8 @@ self.addEventListener('fetch', (e) => {
 
 
     // --- INICIO: INTERCEPTOR DE BÓVEDA TÁCTICA (Caja Negra Vloitz) ---
-    // 🛡️ FIX: Añadimos 'init.mp4' para que también se desencripte y cachee.
+    // 🛡️ RESTAURADO: El init.mp4 SÍ está encriptado en R2 (según vloitz-check.js).
+    // Necesita pasar por el interceptor para ser desencriptado.
     if ((e.request.url.includes('.m4s') || e.request.url.includes('init.mp4')) && e.request.url.includes('pub-1bd5ca00f737488cae44be74016d8499.r2.dev')) {
         e.respondWith(
             async function() {
