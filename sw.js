@@ -1,5 +1,5 @@
 importScripts('/aegis-sw-adapter.js');
-const CACHE_NAME = 'vloitz-app-v78.1';
+const CACHE_NAME = 'vloitz-app-v78.2';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache-v2'; // Bóveda de 2s para Latencia Cero
 
 // === CACHES DEL HERO VIDEO ===
@@ -17,6 +17,14 @@ const ASSETS_TO_CACHE = [
     '/index.html',
     '/style.css',
     '/fonts.css',
+    // 🚀 v6.5 FIX: Precachear las fuentes locales para evitar los 5s de espera de red
+    '/fonts/roboto-mono-v31-latin-regular.woff2',
+    '/fonts/roboto-mono-v31-latin-500.woff2',
+    '/fonts/roboto-mono-v31-latin-700.woff2',
+    '/fonts/ibm-plex-mono-v20-latin-500.woff2',
+    '/fonts/ibm-plex-mono-v20-latin-600.woff2',
+    '/fonts/space-mono-v17-latin-regular.woff2',
+    '/fonts/space-mono-v17-latin-700.woff2',
     '/hero.js',
     '/app.js',
     '/calibradores.js',
@@ -619,7 +627,7 @@ self.addEventListener('fetch', (e) => {
         return;
     }
 
-    // 🛰️ INTERCEPTOR DE MANIFIESTOS HLS (.m3u8)
+    // 🛰️ INTERCEPTOR DE MANIFESTOS HLS (.m3u8)
     // Cachea el manifiesto dinámico de cada set para que la segunda visita sea en 0ms.
     if (e.request.url.includes('.m3u8')) {
         e.respondWith(
@@ -628,8 +636,8 @@ self.addEventListener('fetch', (e) => {
                     return cachedResponse; // Hit de caché instantáneo
                 }
                 return fetch(e.request).then((networkResponse) => {
-                    if (networkResponse.ok) {
-                        // 🚀 FIX: Clonamos INMEDIATAMENTE para evitar el error "Response body is already used"
+                    // 🛡️ FIX v6.5: Solo guardar en caché si el método es GET (ignora HEAD, POST, etc.)
+                    if (networkResponse.ok && e.request.method === 'GET') {
                         const responseClone = networkResponse.clone();
                         caches.open(PRELOAD_CACHE_NAME).then(c => c.put(e.request, responseClone));
                     }
