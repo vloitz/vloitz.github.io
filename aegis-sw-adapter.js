@@ -4,7 +4,7 @@
 self.AegisAdapter = (function() {
     let manifest = null;
     const AEGIS_VAULT = 'aegis-engine-vault';
-    const wasmVersionUrl = '/bin/aegis_engine.wasm?v=437573';
+    const wasmVersionUrl = '/bin/aegis_engine.wasm?v=961444';
 
     // 🚀 AUTO-CACHÉ UNIVERSAL: Guarda el Wasm en una bóveda separada
     const cacheWasm = async () => {
@@ -55,11 +55,25 @@ self.AegisAdapter = (function() {
             // 🚀 AUTO-SERVICIO DESDE LA BÓVEDA PARA EL WASM (Evita el parpadeo de las palmeras)
             if (url.pathname.includes('aegis_engine.wasm')) {
                 event.respondWith(
-                    caches.open(AEGIS_VAULT).then(cache => {
-                        return cache.match(event.request).then(res => {
-                            if (res) return res; // Hit en bóveda: responde en 0ms
-                            return fetch(event.request); // Miss: busca en red
-                        });
+                    caches.open(AEGIS_VAULT).then(async (cache) => {
+                        // 1. Match EXACTO (respeta el ?v= del SDK, no sirve versiones obsoletas)
+                        const cached = await cache.match(event.request);
+                        if (cached) return cached;
+
+                        // 2. Miss: va a red Y CACHEA con el ?v= exacto que pidió el SDK
+                        // 🚀 FIX UNIVERSAL v3.2: Store-on-miss para eliminar el miss repetido
+                        // cuando el SDK pide una versión que no está en la bóveda (ej. SDK cacheado en HTTP).
+                        const response = await fetch(event.request);
+                        if (response.ok) {
+                            try {
+                                await cache.put(event.request, response.clone());
+                            } catch (cacheErr) {
+                                // 🛡️ No crítico: si falla el cacheo (cuota llena, bóveda corrupta),
+                                // servimos el .wasm igual al SDK. La próxima visita lo reintentará.
+                                console.warn('[Aegis Adapter] cache.put falló (no crítico):', cacheErr);
+                            }
+                        }
+                        return response;
                     })
                 );
                 return true;
