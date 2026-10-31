@@ -1,5 +1,5 @@
 importScripts('/aegis-sw-adapter.js');
-const CACHE_NAME = 'vloitz-app-v79.9';
+const CACHE_NAME = 'vloitz-app-v80.1';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache-v2'; // Bóveda de 2s para Latencia Cero
 
 // === CACHES DEL HERO VIDEO ===
@@ -27,6 +27,11 @@ const ASSETS_TO_CACHE = [
     '/fonts/space-mono-v17-latin-700.woff2',
     '/hero.js',
     '/app.js',
+    // 🚀 FIX SENIOR: Precachear los archivos de Aegis para que no vayan a la red en cada recarga
+    '/aegis-sentinel.js',
+    '/aegis-sdk.js',
+    '/aegis_engine.js',
+    '/aegis.manifest.json',
     '/calibradores.js',
     '/portada_visual.js',
     '/body-particles.js',
@@ -659,6 +664,29 @@ self.addEventListener('fetch', (e) => {
             })
         );
         return;
+    }
+
+    // 🛰️ INTERCEPTOR DE BLACKLISTED.JSON (Cache-First Definitivo)
+    // Se sirve desde disco en 0ms. Se actualiza automáticamente cuando bumpeas el CACHE_NAME.
+    if (e.request.url.includes('blacklisted.json')) {
+        e.respondWith(
+            caches.match(e.request).then((cachedResponse) => {
+                if (cachedResponse) {
+                    console.log(`[Service Worker] ⚡ Hit Caché de Blacklist (0ms): blacklisted.json`);
+                    return cachedResponse; // Hit: 0ms, cero red
+                }
+
+                // Miss: Si no está en caché, lo descargamos y lo guardamos
+                return fetch(e.request).then((networkResponse) => {
+                    if (networkResponse.ok) {
+                        const cacheClone = networkResponse.clone();
+                        caches.open(CACHE_NAME).then(c => c.put(e.request, cacheClone));
+                    }
+                    return networkResponse;
+                });
+            })
+        );
+        return; // 🛑 Interrupción temprana: Evita que el SW siga evaluando otras reglas
     }
 
     // 🛰️ ESTRATEGIA VLOITZ ULTRA-FRESH: Carga 0ms + Verificación Real Forzada
