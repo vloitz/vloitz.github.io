@@ -1,5 +1,5 @@
 importScripts('/aegis-sw-adapter.js');
-const CACHE_NAME = 'vloitz-app-v77.8';
+const CACHE_NAME = 'vloitz-app-v77.9';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache-v2'; // Bóveda de 2s para Latencia Cero
 
 // === CACHES DEL HERO VIDEO ===
@@ -565,9 +565,28 @@ self.addEventListener('activate', (e) => {
                     // ⚠️ FIX CRÍTICO: No borrar la bóveda fantasma, los caches del hero
                     // NI LA BÓVEDA DE AEGISWASM (aegis-engine-vault).
                     const AEGIS_VAULT = 'aegis-engine-vault';
+                    if (key === AEGIS_VAULT) {
+                        // 🚀 FIX v6.5: Purgar versiones viejas del Wasm, mantener solo las 2 más recientes.
+                        return caches.open(AEGIS_VAULT).then((cache) => {
+                            return cache.keys().then((requests) => {
+                                const wasmRequests = requests.filter(req => req.url.includes('aegis_engine.wasm'));
+                                if (wasmRequests.length > 2) {
+                                    // Ordenar por timestamp (query param) de más nuevo a más viejo
+                                    wasmRequests.sort((a, b) => {
+                                        const vA = new URL(a.url).searchParams.get('v') || '0';
+                                        const vB = new URL(b.url).searchParams.get('v') || '0';
+                                        return parseInt(vB) - parseInt(vA);
+                                    });
+                                    // Borrar todos excepto los 2 más nuevos
+                                    const toDelete = wasmRequests.slice(2);
+                                    return Promise.all(toDelete.map(req => cache.delete(req)));
+                                }
+                            });
+                        });
+                    }
+
                     if (key !== CACHE_NAME && key !== PRELOAD_CACHE_NAME &&
-                        key !== HERO_CACHE_NAME && key !== HERO_RUNTIME_CACHE &&
-                        key !== AEGIS_VAULT) {
+                        key !== HERO_CACHE_NAME && key !== HERO_RUNTIME_CACHE) {
                         console.log(`[Service Worker] 🧹 Limpiando caché obsoleta: ${key}`);
                         return caches.delete(key);
                     }
@@ -597,6 +616,26 @@ self.addEventListener('fetch', (e) => {
     // En Chrome/Firefox: la 2da visita sirve el video desde caché local.
     if (e.request.url.includes('/hero/') && /\.(mp4|webm)$/i.test(e.request.url)) {
         e.respondWith(handleHeroVideo(e.request));
+        return;
+    }
+
+    // 🛰️ INTERCEPTOR DE MANIFIESTOS HLS (.m3u8)
+    // Cachea el manifiesto dinámico de cada set para que la segunda visita sea en 0ms.
+    if (e.request.url.includes('.m3u8')) {
+        e.respondWith(
+            caches.match(e.request).then((cachedResponse) => {
+                if (cachedResponse) {
+                    return cachedResponse; // Hit de caché instantáneo
+                }
+                return fetch(e.request).then((networkResponse) => {
+                    if (networkResponse.ok) {
+                        const cache = caches.open(PRELOAD_CACHE_NAME);
+                        cache.then(c => c.put(e.request, networkResponse.clone()));
+                    }
+                    return networkResponse;
+                });
+            })
+        );
         return;
     }
 
