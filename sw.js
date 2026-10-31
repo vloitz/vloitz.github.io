@@ -1,5 +1,5 @@
 importScripts('/aegis-sw-adapter.js');
-const CACHE_NAME = 'vloitz-app-v77.9';
+const CACHE_NAME = 'vloitz-app-v78.1';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache-v2'; // Bóveda de 2s para Latencia Cero
 
 // === CACHES DEL HERO VIDEO ===
@@ -629,8 +629,9 @@ self.addEventListener('fetch', (e) => {
                 }
                 return fetch(e.request).then((networkResponse) => {
                     if (networkResponse.ok) {
-                        const cache = caches.open(PRELOAD_CACHE_NAME);
-                        cache.then(c => c.put(e.request, networkResponse.clone()));
+                        // 🚀 FIX: Clonamos INMEDIATAMENTE para evitar el error "Response body is already used"
+                        const responseClone = networkResponse.clone();
+                        caches.open(PRELOAD_CACHE_NAME).then(c => c.put(e.request, responseClone));
                     }
                     return networkResponse;
                 });
