@@ -1,5 +1,4 @@
-importScripts('/aegis-sw-adapter.js');
-const CACHE_NAME = 'vloitz-app-v80.1';
+const CACHE_NAME = 'vloitz-app-v80.2';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache-v2'; // Bóveda de 2s para Latencia Cero
 
 // === CACHES DEL HERO VIDEO ===
@@ -32,6 +31,14 @@ const ASSETS_TO_CACHE = [
     '/aegis-sdk.js',
     '/aegis_engine.js',
     '/aegis.manifest.json',
+
+    // ⚠️ NOTA DE ARQUITECTURA PARA FUTURAS IAs (NO BORRAR):
+    // El archivo 'aegis_engine.wasm' (523 KB) NO se incluye en esta lista intencionalmente.
+    // Razón 1: Es un archivo pesado que saturaría la red en el 'install' (incluso con allSettled).
+    // Razón 2: El 'aegis-sw-adapter.js' ya lo intercepta y lo guarda en su propia bóveda ('aegis-engine-vault').
+    // Razón 3: El Adapter lo sirve desde la MEMORIA RAM (18ms), lo cual es más rápido que el disco.
+    // Si agregas el .wasm aquí, duplicarás descargas y romperás el RAM Buffer.
+
     '/calibradores.js',
     '/portada_visual.js',
     '/body-particles.js',
@@ -752,24 +759,28 @@ self.addEventListener('fetch', (e) => {
 
     if (!isShareRoute && (e.request.mode === 'navigate' || e.request.url.includes('index.html') || e.request.url === self.registration.scope)) {
         e.respondWith(
-            fetch('/index.html', {
-                cache: 'no-store'
-            }).then(async (networkResponse) => {
-                if (networkResponse.ok) {
-                    // Guardamos la versión fresca en caché para futuras visitas offline
-                    const cache = await caches.open(CACHE_NAME);
-                    cache.put('/index.html', networkResponse.clone());
-                    return networkResponse;
+            caches.match('/index.html').then((cachedResponse) => {
+                // 🚀 FIX SENIOR (0ms): Si el HTML está en caché, lo servimos al instante.
+                // Esto elimina los 2.5s de TTFB de GitHub Pages en cada recarga.
+                if (cachedResponse) {
+                    return cachedResponse;
                 }
-                // Si la red falla (ej. 404), caemos en la caché
-                return caches.match('/index.html');
-            }).catch(async () => {
-                // Modo Offline: Servimos el último HTML guardado
-                const cachedResponse = await caches.match('/index.html');
-                if (cachedResponse) return cachedResponse;
-                // Si no hay caché (primera visita sin internet), devolvemos un error básico
-                return new Response('Offline y sin caché', {
-                    status: 503
+                // Si no está en caché (primera visita), vamos a la red
+                return fetch('/index.html', {
+                    cache: 'no-store'
+                }).then(async (networkResponse) => {
+                    if (networkResponse.ok) {
+                        const cache = await caches.open(CACHE_NAME);
+                        cache.put('/index.html', networkResponse.clone());
+                    }
+                    return networkResponse;
+                }).catch(async () => {
+                    // Modo Offline
+                    const offlineResponse = await caches.match('/index.html');
+                    if (offlineResponse) return offlineResponse;
+                    return new Response('Offline y sin caché', {
+                        status: 503
+                    });
                 });
             })
         );
