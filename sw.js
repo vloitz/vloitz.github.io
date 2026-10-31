@@ -1,5 +1,5 @@
 importScripts('/aegis-sw-adapter.js');
-const CACHE_NAME = 'vloitz-app-v78.9';
+const CACHE_NAME = 'vloitz-app-v79.1';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache-v2'; // Bóveda de 2s para Latencia Cero
 
 // === CACHES DEL HERO VIDEO ===
@@ -620,9 +620,12 @@ self.addEventListener('fetch', (e) => {
 
 
     // 🛡️ INMUNIDAD ABSOLUTA CONTRA EXTENSIONES Y PARÁSITOS
-    // Si la petición no es protocolo web estándar (ej. chrome-extension:// o moz-extension://),
-    // la abortamos instantáneamente para no asfixiar el hilo del Service Worker.
     if (!e.request.url.startsWith('http')) {
+        return;
+    }
+
+    // 🚀 FIX SENIOR: Ignorar peticiones "basura" (null, undefined) que ensucian la consola
+    if (e.request.url.endsWith('/null') || e.request.url.endsWith('/undefined')) {
         return;
     }
 
@@ -1035,9 +1038,12 @@ self.addEventListener('fetch', (e) => {
         caches.match(e.request, {
             ignoreSearch: !isCriticalAsset // Solo ignora el search en imágenes, fuentes, etc.
         }).then((response) => {
-            if (!response) {
-                console.warn(`[Service Worker] ⚠️ Miss Caché (undefined) en recarga: ${e.request.url}`);
+            // 🚀 FIX SENIOR: Silenciamos los Miss Caché normales (imágenes, json, etc).
+            // Solo avisamos si de verdad es un archivo crítico (JS o CSS de la app).
+            if (!response && isCriticalAsset) {
+                console.log(`[Service Worker] 🌐 Miss Caché (Crítico), recuperando de red: ${e.request.url.split('/').pop()}`);
             }
+
             // Si está en caché, lo devolvemos. Si no, intentamos la red con un escudo catch defensivo.
             return response || fetch(e.request).catch(async (err) => {
                 console.warn(`[Service Worker] 🛡️ Fallo de red recuperado silenciosamente para: ${e.request.url}`);
