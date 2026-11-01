@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vloitz-app-v81.1';
+const CACHE_NAME = 'vloitz-app-v81.2';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache-v2'; // Bóveda de 2s para Latencia Cero
 
 // === CACHES DEL HERO VIDEO ===
@@ -638,6 +638,16 @@ self.addEventListener('fetch', (e) => {
 
     // 🚀 FIX SENIOR: Ignorar peticiones "basura" (null, undefined) que ensucian la consola
     if (e.request.url.endsWith('/null') || e.request.url.endsWith('/undefined')) {
+        return;
+    }
+
+    // 🚀 FIX SENIOR (Emscripten Quirk): Ignorar la búsqueda fallida del loader .js en la raíz
+    if (e.request.url.endsWith('/aegis_engine.js') && !e.request.url.includes('/bin/')) {
+        e.respondWith(new Response('// Silenced Emscripten Probe', {
+            headers: {
+                'Content-Type': 'application/javascript'
+            }
+        }));
         return;
     }
 
