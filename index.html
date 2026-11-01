@@ -50,7 +50,6 @@
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
 
     <link rel="manifest" href="/manifest.json">
-    <link rel="preload" as="image" href="/perfil/perfil.webp">
     <meta name="theme-color" content="#121212">
 
     <meta property="og:title" content="Vloitz - High Quality Sets">
@@ -168,6 +167,7 @@
             opacity: 0 !important;
         }
     </style>
+    <link rel="preload" as="image" href="/Artwork/GDL014.webp" imagesrcset="/Artwork/GDL014-sm.webp 400w, /Artwork/GDL014.webp 800w" imagesizes="(max-width: 768px) 400px, 800px">
 </head>
 
 <body>
@@ -842,7 +842,7 @@
         }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest" defer></script>
-    <script defer src="/aegis-sentinel.js" data-target="portada_visual.js"></script>
+    <!-- 🚀 FIX SENIOR: portada_visual.js y body-particles.js se inyectan en app.js para no bloquear el LCP ni el CPU -->
     <!-- body-particles.js removido para inyección diferida en app.js -->
     <script defer src="/aegis-sentinel.js" data-target="hero.js"></script>
     <script defer src="/aegis-sentinel.js" data-target="app.js"></script>
