@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vloitz-app-v82.6';
+const CACHE_NAME = 'vloitz-app-v82.7';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache-v2'; // Bóveda de 2s para Latencia Cero
 
 // === CACHES DEL HERO VIDEO ===
@@ -29,7 +29,7 @@ const ASSETS_TO_CACHE = [
     // 🚀 FIX SENIOR: Precachear los archivos de Aegis para que no vayan a la red en cada recarga
     '/aegis-sentinel.js',
     '/aegis-sdk.js',
-    '/aegis_engine.js',
+    '/bin/aegis_engine.js',
     '/aegis.manifest.json',
 
     // ⚠️ NOTA DE ARQUITECTURA PARA FUTURAS IAs (NO BORRAR):
