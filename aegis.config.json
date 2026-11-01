@@ -16,6 +16,8 @@
     ],
     "options": {
         "xor_key": 90,
-        "out_dir": "./Build"
+        "out_dir": "./Build",
+        "minify": true,
+        "minify_level": 2
     }
 }
