@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vloitz-app-v81.2';
+const CACHE_NAME = 'vloitz-app-v81.3';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache-v2'; // Bóveda de 2s para Latencia Cero
 
 // === CACHES DEL HERO VIDEO ===
@@ -636,13 +636,19 @@ self.addEventListener('fetch', (e) => {
         return;
     }
 
-    // 🚀 FIX SENIOR: Ignorar peticiones "basura" (null, undefined) que ensucian la consola
+    // 🚀 FIX SENIOR: Silenciar peticiones "basura" (null, undefined) devolviendo un 204 No Content
+    // Usar 'return;' hace que el navegador vaya a la red por defecto. Con respondWith, lo atajamos aquí.
     if (e.request.url.endsWith('/null') || e.request.url.endsWith('/undefined')) {
+        e.respondWith(new Response('', {
+            status: 204,
+            statusText: 'No Content'
+        }));
         return;
     }
 
-    // 🚀 FIX SENIOR (Emscripten Quirk): Ignorar la búsqueda fallida del loader .js en la raíz
-    if (e.request.url.endsWith('/aegis_engine.js') && !e.request.url.includes('/bin/')) {
+    // 🚀 FIX SENIOR (Emscripten Quirk): Silenciar el loader .js en la raíz
+    // Usamos 'includes' en lugar de 'endsWith' por si el SDK le añade algún query param (?v=...)
+    if (e.request.url.includes('/aegis_engine.js') && !e.request.url.includes('/bin/')) {
         e.respondWith(new Response('// Silenced Emscripten Probe', {
             headers: {
                 'Content-Type': 'application/javascript'
