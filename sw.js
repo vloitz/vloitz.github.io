@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vloitz-app-v82.5';
+const CACHE_NAME = 'vloitz-app-v82.6';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache-v2'; // Bóveda de 2s para Latencia Cero
 
 // === CACHES DEL HERO VIDEO ===
@@ -639,7 +639,7 @@ self.addEventListener('fetch', (e) => {
     // 🚀 FIX SENIOR: Silenciar peticiones "basura" (null, undefined) devolviendo un 204 No Content
     // Usar 'return;' hace que el navegador vaya a la red por defecto. Con respondWith, lo atajamos aquí.
     if (e.request.url.endsWith('/null') || e.request.url.endsWith('/undefined')) {
-        e.respondWith(new Response('', {
+        e.respondWith(new Response(null, {
             status: 204,
             statusText: 'No Content'
         }));
