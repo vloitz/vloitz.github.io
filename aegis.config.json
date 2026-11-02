@@ -3,7 +3,6 @@
     "encrypt": [
         "app.js",
         "body-particles.js",
-        "calibradores.js",
         "hero.js",
         "portada_visual.js",
         "story.js"
