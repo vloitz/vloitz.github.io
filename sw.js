@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vloitz-app-v84.8';
+const CACHE_NAME = 'vloitz-app-v84.9';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache-v2'; // Bóveda de 2s para Latencia Cero
 
 // === CACHES DEL HERO VIDEO ===
@@ -956,8 +956,12 @@ self.addEventListener('fetch', (e) => {
                         return originalResponse;
                     }
                 } catch (err) {
-                    console.error("[Vloitz Crypto] Fallo crítico de red. Activando puente de emergencia al original.", err);
-                    return fetch(e.request);
+                    // 🚀 FIX SENIOR: Si falla la red, NO intentes buscar el .m4s original (no existe y da 404).
+                    // Devolvemos un 204 silencioso. HLS.js lo ignorará y pedirá el siguiente.
+                    console.warn("[Vloitz Crypto] Micro-corte de red. Omitiendo fragmento silenciosamente.");
+                    return new Response(null, {
+                        status: 204
+                    });
                 }
             }()
         );

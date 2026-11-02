@@ -4,7 +4,7 @@
 self.AegisAdapter = (function() {
     let manifest = null;
     const AEGIS_VAULT = 'aegis-engine-vault';
-    const wasmVersionUrl = '/bin/aegis_engine.wasm?v=231492';
+    const wasmVersionUrl = '/bin/aegis_engine.wasm?v=402011';
 
     // 🚀 FIX v3.2: cacheWasm() ELIMINADO.
     // Motivo: cacheWasm() ejecuta un fetch + put en background que compite
