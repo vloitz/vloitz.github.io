@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vloitz-app-v84.2';
+const CACHE_NAME = 'vloitz-app-v84.3';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache-v2'; // Bóveda de 2s para Latencia Cero
 
 // === CACHES DEL HERO VIDEO ===
@@ -17,11 +17,9 @@ const ASSETS_TO_CACHE = [
     '/style.css',
     '/fonts.css',
     // 🚀 v6.5 FIX: Precachear las fuentes locales para evitar los 5s de espera de red
-    '/fonts/roboto-mono-v31-latin-regular.woff2',
-    '/fonts/roboto-mono-v31-latin-500.woff2',
-    '/fonts/roboto-mono-v31-latin-700.woff2',
-    '/fonts/ibm-plex-mono-v20-latin-500.woff2',
-    '/fonts/ibm-plex-mono-v20-latin-600.woff2',
+    // 🚀 Nuevas Fuentes Optimizadas (Variables + Subsetted)
+    '/fonts/ibm-plex-mono-var.woff2',
+    '/fonts/roboto-mono-var.woff2',
     '/fonts/space-mono-v17-latin-regular.woff2',
     '/fonts/space-mono-v17-latin-700.woff2',
     '/hero.js',
