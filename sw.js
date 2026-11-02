@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vloitz-app-v85.3';
+const CACHE_NAME = 'vloitz-app-v85.4';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache-v2'; // Bóveda de 2s para Latencia Cero
 
 // === CACHES DEL HERO VIDEO ===
@@ -22,7 +22,6 @@ const ASSETS_TO_CACHE = [
     '/fonts/roboto-mono-var.woff2',
     '/fonts/space-mono-v17-latin-regular.woff2',
     '/fonts/space-mono-v17-latin-700.woff2',
-    '/hero.js',
     '/app.js',
     // 🚀 FIX SENIOR: Precachear los archivos de Aegis para que no vayan a la red en cada recarga
     '/aegis-sentinel.js',
@@ -46,8 +45,6 @@ const ASSETS_TO_CACHE = [
     //                        dispositivo (hero video en desktop,
     //                        canvas WebGL en móvil). El archivo sigue
     //                        en el repo por si se necesita fallback.
-    '/perfil/logo_og.webp',
-    '/hero/hero-poster.webp',
     '/favicon/favicon.ico',
     '/manifest.json',
     '/js/wavesurfer.min.js',
