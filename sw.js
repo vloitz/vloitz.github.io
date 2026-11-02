@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vloitz-app-v84.3';
+const CACHE_NAME = 'vloitz-app-v84.5';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache-v2'; // Bóveda de 2s para Latencia Cero
 
 // === CACHES DEL HERO VIDEO ===
@@ -52,7 +52,7 @@ const ASSETS_TO_CACHE = [
     '/manifest.json',
     'https://unpkg.com/wavesurfer.js@7.7.5/dist/wavesurfer.min.js',
     'https://unpkg.com/wavesurfer.js@7.7.5/dist/plugins/regions.min.js',
-    'https://cdn.jsdelivr.net/npm/hls.js@latest'
+    '/js/hls.min.js'
 ];
 
 
