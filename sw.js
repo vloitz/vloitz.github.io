@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vloitz-app-v85.4';
+const CACHE_NAME = 'vloitz-app-v85.5';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache-v2'; // Bóveda de 2s para Latencia Cero
 
 // === CACHES DEL HERO VIDEO ===
@@ -36,7 +36,7 @@ const ASSETS_TO_CACHE = [
     // Razón 3: El Adapter lo sirve desde la MEMORIA RAM (18ms), lo cual es más rápido que el disco.
     // Si agregas el .wasm aquí, duplicarás descargas y romperás el RAM Buffer.
 
-    '/calibradores.js',
+    //'/calibradores.js',
     '/portada_visual.js',
     '/body-particles.js',
     '/sets.json',
