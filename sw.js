@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vloitz-app-v86.2';
+const CACHE_NAME = 'vloitz-app-v86.3';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache-v2'; // Bóveda de 2s para Latencia Cero
 
 // === CACHES DEL HERO VIDEO ===
@@ -916,9 +916,12 @@ self.addEventListener('fetch', (e) => {
                     const encResponse = await fetch(encUrl);
 
                     if (encResponse.ok) {
-                        // 🚀 FASE 3: STREAMING DECRYPTOR (Cero Latencia Real)
-                        // En lugar de esperar 250ms a que baje todo el .enc, lo desencriptamos en vivo.
+                        // 🚀 FASE 3: STREAMING DECRYPTOR (Cero Latencia Real y Caché Segura)
                         const reader = encResponse.body.getReader();
+                        const chunks = []; // Buffer temporal para guardar en caché después
+                        let totalBytes = 0;
+                        let isFirstChunk = true;
+
                         const stream = new ReadableStream({
                             async start(controller) {
                                 try {
@@ -927,23 +930,54 @@ self.addEventListener('fetch', (e) => {
                                             done,
                                             value
                                         } = await reader.read();
-                                        if (done) break;
-                                        // Desencriptamos el trozo (chunk) al vuelo
-                                        const decryptedChunk = decryptBuffer(value.buffer);
-                                        controller.enqueue(new Uint8Array(decryptedChunk));
+                                        if (done) {
+                                            controller.close();
+
+                                            // 💡 GUARDADO EN CACHÉ (Después de terminar el stream)
+                                            if (storageMode !== 'SURVIVAL') {
+                                                const cacheToSave = await caches.open(PRELOAD_CACHE_NAME);
+                                                const cleanGetRequest = new Request(e.request.url, {
+                                                    method: 'GET'
+                                                });
+                                                const fullBlob = new Blob(chunks, {
+                                                    type: 'video/iso.segment'
+                                                });
+                                                const cacheResponse = new Response(fullBlob, {
+                                                    status: 200,
+                                                    headers: {
+                                                        'Content-Type': 'video/iso.segment'
+                                                    }
+                                                });
+                                                await cacheToSave.put(cleanGetRequest, cacheResponse);
+
+                                                // 🧾 ACTUALIZAR LIBRO CONTABLE
+                                                const urlObj = new URL(e.request.url);
+                                                const pathParts = urlObj.pathname.split('/').filter(Boolean);
+                                                const setId = pathParts[0];
+                                                ledgerAdd(setId, e.request.url, totalBytes);
+                                            }
+                                            break;
+                                        }
+
+                                        // Desencriptar SOLO los primeros 100 bytes del PRIMER chunk
+                                        let chunkData = new Uint8Array(value);
+                                        if (isFirstChunk) {
+                                            const limit = Math.min(100, chunkData.length);
+                                            for (let i = 0; i < limit; i++) {
+                                                chunkData[i] ^= KEY_BUFFER[i % KEY_BUFFER.length];
+                                            }
+                                            isFirstChunk = false;
+                                        }
+
+                                        chunks.push(chunkData);
+                                        totalBytes += chunkData.byteLength;
+
+                                        // Enviar a HLS.js inmediatamente
+                                        controller.enqueue(chunkData);
                                     }
-                                    controller.close();
                                 } catch (e) {
                                     controller.error(e);
                                 }
-                            }
-                        });
-
-                        // Creamos la respuesta usando el stream de datos
-                        const finalResponse = new Response(stream, {
-                            status: 200,
-                            headers: {
-                                'Content-Type': 'video/iso.segment'
                             }
                         });
 
@@ -955,37 +989,14 @@ self.addEventListener('fetch', (e) => {
                         const secs = totalSecs % 60;
                         const timeFormatted = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 
-                        console.log(`%c[${getWallClockTime()}] [Vloitz Crypto] 🔓 Desencriptado [Audio: ${timeFormatted}] (${fileName})`, "color: #03dac6; font-size: 10px; font-weight: bold;");
+                        console.log(`%c[${getWallClockTime()}] [Vloitz Crypto] 🔓 Streaming Desencriptado [Audio: ${timeFormatted}] (${fileName})`, "color: #03dac6; font-size: 10px; font-weight: bold;");
 
-                        const finalResponse = new Response(decryptedBuffer, {
+                        return new Response(stream, {
                             status: 200,
                             headers: {
                                 'Content-Type': 'video/iso.segment'
                             }
                         });
-
-                        // 💡 FIX SENIOR: Guardar automáticamente en la Bóveda Táctica (PRELOAD_CACHE_NAME)
-                        // Forzando el método GET para evitar errores con peticiones HEAD o personalizadas.
-                        try {
-                            // 🆘 Si estamos en modo supervivencia, NO guardamos en caché
-                            if (storageMode !== 'SURVIVAL') {
-                                const cacheToSave = await caches.open(PRELOAD_CACHE_NAME);
-                                const cleanGetRequest = new Request(e.request.url, {
-                                    method: 'GET'
-                                });
-                                await cacheToSave.put(cleanGetRequest, finalResponse.clone());
-
-                                // 🧾 ACTUALIZAR LIBRO CONTABLE (R2)
-                                const urlObj = new URL(e.request.url);
-                                const pathParts = urlObj.pathname.split('/').filter(Boolean);
-                                const setId = pathParts[0];
-                                ledgerAdd(setId, e.request.url, decryptedBuffer.byteLength);
-                            }
-                        } catch (cacheErr) {
-                            console.warn("[Vloitz Cache] No se pudo auto-guardar el fragmento R2 al vuelo:", cacheErr);
-                        }
-
-                        return finalResponse;
                     } else {
                         // 🚀 FASE 1 (Solución Forense): Si el .enc falla, NO busques el .m4s (evita el 404).
                         // Devuelve un 204 silencioso. HLS.js lo ignorará y pedirá el siguiente, o el Trackpad lo salvará.
