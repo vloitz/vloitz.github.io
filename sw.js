@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vloitz-app-v85.8';
+const CACHE_NAME = 'vloitz-app-v85.9';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache-v2'; // Bóveda de 2s para Latencia Cero
 
 // === CACHES DEL HERO VIDEO ===
@@ -960,17 +960,12 @@ self.addEventListener('fetch', (e) => {
 
                         return finalResponse;
                     } else {
-                        // 4. Fallback de Seguridad: Si da 404 el .enc, pedimos el original y LO GUARDAMOS EN CACHÉ
-                        console.warn(`%c[Vloitz Crypto] ⚠️ Archivo blindado no encontrado. Usando original y cacheando: ${fileName}`, "color: #ffb703; font-weight: bold;");
-                        const originalResponse = await fetch(e.request);
-                        if (originalResponse.ok) {
-                            const cacheToSave = await caches.open(PRELOAD_CACHE_NAME);
-                            const cleanGetRequest = new Request(e.request.url, {
-                                method: 'GET'
-                            });
-                            await cacheToSave.put(cleanGetRequest, originalResponse.clone());
-                        }
-                        return originalResponse;
+                        // 🚀 FASE 1 (Solución Forense): Si el .enc falla, NO busques el .m4s (evita el 404).
+                        // Devuelve un 204 silencioso. HLS.js lo ignorará y pedirá el siguiente, o el Trackpad lo salvará.
+                        console.warn(`%c[Vloitz Crypto] ⚠️ Archivo blindado no encontrado o abortado. Omitiendo (204): ${fileName}`, "color: #ffb703; font-weight: bold;");
+                        return new Response(null, {
+                            status: 204
+                        });
                     }
                 } catch (err) {
                     // 🚀 FIX SENIOR: Si falla la red, NO intentes buscar el .m4s original (no existe y da 404).
