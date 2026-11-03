@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vloitz-app-v86.1';
+const CACHE_NAME = 'vloitz-app-v86.2';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache-v2'; // Bóveda de 2s para Latencia Cero
 
 // === CACHES DEL HERO VIDEO ===
@@ -916,9 +916,36 @@ self.addEventListener('fetch', (e) => {
                     const encResponse = await fetch(encUrl);
 
                     if (encResponse.ok) {
-                        // 3. Éxito: Desencriptamos el buffer al vuelo
-                        const buffer = await encResponse.clone().arrayBuffer();
-                        const decryptedBuffer = decryptBuffer(buffer);
+                        // 🚀 FASE 3: STREAMING DECRYPTOR (Cero Latencia Real)
+                        // En lugar de esperar 250ms a que baje todo el .enc, lo desencriptamos en vivo.
+                        const reader = encResponse.body.getReader();
+                        const stream = new ReadableStream({
+                            async start(controller) {
+                                try {
+                                    while (true) {
+                                        const {
+                                            done,
+                                            value
+                                        } = await reader.read();
+                                        if (done) break;
+                                        // Desencriptamos el trozo (chunk) al vuelo
+                                        const decryptedChunk = decryptBuffer(value.buffer);
+                                        controller.enqueue(new Uint8Array(decryptedChunk));
+                                    }
+                                    controller.close();
+                                } catch (e) {
+                                    controller.error(e);
+                                }
+                            }
+                        });
+
+                        // Creamos la respuesta usando el stream de datos
+                        const finalResponse = new Response(stream, {
+                            status: 200,
+                            headers: {
+                                'Content-Type': 'video/iso.segment'
+                            }
+                        });
 
                         // ⏱️ Extracción milimétrica del índice y conversión a [MM:SS] (Bloques HLS de 2s)
                         const match = fileName.match(/seg-(\d+)\.m4s/);
