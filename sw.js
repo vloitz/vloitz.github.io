@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vloitz-app-v86.4';
+const CACHE_NAME = 'vloitz-app-v90.1';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache-v2'; // Bóveda de 2s para Latencia Cero
 
 // === CACHES DEL HERO VIDEO ===
@@ -916,70 +916,9 @@ self.addEventListener('fetch', (e) => {
                     const encResponse = await fetch(encUrl);
 
                     if (encResponse.ok) {
-                        // 🚀 FASE 3: STREAMING DECRYPTOR (Cero Latencia Real y Caché Segura)
-                        const reader = encResponse.body.getReader();
-                        const chunks = []; // Buffer temporal para guardar en caché después
-                        let totalBytes = 0;
-                        let isFirstChunk = true;
-
-                        const stream = new ReadableStream({
-                            async start(controller) {
-                                try {
-                                    while (true) {
-                                        const {
-                                            done,
-                                            value
-                                        } = await reader.read();
-                                        if (done) {
-                                            controller.close();
-
-                                            // 💡 GUARDADO EN CACHÉ (Después de terminar el stream)
-                                            if (storageMode !== 'SURVIVAL') {
-                                                const cacheToSave = await caches.open(PRELOAD_CACHE_NAME);
-                                                const cleanGetRequest = new Request(e.request.url, {
-                                                    method: 'GET'
-                                                });
-                                                const fullBlob = new Blob(chunks, {
-                                                    type: 'video/iso.segment'
-                                                });
-                                                const cacheResponse = new Response(fullBlob, {
-                                                    status: 200,
-                                                    headers: {
-                                                        'Content-Type': 'video/iso.segment'
-                                                    }
-                                                });
-                                                await cacheToSave.put(cleanGetRequest, cacheResponse);
-
-                                                // 🧾 ACTUALIZAR LIBRO CONTABLE
-                                                const urlObj = new URL(e.request.url);
-                                                const pathParts = urlObj.pathname.split('/').filter(Boolean);
-                                                const setId = pathParts[0];
-                                                ledgerAdd(setId, e.request.url, totalBytes);
-                                            }
-                                            break;
-                                        }
-
-                                        // Desencriptar SOLO los primeros 100 bytes del PRIMER chunk
-                                        let chunkData = new Uint8Array(value);
-                                        if (isFirstChunk) {
-                                            const limit = Math.min(100, chunkData.length);
-                                            for (let i = 0; i < limit; i++) {
-                                                chunkData[i] ^= KEY_BUFFER[i % KEY_BUFFER.length];
-                                            }
-                                            isFirstChunk = false;
-                                        }
-
-                                        chunks.push(chunkData);
-                                        totalBytes += chunkData.byteLength;
-
-                                        // Enviar a HLS.js inmediatamente
-                                        controller.enqueue(chunkData);
-                                    }
-                                } catch (e) {
-                                    controller.error(e);
-                                }
-                            }
-                        });
+                        // 3. Éxito: Desencriptamos el buffer al vuelo
+                        const buffer = await encResponse.clone().arrayBuffer();
+                        const decryptedBuffer = decryptBuffer(buffer);
 
                         // ⏱️ Extracción milimétrica del índice y conversión a [MM:SS] (Bloques HLS de 2s)
                         const match = fileName.match(/seg-(\d+)\.m4s/);
@@ -989,21 +928,49 @@ self.addEventListener('fetch', (e) => {
                         const secs = totalSecs % 60;
                         const timeFormatted = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 
-                        console.log(`%c[${getWallClockTime()}] [Vloitz Crypto] 🔓 Streaming Desencriptado [Audio: ${timeFormatted}] (${fileName})`, "color: #03dac6; font-size: 10px; font-weight: bold;");
+                        console.log(`%c[${getWallClockTime()}] [Vloitz Crypto] 🔓 Desencriptado [Audio: ${timeFormatted}] (${fileName})`, "color: #03dac6; font-size: 10px; font-weight: bold;");
 
-                        return new Response(stream, {
+                        const finalResponse = new Response(decryptedBuffer, {
                             status: 200,
                             headers: {
                                 'Content-Type': 'video/iso.segment'
                             }
                         });
+
+                        // 💡 FIX SENIOR: Guardar automáticamente en la Bóveda Táctica (PRELOAD_CACHE_NAME)
+                        // Forzando el método GET para evitar errores con peticiones HEAD o personalizadas.
+                        try {
+                            // 🆘 Si estamos en modo supervivencia, NO guardamos en caché
+                            if (storageMode !== 'SURVIVAL') {
+                                const cacheToSave = await caches.open(PRELOAD_CACHE_NAME);
+                                const cleanGetRequest = new Request(e.request.url, {
+                                    method: 'GET'
+                                });
+                                await cacheToSave.put(cleanGetRequest, finalResponse.clone());
+
+                                // 🧾 ACTUALIZAR LIBRO CONTABLE (R2)
+                                const urlObj = new URL(e.request.url);
+                                const pathParts = urlObj.pathname.split('/').filter(Boolean);
+                                const setId = pathParts[0];
+                                ledgerAdd(setId, e.request.url, decryptedBuffer.byteLength);
+                            }
+                        } catch (cacheErr) {
+                            console.warn("[Vloitz Cache] No se pudo auto-guardar el fragmento R2 al vuelo:", cacheErr);
+                        }
+
+                        return finalResponse;
                     } else {
-                        // 🚀 FASE 1 (Solución Forense): Si el .enc falla, NO busques el .m4s (evita el 404).
-                        // Devuelve un 204 silencioso. HLS.js lo ignorará y pedirá el siguiente, o el Trackpad lo salvará.
-                        console.warn(`%c[Vloitz Crypto] ⚠️ Archivo blindado no encontrado o abortado. Omitiendo (204): ${fileName}`, "color: #ffb703; font-weight: bold;");
-                        return new Response(null, {
-                            status: 204
-                        });
+                        // 4. Fallback de Seguridad: Si da 404 el .enc, pedimos el original y LO GUARDAMOS EN CACHÉ
+                        console.warn(`%c[Vloitz Crypto] ⚠️ Archivo blindado no encontrado. Usando original y cacheando: ${fileName}`, "color: #ffb703; font-weight: bold;");
+                        const originalResponse = await fetch(e.request);
+                        if (originalResponse.ok) {
+                            const cacheToSave = await caches.open(PRELOAD_CACHE_NAME);
+                            const cleanGetRequest = new Request(e.request.url, {
+                                method: 'GET'
+                            });
+                            await cacheToSave.put(cleanGetRequest, originalResponse.clone());
+                        }
+                        return originalResponse;
                     }
                 } catch (err) {
                     // 🚀 FIX SENIOR: Si falla la red, NO intentes buscar el .m4s original (no existe y da 404).
