@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vloitz-app-v91.8';
+const CACHE_NAME = 'vloitz-app-v91.9';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache-v2'; // Bóveda de 2s para Latencia Cero
 
 // === CACHES DEL HERO VIDEO ===
@@ -637,11 +637,8 @@ self.addEventListener('fetch', (e) => {
         return;
     }
 
-    // 🚀 FIX NUCLEAR: Forzar red si el navegador tiene una versión vieja de las librerías locales
-    if (e.request.url.includes('app.js') ||
-        e.request.url.includes('wavesurfer.min.js') ||
-        e.request.url.includes('regions.min.js') ||
-        e.request.url.includes('hls.min.js')) {
+    // 🚀 FIX NUCLEAR: Forzar red SOLO para app.js (el resto se sirve desde caché en 0ms)
+    if (e.request.url.includes('app.js')) {
 
         e.respondWith(
             fetch(e.request, {
