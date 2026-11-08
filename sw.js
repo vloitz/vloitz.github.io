@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vloitz-app-v91.7';
+const CACHE_NAME = 'vloitz-app-v91.8';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache-v2'; // Bóveda de 2s para Latencia Cero
 
 // === CACHES DEL HERO VIDEO ===
@@ -46,6 +46,12 @@ const ASSETS_TO_CACHE = [
     //                        canvas WebGL en móvil). El archivo sigue
     //                        en el repo por si se necesita fallback.
     '/favicon/favicon.ico',
+    // 🚀 FIX SENIOR (Anti-Blocking de 10s): Cacheamos los íconos de la PWA
+    // Evita que el navegador los busque a la red (y se bloquee en la cola) en cada recarga.
+    '/favicon/web-app-manifest-192x192.png',
+    '/favicon/web-app-manifest-512x512.png',
+    '/favicon/apple-touch-icon.png',
+    '/favicon/favicon-96x96.png',
     '/manifest.json',
     '/js/wavesurfer.min.js',
     '/js/regions.min.js',
