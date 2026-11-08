@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vloitz-app-v90.6';
+const CACHE_NAME = 'vloitz-app-v90.7';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache-v2'; // Bóveda de 2s para Latencia Cero
 
 // === CACHES DEL HERO VIDEO ===
