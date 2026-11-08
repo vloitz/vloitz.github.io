@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vloitz-app-v91.9';
+const CACHE_NAME = 'vloitz-app-v92.2';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache-v2'; // Bóveda de 2s para Latencia Cero
 
 // === CACHES DEL HERO VIDEO ===
@@ -729,6 +729,41 @@ self.addEventListener('fetch', (e) => {
         );
         return; // 🛑 Interrupción temprana: Evita que el SW siga evaluando otras reglas
     }
+
+    // 🛰️ INTERCEPTOR DE TRACKLISTS (Cache-First Definitivo)
+    // Se sirven desde disco en 0ms. Se actualizan cuando bumpeas el CACHE_NAME.
+    if (e.request.url.includes('/tracklists/')) {
+        e.respondWith(
+            caches.match(e.request).then((cachedResponse) => {
+                if (cachedResponse) {
+                    return cachedResponse; // Hit: 0ms, cero red
+                }
+
+                // Miss: Si no está en caché, lo descargamos
+                return fetch(e.request).then((networkResponse) => {
+                    if (networkResponse.ok) {
+                        const cacheClone = networkResponse.clone();
+                        caches.open(CACHE_NAME).then(c => c.put(e.request, cacheClone));
+                    }
+                    return networkResponse;
+                }).catch(async (err) => {
+                    // 🛡️ ESCUDO ANTI-COLAPSO: Si falla la red, devolvemos un JSON vacío
+                    // para que app.js no explote al intentar parsear un HTML de error.
+                    console.warn(`[Service Worker] ⚠️ Fallo al cargar tracklist: ${e.request.url.split('/').pop()}`);
+                    return new Response(JSON.stringify({
+                        tracklist: []
+                    }), {
+                        status: 200,
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                });
+            })
+        );
+        return; // 🛑 Interrupción temprana
+    }
+
 
     // 🛰️ ESTRATEGIA VLOITZ ULTRA-FRESH: Carga 0ms + Verificación Real Forzada
     if (e.request.url.includes('sets.json')) {
