@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vloitz-app-v94.3';
+const CACHE_NAME = 'vloitz-app-v94.4';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache-v2'; // Bóveda de 2s para Latencia Cero
 
 // === CACHES DEL HERO VIDEO ===
@@ -568,7 +568,8 @@ self.addEventListener('message', (event) => {
 
 // 1. INSTALACIÓN: Guardamos la interfaz en el caché (Esperando decisión del usuario)
 self.addEventListener('install', (e) => {
-    console.log('[Service Worker] Nueva versión instalada. Esperando la orden del usuario para activarse...');
+    console.log('[Service Worker] 🚨 Modo Emergencia: Forzando activación inmediata...');
+    self.skipWaiting(); // 🛡️ LA BALA DE PLATA: Mata al SW viejo y toma el control
     e.waitUntil(
         caches.open(CACHE_NAME).then(async (cache) => {
             // 🚀 FIX SENIOR: Descarga individual (AllSettled)
