@@ -1,4 +1,44 @@
-const CACHE_NAME = 'vloitz-app-v94.4';
+const CACHE_NAME = 'vloitz-app-v94.5';
+
+// ==============================================================================
+// 🚨 INTERRUPTOR DE EMERGENCIA (SISTEMA DE RESCATE COORDINADO)
+// ==============================================================================
+// ¿CÓMO FUNCIONA EL RESCATE? (Regla de oro: "Ariete + Conserje")
+// Cuando hay un error crítico (ej. AegisWasm roto), el Service Worker viejo
+// se atasca y no deja cargar el HTML nuevo. Usamos un ataque en 2 frentes:
+//   1. ESTE ARCHIVO (sw.js) es el "ARiete": Fuerza la activación inmediata
+//      (skipWaiting) para matar al SW viejo y tomar el control de la PWA.
+//   2. EL HTML (index.html) es el "Conserje": Un script en el <head> borra
+//      la caché corrupta en cuanto el SW nuevo toma el control.
+// ¡AMBOS SE USAN A LA VEZ! Si solo cambias uno, el rescate fallará.
+//
+// ¿CÓMO ACTIVAR EL MODO RESCATE? (Solo en emergencias)
+//   1. Aquí (sw.js): Ajusta la fecha de expiración (EMERGENCY_DATE) a un plazo
+//      de 1 o 2 semanas en el futuro.
+//   2. En index.html: Cambia el VLOITZ_FORCE_UPDATE_TOKEN a una versión nueva (ej. 'v6').
+//   3. Sube ambos archivos (con bump de versión) para salvar a todos los usuarios.
+//
+// ¿CUÁNDO SE APAGA?
+// Pasada la fecha de expiración, el SW se auto-desactiva y vuelve al botón
+// verde de "Actualización lista" sin molestar a nadie.
+
+const EMERGENCY_DATE = {
+    year: 2026,
+    month: 11, // 11 = Noviembre (1-12)
+    day: 25, // Día 25
+    hour: 23, // 11:59 PM
+    minute: 59
+};
+
+// Convierte la fecha legible a UTC para que funcione igual en cualquier zona horaria
+const VLOITZ_EMERGENCY_EXPIRATION = Date.UTC(
+    EMERGENCY_DATE.year,
+    EMERGENCY_DATE.month - 1, // JS usa 0-11 para los meses
+    EMERGENCY_DATE.day,
+    EMERGENCY_DATE.hour,
+    EMERGENCY_DATE.minute
+);
+
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache-v2'; // Bóveda de 2s para Latencia Cero
 
 // === CACHES DEL HERO VIDEO ===
@@ -568,8 +608,16 @@ self.addEventListener('message', (event) => {
 
 // 1. INSTALACIÓN: Guardamos la interfaz en el caché (Esperando decisión del usuario)
 self.addEventListener('install', (e) => {
-    console.log('[Service Worker] 🚨 Modo Emergencia: Forzando activación inmediata...');
-    self.skipWaiting(); // 🛡️ LA BALA DE PLATA: Mata al SW viejo y toma el control
+    // 🛡️ EVALUACIÓN DE FECHA DE EMERGENCIA
+    const now = Date.now();
+
+    if (now < VLOITZ_EMERGENCY_EXPIRATION) {
+        console.log(`[Service Worker] 🚨 Modo Emergencia ACTIVO (Expira el ${EMERGENCY_DATE.day}/${EMERGENCY_DATE.month} a las ${EMERGENCY_DATE.hour}:${EMERGENCY_DATE.minute} UTC). Forzando activación...`);
+        self.skipWaiting(); // 🛡️ LA BALA DE PLATA: Mata al SW viejo y toma el control
+    } else {
+        console.log('[Service Worker] ⏳ Modo Normal: La fecha de emergencia expiró. Esperando al usuario...');
+    }
+
     e.waitUntil(
         caches.open(CACHE_NAME).then(async (cache) => {
             // 🚀 FIX SENIOR: Descarga individual (AllSettled)
