@@ -1,5 +1,162 @@
 import loadAegisEngine from './bin/aegis_engine.js';
 
+// ============================================================
+// 🛡️ AEGIS DEBUG MODE (Fase 0 — Diagnóstico de rendimiento)
+// ============================================================
+// Activo SOLO si ?aegis_debug=1 en URL o localStorage.aegis_debug === '1'.
+// En producción normal: cero overhead, cero marcas ejecutadas, cero wrapping.
+// Reporta en consola el desglose de tiempos de init() + Wasm APIs.
+// ============================================================
+const AEGIS_DEBUG = (() => {
+    try {
+        return new URLSearchParams(location.search).has('aegis_debug')
+            || localStorage.getItem('aegis_debug') === '1';
+    } catch (_) {
+        return false;
+    }
+})();
+
+function aegisDebugMark(name) {
+    if (!AEGIS_DEBUG) return;
+    try { performance.mark('aegis:' + name); } catch (_) {}
+}
+
+function aegisDebugMeasure(name, startMark, endMark) {
+    if (!AEGIS_DEBUG) return null;
+    try {
+        performance.measure('aegis:' + name, 'aegis:' + startMark, 'aegis:' + endMark);
+        const entries = performance.getEntriesByName('aegis:' + name, 'measure');
+        return entries[entries.length - 1] ? entries[entries.length - 1].duration : null;
+    } catch (_) {
+        return null;
+    }
+}
+
+const aegisDebugData = {
+    fetch_wasm: null,
+    instantiateStreaming: null,
+    instantiate: null,
+    compileStreaming: null,
+    compile: null,
+    apiCalled: []
+};
+
+function aegisDebugWrapWasmAPIs() {
+    if (!AEGIS_DEBUG) return function noop() {};
+    const originals = {
+        fetch: window.fetch,
+        instantiateStreaming: WebAssembly.instantiateStreaming,
+        instantiate: WebAssembly.instantiate,
+        compileStreaming: WebAssembly.compileStreaming,
+        compile: WebAssembly.compile,
+    };
+    window.fetch = function() {
+        const args = Array.prototype.slice.call(arguments);
+        const url = typeof args[0] === 'string' ? args[0] : (args[0] && args[0].url) || '';
+        if (url.indexOf('.wasm') === -1) return originals.fetch.apply(this, args);
+        const t0 = performance.now();
+        return originals.fetch.apply(this, args).then(function(res) {
+            aegisDebugData.fetch_wasm = performance.now() - t0;
+            return res;
+        });
+    };
+    if (originals.instantiateStreaming) {
+        WebAssembly.instantiateStreaming = function() {
+            const args = Array.prototype.slice.call(arguments);
+            const t0 = performance.now();
+            aegisDebugData.apiCalled.push('instantiateStreaming');
+            return originals.instantiateStreaming.apply(this, args).finally(function() {
+                aegisDebugData.instantiateStreaming = performance.now() - t0;
+            });
+        };
+    }
+    if (originals.instantiate) {
+        WebAssembly.instantiate = function() {
+            const args = Array.prototype.slice.call(arguments);
+            const t0 = performance.now();
+            aegisDebugData.apiCalled.push('instantiate');
+            return originals.instantiate.apply(this, args).finally(function() {
+                aegisDebugData.instantiate = performance.now() - t0;
+            });
+        };
+    }
+    if (originals.compileStreaming) {
+        WebAssembly.compileStreaming = function() {
+            const args = Array.prototype.slice.call(arguments);
+            const t0 = performance.now();
+            aegisDebugData.apiCalled.push('compileStreaming');
+            return originals.compileStreaming.apply(this, args).finally(function() {
+                aegisDebugData.compileStreaming = performance.now() - t0;
+            });
+        };
+    }
+    if (originals.compile) {
+        WebAssembly.compile = function() {
+            const args = Array.prototype.slice.call(arguments);
+            const t0 = performance.now();
+            aegisDebugData.apiCalled.push('compile');
+            return originals.compile.apply(this, args).finally(function() {
+                aegisDebugData.compile = performance.now() - t0;
+            });
+        };
+    }
+    return function restore() {
+        window.fetch = originals.fetch;
+        WebAssembly.instantiateStreaming = originals.instantiateStreaming;
+        WebAssembly.instantiate = originals.instantiate;
+        WebAssembly.compileStreaming = originals.compileStreaming;
+        WebAssembly.compile = originals.compile;
+    };
+}
+
+function aegisDebugReport() {
+    if (!AEGIS_DEBUG) return;
+    const fmt = function(n) { return (n === null || n === undefined) ? '—' : n.toFixed(0) + ' ms'; };
+    const total = aegisDebugMeasure('total', 'init:start', 'ready:resolved');
+    const preload = aegisDebugMeasure('preload', 'init:start', 'engine:load:start');
+    const engineLoad = aegisDebugMeasure('engine_load', 'engine:load:start', 'engine:load:end');
+    const postEngine = aegisDebugMeasure('post_engine', 'engine:load:end', 'ready:resolved');
+    const lines = [
+        '╔══════════════════════════════════════════════════════╗',
+        '║  🛡️ AEGIS DEBUG REPORT (Fase 0 — baseline)           ║',
+        '╠══════════════════════════════════════════════════════╣',
+        '║  Total (init → ready):   ' + fmt(total).padEnd(28) + '║',
+        '║  ├─ Preload + setup:     ' + fmt(preload).padEnd(28) + '║',
+        '║  ├─ Engine load (glue):  ' + fmt(engineLoad).padEnd(28) + '║',
+        '║  │   ├─ fetch(wasm):     ' + fmt(aegisDebugData.fetch_wasm).padEnd(28) + '║',
+        '║  │   ├─ instStreaming:   ' + fmt(aegisDebugData.instantiateStreaming).padEnd(28) + '║',
+        '║  │   ├─ instantiate:     ' + fmt(aegisDebugData.instantiate).padEnd(28) + '║',
+        '║  │   ├─ compileStream:   ' + fmt(aegisDebugData.compileStreaming).padEnd(28) + '║',
+        '║  │   └─ compile:         ' + fmt(aegisDebugData.compile).padEnd(28) + '║',
+        '║  └─ Post-engine (run):   ' + fmt(postEngine).padEnd(28) + '║',
+        '╠══════════════════════════════════════════════════════╣',
+        '║  APIs Wasm llamadas:     ' + (aegisDebugData.apiCalled.join(', ') || '—').slice(0,28).padEnd(28) + '║',
+        '║  Modo:                   baseline v3.4.1              ║',
+        '╚══════════════════════════════════════════════════════╝'
+    ];
+    console.log('
+' + lines.join('
+') + '
+');
+    if (total && total > 10000) {
+        console.warn('[Aegis Debug] ⚠️ Total > 10s. El freeze es significativo. Revisar desglose.');
+    }
+    window.__aegisDebug = {
+        total: total,
+        preload: preload,
+        engineLoad: engineLoad,
+        postEngine: postEngine,
+        fetch_wasm: aegisDebugData.fetch_wasm,
+        instantiateStreaming: aegisDebugData.instantiateStreaming,
+        instantiate: aegisDebugData.instantiate,
+        compileStreaming: aegisDebugData.compileStreaming,
+        compile: aegisDebugData.compile,
+        apiCalled: aegisDebugData.apiCalled.slice(),
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+    };
+}
+
 class AegisShield {
     constructor() {
         this.engine = null;
@@ -7,16 +164,19 @@ class AegisShield {
         if (!document.querySelector('link[href*="aegis_engine.wasm"]')) {
             const preloadWasm = document.createElement('link');
             preloadWasm.rel = 'preload';
-            preloadWasm.href = '/bin/aegis_engine.wasm?v=097367';
+            preloadWasm.href = '/bin/aegis_engine.wasm?v=566502';
             preloadWasm.as = 'fetch';
             preloadWasm.type = 'application/wasm';
             preloadWasm.crossOrigin = 'anonymous';
             document.head.appendChild(preloadWasm);
         }
+        aegisDebugMark('init:start');
         this.ready = this.init();
 
         // 🚀 NOTIFICAR AL CENTINELA CUANDO EL MOTOR ESTÉ LISTO
         this.ready.then(() => {
+            aegisDebugMark('ready:resolved');
+            aegisDebugReport();
             window.dispatchEvent(new Event('aegis-ready'));
         });
 
@@ -24,15 +184,19 @@ class AegisShield {
 
     async init() {
         console.log("[🛡️ AegisWasm] Inicializando bóveda asíncrona...");
+        aegisDebugMark('engine:load:start');
+        const _aegisDebugRestoreAPIs = aegisDebugWrapWasmAPIs();
         // 🚀 MAGIA UNIVERSAL DEFINITIVA: Ruta absoluta a la carpeta /bin/
         this.engine = await loadAegisEngine({
             locateFile: (path) => {
                 if (path.includes('.wasm')) {
-                    return '/bin/' + path + '?v=097367';
+                    return '/bin/' + path + '?v=566502';
                 }
                 return path;
             }
         });
+        aegisDebugMark('engine:load:end');
+        _aegisDebugRestoreAPIs();
         this._manifestCache = null;
         this._installWorkerInterceptor();
         console.log("[🛡️ AegisWasm] Motor en línea. Listo para servir activos.");
