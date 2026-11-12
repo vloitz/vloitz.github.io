@@ -781,6 +781,14 @@ self.addEventListener('fetch', (e) => {
 
     // 🛰️ ESTRATEGIA VLOITZ ULTRA-FRESH: Carga 0ms + Verificación Real Forzada
     if (e.request.url.includes('sets.json')) {
+
+        // 🛡️ ESCUDO ANTI-RECURSIÓN (Fix: TypeError: Failed to fetch)
+        // Si la URL ya tiene el parámetro '?t=', es una petición interna del SW.
+        // Dejamos que vaya a la red directamente para evitar el bucle infinito.
+        if (new URL(e.request.url).searchParams.has('t')) {
+            return;
+        }
+
         e.respondWith(
             caches.match(e.request).then((cachedResponse) => {
                 const safeCachedResponse = cachedResponse ? cachedResponse.clone() : null; // Clon seguro antes de consumirse

@@ -164,7 +164,7 @@ class AegisShield {
         if (!document.querySelector('link[href*="aegis_engine.wasm"]')) {
             const preloadWasm = document.createElement('link');
             preloadWasm.rel = 'preload';
-            preloadWasm.href = '/bin/aegis_engine.wasm?v=566502';
+            preloadWasm.href = '/bin/aegis_engine.wasm?v=257212';
             preloadWasm.as = 'fetch';
             preloadWasm.type = 'application/wasm';
             preloadWasm.crossOrigin = 'anonymous';
@@ -190,7 +190,7 @@ class AegisShield {
         this.engine = await loadAegisEngine({
             locateFile: (path) => {
                 if (path.includes('.wasm')) {
-                    return '/bin/' + path + '?v=566502';
+                    return '/bin/' + path + '?v=257212';
                 }
                 return path;
             }
