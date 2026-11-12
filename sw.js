@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vloitz-app-v93.7';
+const CACHE_NAME = 'vloitz-app-v93.8';
 const PRELOAD_CACHE_NAME = 'vloitz-tracklist-cache-v2'; // Bóveda de 2s para Latencia Cero
 
 // === CACHES DEL HERO VIDEO ===
@@ -635,6 +635,20 @@ self.addEventListener('fetch', (e) => {
     // 🛡️ INMUNIDAD ABSOLUTA CONTRA EXTENSIONES Y PARÁSITOS
     if (!e.request.url.startsWith('http')) {
         return;
+    }
+
+    // ⚡ FAST-PATH: Servir recursos estáticos INMEDIATAMENTE desde caché
+    // Esto evita que la foto de perfil o el CSS esperen a que AegisWasm despierte.
+    if (e.request.url.match(/\.(css|webp|png|jpg|jpeg|woff2|ico)$/)) {
+        e.respondWith(
+            caches.match(e.request).then((cachedResponse) => {
+                if (cachedResponse) {
+                    return cachedResponse; // Entrega instantánea (0ms)
+                }
+                return fetch(e.request); // Si no está en caché, va a la red
+            })
+        );
+        return; // 🛑 Cortamos aquí. No pasa por el resto de lógica pesada.
     }
 
     // 🚀 FIX NUCLEAR: Forzar red SOLO para app.js (el resto se sirve desde caché en 0ms)
